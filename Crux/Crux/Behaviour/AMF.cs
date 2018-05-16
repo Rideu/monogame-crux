@@ -86,9 +86,9 @@ namespace Crux
 
     }
 
-    public static class MonoMessageBox 
+    public static class MonoMessageBox
     {
-        static int stdw = 160, stdh = 70, stdx = WinSize.X / 2 - stdw/2, stdy = WinSize.Y / 2 - stdh/2;
+        static int stdw = 160, stdh = 70, stdx = WinSize.X / 2 - stdw / 2, stdy = WinSize.Y / 2 - stdh / 2;
         static int crtw = stdw, crth = stdh, crtx = WinSize.X / 2 - stdw / 2, crty = WinSize.Y / 2 - stdh / 2;
 
         static MonoForm form = new MonoForm(stdx, stdy, stdw, stdh, new Color(0, 31, 56));
@@ -104,8 +104,8 @@ namespace Crux
                 {
                     Text = "OK"
                 };
-                c.OnLeftClick += 
-                    delegate 
+                c.OnLeftClick +=
+                    delegate
                     {
                         form.IsVisible = !true;
                         //form.Bounds = new Rectangle(crtx = stdx, crty = stdy, crtw = stdw, crth = stdh);
@@ -130,7 +130,7 @@ namespace Crux
 
         public static void Show(string message)
         {
-            crtw = Math.Max((int)font.MeasureString(message).X+20, crtw);
+            crtw = Math.Max((int)font.MeasureString(message).X + 20, crtw);
             form = null;
             form = new MonoForm(stdx, stdy, crtw, stdh, new Color(0, 31, 56));
             Init();
@@ -342,7 +342,7 @@ namespace Crux
                         OMLOccured = true;
                     }
 
-                    
+
                     if (ActiveControl == null && IsActive && Control.LeftClick())
                         OnMouseLeftClicked?.Invoke(new object(), new EventArgs());
 
@@ -603,10 +603,16 @@ namespace Crux
         public override void Draw()
         {
             batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X + X), (int)(Owner.Y + Y)), new Point((int)Width, (int)Height));
-            batch.Begin(SpriteSortMode.Deferred, null, SamplerState.AnisotropicClamp, null, batch.GraphicsDevice.RasterizerState);
+            batch.Begin(SpriteSortMode.Deferred, null, null, null);
             {
                 batch.Draw(Tex, new Vector2(Owner.X + X, Owner.Y + Y), Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
-                batch.DrawString(font, Text, (new Vector2(Owner.X + X, Owner.Y + Y) + new Vector2(4, 2) + textpos).ToPoint().ToVector2(), Color.White, 0f, new Vector2(), 0.98f, SpriteEffects.None, 1f);
+                using (var b = new SpriteBatch(batch.GraphicsDevice))
+                {
+                    b.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X + X), (int)(Owner.Y + Y)), new Point((int)Width, (int)Height));
+                    b.Begin(SpriteSortMode.Deferred, null, null, null, b.GraphicsDevice.RasterizerState);
+                    b.DrawString(font, Text, (new Vector2(Owner.X + X, Owner.Y + Y) + new Vector2(4, 2) + textpos).ToPoint().ToVector2(), Color.White, 0f, new Vector2(), 1f, SpriteEffects.None, 1f);
+                    b.End();
+                }
             }
             batch.End();
         }
@@ -828,7 +834,7 @@ namespace Crux
             {
                 IsChecked = !IsChecked;
             }
-            
+
         }
 
         public override void InnerUpdate()

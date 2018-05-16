@@ -22,12 +22,14 @@ namespace Crux
 
         Vector2 p; public Vector2 Position { get => p; set /*enwrite*/ => p = value; }
 
-        public StringBuilder(SpriteFont font, string text, Vector2 pos)
+        public StringBuilder(SpriteFont font, string text, Vector2 pos, Vector2 size)
         {
+            pc = new cmd();
+            gc = "";
             f = font;
-            t = Replace(text, @"\s+ (?!\n)", " "); // Filter input to necessary view so commands can recgonize it properly
-            t = Replace(t, @"[}]\s", "}"); 
-            t = Replace(t, @"\b[{]", " {"); 
+            t = Replace(text, @"[}]\s", "}");
+            t = Replace(t, @"[{]", " {");
+            t = Replace(t, @"\s+ (?!\n)", " ").Trim(' '); // Filter input to necessary view so commands can recgonize it properly
             Vector2 cp = new Vector2();
             var sp = f.MeasureString("  ");
             var l = 0;
@@ -36,14 +38,17 @@ namespace Crux
             {
                 var ws = f.MeasureString(n);
                 var rt = n;
-                if (rt.Contains("\n"))
+                var tsl = 0;
+                w.FindAll(u => u.l == l).ForEach(u => { tsl += (int)u.b.Width; });
+                if (rt.Contains("\n") || tsl > size.X)
                 {
-                    rt = n.Replace("\n", ""); // Move words that are newly filtered to left and one line lower
+                    rt = n.Replace("\n", "");
+                    // Move words that are newly filtered to left and one line lower
+                    // {
                     cp.X = 0;
-                    cp.Y += ws.Y / 2;
-                    l += 1;
+                    cp.Y += ws.Y;
+                    l += 1; // }
                 }
-
                 var s = new sub(pos + cp, f, rt, Color.Black, ws.X, ws.Y, l);
                 F_C_APPLY(s);
                 ws = f.MeasureString(s);
@@ -73,13 +78,19 @@ namespace Crux
                     s.t = Replace(s.t, ".+?}+", "");
                     // Set word's bounds width. Example: ":h" directive won't work properly if mouse hovers over this word
                     s.b.Width = (int)f.MeasureString(s.t).X;
-                    s = pc.p(s); // Apply command processor
+                    s = pc.p(s, pc.ct); // Apply command processor
                 }
+                if (IsMatch(s.t, "{.+?}"))
+                    s.t = Replace(s.t, "{.+?}", "");
             }
             if (pc.pr) // Apply every next word, if ":p" directive defined
             {
                 s = pc.p(s);
             }
+            //if (gc.ct.Length > 0) //temp
+            //{
+            //    s = gc.p(s);
+            //}
         }
 
         void F_C_ASSOC() // !Unused
@@ -150,50 +161,62 @@ namespace Crux
         struct cmd // A command
         {
             public string ct; // std marking: {.ct}
-            public Func<sub, string, sub> onf; // Delegate that applies command's logic
-            public sub p(sub s, string v = "") => onf.Invoke(s, v); // "v" is addition parameters for commands. Unused currently
+            public Func<sub, string, sub> onf; // Delegate that applies command's logic.
+            public sub p(sub s, string v = "") => onf.Invoke(s, v); // "v" is addition parameters for commands. Unused currently.
             public bool pr; // Propagator flag that allows apply specified formatting for next words until new command defined.
             public static cmd al(string c) // Command analyser. Selects proper command, applies directive for it if there is.
             {
-                var re = Replace(c, "((?<=}).+)", ""); // Select very first command inside string.
-                var dir = Match(re, ":\\w+").Value; // Defines, whether there is any directive.
-
-                var cm = cmds.Find(n => n.ct == Replace(re, ":\\w+", "")); // Selects a command from the list.
-                if (cm.ct == null) throw new Exception("No such command found => " + re);
-                if (dir.Length > 0)
-                    switch (dir)
+                var iv = Match(Replace(c, "((?<=}).+)", ""), @"\(.+(?:\))").Value; // Parse the parameter command needed for further usage.
+                var re = Replace(c, @"\(.+(?:\))|((?<=}).+)", ""); // Select very first command inside string.
+                var dir = Matches(re, "((?<=:|,)\\w+)"); // Defines, whether there is any directive. Keeps the directive, if so.
+                var cm = cmds.Find(n => n.ct == Replace(Replace(re, ":(\\w+|,)+", ""), ":", "")); // Selects a command from the list, in advance cleaning it up of directives.
+                //if (cm.ct == null) throw new Exception("No such command found => " + re);
+                if(iv.Length > 0)
+                {
+                    var conf = cm.onf;
+                    cm.onf = delegate (sub s, string v)
                     {
-                        case ":p":
-                            {
-                                cm.pr = true; // Enable propagator for this command.
-                                pc = cm;
-                            }
-                            break;
-                        case ":h":
-                            {
-                                var conf = cm.onf; // Create delegate-formatter reference. Some kind of copy.
-                                cm.onf = delegate (sub s, string v) // Redefine 
+                        conf.Invoke(s, iv); // Invoke the processor with defined command.
+                        return s;
+                    };
+                }
+                if (dir.Count > 0)
+                    foreach (var n in dir)
+                        switch ((n.GetType().GetProperty("Value").GetValue(n)))
+                        {
+                            case "p":
                                 {
-                                    if (Control.MouseHoverOver(s) && !Control.LeftButtonPressed)
-                                        return conf.Invoke(s, v); // Apply formatting when mouse hovers over "s" word
+                                    cm.pr = true; // Enable propagator for this command.
+                                    pc = cm;
+                                }
+                                break;
+                            case "h":
+                                {
+                                    var conf = cm.onf; // Create delegate-formatter reference. Some kind of copy.
+                                    cm.onf = delegate (sub s, string v) // Redefine 
+                                    {
+                                        if (Control.MouseHoverOver(s) && !Control.LeftButtonPressed)
+                                            return conf.Invoke(s, v); // Apply formatting when mouse hovers over "s" word
                                     return s;
-                                };
-                                pc = cm;
-                            }
-                            break;
-                        default:
-                            throw new Exception("No such directive found => " + dir);
-                    }
+                                    };
+                                    pc = cm;
+                                }
+                                break;
+                                //default:
+                                //throw new Exception("No such directive found => " + dir);
+                        }
                 else pc.pr = false;
                 return cm;
             }
         }
 
         static cmd pc; // A primary command that applies formatting.
+        static string gc; // 
+        static List<sub> tg = new List<sub>();
 
         static List<cmd> cmds = new List<cmd>() // A predefines list of commands
         {
-            new cmd() // A command that makes words blue.
+            new cmd() // Sample. A command that makes words blue.
             {
                 ct = "{blue}", // Define command text
                 onf = delegate(sub s, string v) // Define an action that will be applied for specified word 
@@ -204,15 +227,40 @@ namespace Crux
             },
             new cmd()
             {
-                ct = "{green}",
+                ct = "{#}",
                 onf = delegate(sub s, string v)
                 {
-                    
-                    s.c = new Color(0,255,0);
+                    var m = Matches(v, "\\d+");
+                    s.c = new Color(int.Parse(m[0].Value), int.Parse(m[1].Value), int.Parse(m[2].Value));
                     return s;
                 }
             },
-            new cmd() 
+            new cmd()
+            {
+                ct = "{$=>}",
+                onf = delegate(sub s, string v)
+                {
+                    if(gc.Length == 0) gc = v;
+                    tg.Add(s);
+                    return s;
+                }
+            },
+            new cmd()
+            {
+                ct = "{=>$}",
+                onf = delegate(sub s, string v)
+                {
+                    pc.pr = false;
+                    var f = "{"+gc.Substring(1,gc.Length-2)+"}"; // Extract the parameter
+                    var c = cmd.al(f); // Define the command
+                    if(tg.Exists(n => n.b.Contains(GlobalMousePos)))
+                    foreach(var n in tg)
+                        c.p(n); // Apply this command for each word
+                    tg.Clear();
+                    return s;
+                }
+            },
+            new cmd()
             {
                 ct = "{@p}", // A null-command that prevents continued propagation
                 onf = delegate(sub s, string v)

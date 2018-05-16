@@ -7,15 +7,15 @@ with.
 -->
 <XnaContent xmlns:Graphics="Microsoft.Xna.Framework.Content.Pipeline.Graphics">
   <Asset Type="Graphics:FontDescription">
-    <FontName>Arial</FontName> <!-- Euphemia, -->
-    <Size>10</Size>
-    <Spacing>2</Spacing>
+    <FontName>Arial</FontName> <!-- Euphemia, Candara -->
+    <Size>11</Size>
+    <Spacing>1</Spacing>
     <UseKerning>false</UseKerning>
-    <Style>Bold</Style><!-- "Regular", "Bold", "Italic" -->
+    <Style>Regular</Style><!-- "Regular", "Bold", "Italic" -->
     <CharacterRegions>
       <CharacterRegion>
         <Start>&#32;</Start>
-        <End>&#126;</End>
+        <End>&#426;</End>
       </CharacterRegion>
     </CharacterRegions>
   </Asset>

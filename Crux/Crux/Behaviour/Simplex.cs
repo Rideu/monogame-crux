@@ -212,22 +212,13 @@ namespace Crux
 
         public static void DrawRect(SpriteBatch sb, Vector2 pos, Vector2 size, Color col)
         {
-            DrawLine(pos, new Vector2(pos.X + size.X, pos.Y), col, sb);
-            DrawLine(new Vector2(pos.X + size.X, pos.Y), pos + size, col, sb);
-            DrawLine(pos + size, new Vector2(pos.X, pos.Y + size.Y), col, sb);
-            DrawLine(new Vector2(pos.X, pos.Y + size.Y), pos, col, sb);
-        }
-        
-        public static void DrawRect(SpriteBatch sb, Rectangle rect, Color col)
-        {
-            Vector2 pos = new Vector2(rect.Location.X, rect.Location.Y);
-            Vector2 size = new Vector2(rect.Width, rect.Height);
-            DrawLine(pos, new Vector2(pos.X + size.X, pos.Y), col, sb);
-            DrawLine(new Vector2(pos.X + size.X, pos.Y), pos + size, col, sb);
-            DrawLine(pos + size, new Vector2(pos.X, pos.Y + size.Y), col, sb);
-            DrawLine(new Vector2(pos.X, pos.Y + size.Y), pos, col, sb);
+            sb.DrawRect(new Rectangle(pos.ToPoint(), size.ToPoint()), col);
         }
 
+        public static void DrawRect(this SpriteBatch sb, Rectangle rect, Color c)
+        {
+            sb.Draw(Game1.pixel, rect, c);
+        }
 
         public static void DrawCircle(this SpriteBatch sb, Vector2 center, float diameter, Color col, Texture2D special = null)
         {

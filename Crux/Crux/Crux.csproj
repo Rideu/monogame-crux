@@ -46,6 +46,12 @@
     <Compile Include="Behaviour\Control.cs" />
     <Compile Include="Behaviour\IUnify.cs" />
     <Compile Include="Behaviour\Simplex.cs" />
+    <Compile Include="Behaviour\ToolSet.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Behaviour\ToolSet.Designer.cs">
+      <DependentUpon>ToolSet.cs</DependentUpon>
+    </Compile>
     <Compile Include="Game1.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -55,6 +61,7 @@
       <HintPath>$(MonoGameInstallDirectory)\MonoGame\v3.0\Assemblies\Windows\MonoGame.Framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -65,6 +72,12 @@
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
     <None Include="app.manifest" />
+    <None Include="Content\fonts\arial.spritefont" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Behaviour\ToolSet.resx">
+      <DependentUpon>ToolSet.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
