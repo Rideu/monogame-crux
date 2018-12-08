@@ -11,7 +11,7 @@ using static System.Text.RegularExpressions.Regex;
 
 namespace Crux
 {
-    public partial class ToolSet : Form
+    public partial class ToolSet : System.Windows.Forms.Form
     {
         public ToolSet()
         {

@@ -24,6 +24,8 @@
     <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -41,22 +43,28 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Behaviour\AMF.cs" />
+    <Compile Include="Behaviour\dControls\AMF.cs" />
     <Compile Include="Behaviour\Complex.cs" />
     <Compile Include="Behaviour\Control.cs" />
     <Compile Include="Behaviour\IUnify.cs" />
     <Compile Include="Behaviour\Simplex.cs" />
+    <Compile Include="Behaviour\Timing.cs" />
     <Compile Include="Behaviour\ToolSet.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Behaviour\ToolSet.Designer.cs">
       <DependentUpon>ToolSet.cs</DependentUpon>
     </Compile>
+    <Compile Include="Behaviour\Triplex.cs" />
+    <Compile Include="Behaviour\dControls\uControl.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="HtmlAgilityPack, Version=1.8.9.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.8.9\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="MonoGame.Framework">
       <HintPath>$(MonoGameInstallDirectory)\MonoGame\v3.0\Assemblies\Windows\MonoGame.Framework.dll</HintPath>
     </Reference>
@@ -73,6 +81,11 @@
     <MonoGameContentReference Include="Content\Content.mgcb" />
     <None Include="app.manifest" />
     <None Include="Content\fonts\arial.spritefont" />
+    <None Include="Content\fonts\Tifax.spritefont" />
+    <None Include="Content\fonts\Xolonium.spritefont">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Behaviour\ToolSet.resx">

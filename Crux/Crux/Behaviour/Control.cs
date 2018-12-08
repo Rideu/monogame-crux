@@ -7,33 +7,23 @@ using System.Collections.Generic;
 using System;
 
 namespace Crux
-{ 
-
+{
     public static class Control
     {
 
-        private static MouseState OMS, NMS; 
+        private static MouseState OMS, NMS;
+        private static KeyboardState OKS, NKS;
         public static float NMW, OMW, WheelVal;
 
-        public static bool LeftButtonPressed => OMS.LeftButton == ButtonState.Pressed;
-        public static bool MidButtonPressed => OMS.MiddleButton == ButtonState.Pressed;
-        public static bool RightButtonPressed => OMS.RightButton == ButtonState.Pressed;
-
-        private static List<Keybind> bindslist = (new Func<List<Keybind>> (delegate () 
-        {
-            List<Keybind> ret = new List<Keybind>();
-            foreach (Keys node in Keys.GetValues(typeof(Keys)))
-            {
-                ret.Add(new Keybind()
-                {
-                    Key = node,
-                });
-            }
-            return ret;
-        })).Invoke(); 
+        public static bool LeftButtonPressed => NMS.LeftButton == ButtonState.Pressed;
+        public static bool RightButtonPressed => NMS.RightButton == ButtonState.Pressed;
+        public static Vector2 MousePos => NMS.Position.ToVector2();
 
         public static void Update()
         {
+            OKS = NKS;
+            NKS = Keyboard.GetState();
+
             OMS = NMS;
             NMS = Mouse.GetState();
 
@@ -42,119 +32,39 @@ namespace Crux
             WheelVal = NMW - OMW;
         }
 
-        public static bool MouseHoverOver(Rectangle zone)
-        {
-            if (zone.Contains(Game1.GlobalMousePos.Pos))//new Vector2(Mouse.GetState().X, Mouse.GetState().Y)))
-                return true;
-            return false;
-        }
+        public static bool MouseHoverOverG(Rectangle zone) => (Simplex.PtInsideRect(zone, Game1.GlobalMousePos.Pos));
 
-        public static bool MouseHoverOverTex(Texture2D tex, Vector2 offset)
-        {
-            return ((Simplex.OffsettedTexture(tex, offset).Contains(Mouse.GetState().Position.ToVector2())));
-        }
+        public static bool MouseHoverOverTex(Texture2D tex, Vector2 offset) => (Simplex.PtInsideRect(Simplex.OffsettedTexture(tex, offset), Mouse.GetState().Position.ToVector2()));
 
-        public static bool LeftClickInTexture(Texture2D tex, Vector2 offset)
-        {
-            return (LeftClick() && MouseHoverOverTex(tex, offset));
-        }
+        public static bool LeftClickInTexture(Texture2D tex, Vector2 offset) => (LeftClick() && Simplex.PtInsideRect(Simplex.OffsettedTexture(tex, offset), Mouse.GetState().Position.ToVector2()));
 
-        public static bool RightClickInTexture(Texture2D tex, Vector2 offset)
-        {
-            return (RightClick() && MouseHoverOverTex(tex, offset));
-        }
+        public static bool RightClickInTexture(Texture2D tex, Vector2 offset) => (RightClick() && Simplex.PtInsideRect(Simplex.OffsettedTexture(tex, offset), Mouse.GetState().Position.ToVector2()));
 
-        public static bool LeftPressed()
-        {
-            return Mouse.GetState().LeftButton == ButtonState.Pressed;
-        }
+        public static bool LeftPressed() => Mouse.GetState().LeftButton == ButtonState.Pressed;
 
-        public static bool LeftClick()
-        {
-            if (OMS.LeftButton == ButtonState.Pressed
-            && NMS.LeftButton == ButtonState.Released) // Nice snippet, actually!
-            {
-                return true;
-            }
-            return false;
-        }
+        public static bool LeftClick() => (OMS.LeftButton == ButtonState.Pressed && NMS.LeftButton == ButtonState.Released);
 
-        public static bool RightPressed()
-        {
-            return Mouse.GetState().RightButton == ButtonState.Pressed;
-        }
+        public static bool RightPressed() => Mouse.GetState().RightButton == ButtonState.Pressed;
 
-        public static bool RightClick()
-        {
-            if (OMS.RightButton == ButtonState.Pressed
-            && NMS.RightButton == ButtonState.Released) // Nice snippet, actually!
-            {
-                return true;
-            }
-            return false;
-        }
+        public static bool RightClick() => (OMS.RightButton == ButtonState.Pressed && NMS.RightButton == ButtonState.Released);
 
-        public static bool MidClick()
-        {
-            if (OMS.MiddleButton == ButtonState.Pressed
-            && NMS.MiddleButton == ButtonState.Released) // Nice snippet, actually!
-                return true;
-            return false;
-        }
+        public static bool MidClick() => (OMS.MiddleButton == ButtonState.Pressed && NMS.MiddleButton == ButtonState.Released);
 
+        public static bool PressedKey(Keys key) => (OKS.IsKeyDown(key) && NKS.IsKeyUp(key));
 
+        public static bool AnyKeyPressed() => OKS.GetPressedKeys().Length > 0;
 
-        private class Keybind
-        {
-            public Keys Key;
-            public bool OldState;
-            public bool NewState;
-        }
+        public static bool IsKeyUp(Keys key) => Keyboard.GetState().IsKeyUp(key);
 
-        public static bool PressedKey(Keys key)
-        {
-            bindslist.ForEach(a => a.OldState = (a.Key == key? a.NewState : a.OldState));
-            if (Keyboard.GetState().IsKeyDown(key))
-            {
-                bindslist.ForEach(a => a.NewState = (a.Key == key? true : a.NewState));
-            } else
-            {
-                bindslist.ForEach(a => a.NewState = (a.Key == key? false: a.NewState));
-            }
+        public static bool IsKeyDown(Keys key) => Keyboard.GetState().IsKeyDown(key);
 
-            if(bindslist.Find(p => (p.Key == key)).OldState && 
-              !bindslist.Find(p => (p.Key == key)).NewState)
-                return true;
-            return false; 
-        }
-
-        public static bool AnyKeyPressed()
-        {
-            foreach (var n in bindslist)
-                if (!n.NewState && n.OldState) return true;
-            return false;
-        }
-
-        public static bool IsKeyUp(Keys key)
-        {
-            return Keyboard.GetState().IsKeyUp(key);
-        }
-
-        public static bool IsKeyDown(Keys key)
-        {
-            return Keyboard.GetState().IsKeyDown(key);
-        }
-
-        public static Keys[] GetPressedKeys()
-        {
-            return Keyboard.GetState().GetPressedKeys();
-        }
+        public static Keys[] GetPressedKeys() => Keyboard.GetState().GetPressedKeys();
 
         public static void Debug(SpriteBatch batch)
         {
             //string presseds = "";
             //presseds = bindslist.FindAll(p => p.NewState == true).Count + "/" + bindslist.Capacity;
-                
+
             //batch.DrawString(Game1.font, Mouse.GetState().Position+"", new Vector2(50), Color.White);
         }
     }
