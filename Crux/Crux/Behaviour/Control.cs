@@ -32,13 +32,13 @@ namespace Crux
             WheelVal = NMW - OMW;
         }
 
-        public static bool MouseHoverOverG(Rectangle zone) => (Simplex.PtInsideRect(zone, Game1.GlobalMousePos.Pos));
+        public static bool MouseHoverOverG(Rectangle zone) => (zone.Contains(Game1.GlobalMousePos.Pos));
 
-        public static bool MouseHoverOverTex(Texture2D tex, Vector2 offset) => (Simplex.PtInsideRect(Simplex.OffsettedTexture(tex, offset), Mouse.GetState().Position.ToVector2()));
+        public static bool MouseHoverOverTex(Texture2D tex, Vector2 offset) => (Simplex.OffsettedTexture(tex, offset).Contains(Mouse.GetState().Position.ToVector2()));
 
-        public static bool LeftClickInTexture(Texture2D tex, Vector2 offset) => (LeftClick() && Simplex.PtInsideRect(Simplex.OffsettedTexture(tex, offset), Mouse.GetState().Position.ToVector2()));
+        public static bool LeftClickInTexture(Texture2D tex, Vector2 offset) => (LeftClick() && Simplex.OffsettedTexture(tex, offset).Contains(Mouse.GetState().Position.ToVector2()));
 
-        public static bool RightClickInTexture(Texture2D tex, Vector2 offset) => (RightClick() && Simplex.PtInsideRect(Simplex.OffsettedTexture(tex, offset), Mouse.GetState().Position.ToVector2()));
+        public static bool RightClickInTexture(Texture2D tex, Vector2 offset) => (RightClick() && Simplex.OffsettedTexture(tex, offset).Contains(Mouse.GetState().Position.ToVector2()));
 
         public static bool LeftPressed() => Mouse.GetState().LeftButton == ButtonState.Pressed;
 

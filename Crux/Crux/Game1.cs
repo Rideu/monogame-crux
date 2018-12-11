@@ -43,29 +43,31 @@ namespace Crux
             ts.Show();
         }
 
+
         private void Window_TextInput(object sender, TextInputEventArgs e)
         {
 
         }
 
+
+
         protected override void Initialize()
         {
             base.Initialize();
             IsMouseVisible = true;
-
             Form f = new Form(30, 100, 290, 500, new Color(70, 70, 70))
             {
                 //IsVisible = true
             };
-            uControl mc, ml;
+            uControl mc, ml, mp;
             f.AddNewControl(mc = new Button(20, 20, 40, 20, new Color(100, 100, 100))
             {
                 Text = "Click!"
             });
-            //f.AddNewControl(new Button(30, 30, 40, 70, new Color(100, 100, 100))
-            //{
-            //    Text = "Kek"
-            //});
+            f.AddNewControl(new Button(30, 30, 40, 70, new Color(100, 100, 100))
+            {
+                Text = "Kek"
+            });
             f.AddNewControl(ml = new Label(20, 50, 260, 280)
             {
                 Font = font1
@@ -74,7 +76,11 @@ namespace Crux
             {
                 Font = font1
             });
-            (ml as Label).Text = "{" +string.Format( "0x{0:X8}", 4291481307) + "}";
+            f.AddNewControl(mp = new Panel(20, 380, 260, 80)
+            {
+
+            });
+            (ml as Label).Text = "{" + string.Format("0x{0:X8}", 4291481307) + "}";
             (mc as Button).OnLeftClick += delegate { MessageBox.Show("Clock!"); };
 
             GlobalForms.Add("SampleForm", f);

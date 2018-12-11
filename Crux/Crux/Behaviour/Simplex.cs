@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Audio;
 using System;
 using static System.Math;
 using static Crux.Game1;
+using sRectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace Crux
 {
@@ -154,13 +155,13 @@ namespace Crux
             switch (drawMethod)
             {
                 case DrawMethod.Texture:
-                batch.Draw(objTexture, objBounds, objColor);
-                break;
+                    batch.Draw(objTexture, objBounds, objColor);
+                    break;
                 case DrawMethod.Rectangle:
-                batch.Draw(pixel, objBounds, objColor);
-                break;
+                    batch.Draw(pixel, objBounds, objColor);
+                    break;
                 default:
-                break;
+                    break;
             }
             //(Item as IEntity).Draw(batch);
             if (Text.Length > 0)
@@ -206,17 +207,19 @@ namespace Crux
             rpx.SetData(tc);
         }
 
-        public static void DrawLine(this SpriteBatch sb, Vector2 start, Vector2 end, Color col) => DrawLine(start, end, col, sb);
+        #region Simplexes
 
+        public static void DrawLine(this SpriteBatch sb, Vector2 start, Vector2 end, Color col) => DrawLine(start, end, col, sb);
 
         public static void DrawLine(Vector2 start, Vector2 end, Color col, SpriteBatch sb) => D_L(sb, new Line(start, end), col);
 
-
         public static void DrawLine(this SpriteBatch sb, Vector2 start, Vector2 end, Texture2D tex, Color col) => D_L(sb, new Line(start, end), tex, col);
-
 
         public static void DrawLine(this SpriteBatch sb, Line line, Color col) => DrawLine(line.Start, line.End, col, sb);
 
+        internal static void D_L(this SpriteBatch batch, Line l, Color col) => batch.Draw(px, l.Start, null, col, l.Angle, new Vector2(0f, 1.5f), new Vector2(l.Length, 1), SpriteEffects.None, 0);
+
+        internal static void D_L(this SpriteBatch batch, Line l, Texture2D tex, Color col) => batch.Draw(tex, l.Start, null, col, l.Angle, new Vector2(0), new Vector2(l.Length, 1), SpriteEffects.None, 0);
 
         public static void DrawPath(SpriteBatch sb, Vector2[] pos, Color col)
         {
@@ -276,12 +279,6 @@ namespace Crux
             }
         }
 
-        internal static void D_L(this SpriteBatch batch, Line l, Color col) => batch.Draw(px, l.Start, null, col, l.Angle, new Vector2(0f, 1.5f), new Vector2(l.Length, 1), SpriteEffects.None, 0);
-
-
-        internal static void D_L(this SpriteBatch batch, Line l, Texture2D tex, Color col) => batch.Draw(tex, l.Start, null, col, l.Angle, new Vector2(0), new Vector2(l.Length, 1), SpriteEffects.None, 0);
-
-
         /// <summary>
         /// Submit a sprite to draw in the current batch with white color by default.
         /// </summary>
@@ -289,46 +286,22 @@ namespace Crux
         /// <param name="position"></param>
         public static void Draw(this SpriteBatch batch, Texture2D texture, Vector2 position) => batch.Draw(texture, position, Color.White);
 
-
-        public static void Swap<T>(ref T a, ref T b)
-        {
-            var c = a; a = b; b = c;
-        }
-
-        public static bool PtInsideRect(Rectangle rect, Vector2 dot) => rect.Contains(dot);
-
-
-        public static bool RectColl(Rectangle rect1, Rectangle rect2) => rect1.Intersects(rect2);
-
+        #endregion
 
         /// <summary>
         /// Returns relative positioned rectangle with texture's size bounds.
         /// </summary>
         public static Rectangle OffsettedTexture(Texture2D texture, Vector2 offset) => new Rectangle((int)offset.X + texture.Bounds.X, (int)offset.Y + texture.Bounds.Y, texture.Width, texture.Height);
 
-
-        /// <summary>
-        /// Returns relative positioned rectangle with source's size bounds.
-        /// </summary>
-        public static Rectangle OffsettedTexture(Rectangle src, Vector2 offset) => new Rectangle((int)offset.X + src.X, (int)offset.Y + src.Y, src.Width, src.Height);
-
-
-        //public static Vector2 SetLength(Vector2 target, float len)
-        //{
-        //    return new Vector2((float)Math.Cos(GetAngle(target) * len), (float)Math.Sin(GetAngle(target) * len));
-        //}
-
         /// <summary>
         /// Returns left-up position of the centered rectangle.
         /// </summary>
         public static Vector2 SnapToWindowCenter(Vector2 size) => (LocalDrawingBounds.Size).ToVector2() / 2 - (size) / 2;
 
-
         /// <summary>
         /// Returns left-up position of the centered rectangle.
         /// </summary>
         public static Point SnapToWindowCenterP(Vector2 size) => ((LocalDrawingBounds.Size).ToVector2() / 2 - (size) / 2).ToPoint();
-
 
         /// <summary>
         /// Returns left-up position of the centered rectangle.
@@ -340,9 +313,9 @@ namespace Crux
         /// </summary>
         public static Point SnapToWindowCenterP(Point size) => SnapToWindowCenterP(size.ToVector2());
 
+        #region float
 
         public static float GetLength(Vector2 target) => (float)Math.Sqrt((target.X * target.X) - (target.Y * target.Y));
-
 
         public static float AngleBetween(Vector2 v1, Vector2 v2)
         {
@@ -352,42 +325,15 @@ namespace Crux
 
         public static float Dot(Vector2 v1, Vector2 v2) => (v1.X * v2.X) + (v1.Y * v2.Y);
 
-
         public static float GetAngle(Vector2 start, Vector2 end) => (float)Math.Atan2(end.Y - start.Y, end.X - start.X); // norevert
-
 
         public static float GetAngle(Vector2 point) => (float)Math.Atan2(point.Y, point.X);// norevert 
 
-
-        public static Vector2 NAngle(float angle) => new Vector2((float)Cos(angle), (float)Sin(angle));
-
-
         public static float AngleDiff(Vector2 v1, Vector2 v2) => (float)((Math.Atan2(v1.X, v1.Y)) - (Math.Atan2(v2.X, v2.Y)));
-
-
-        /// <summary>
-        /// Use Line().ReflectPoint instead
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="normal"></param>
-        /// <returns></returns>
-        public static Vector2 ReflectNormal(Vector2 point, Line normal) => Vector2.Reflect(-point, normal.GetUnitAngle());
-
-
-        public static Vector2 GetWCenter() => new Vector2(Game1.PrimaryViewport.Width / 2, Game1.PrimaryViewport.Height / 2);
-
-
-        public static Vector2 GetWCentered(Vector2 v) => GetWCenter() + v;
-
 
         public static float PtDistLine(Vector2 start, Vector2 end, Vector2 pt) => (float)(((end.Y - start.Y) * pt.X - (end.X - start.X) * pt.Y + end.X * start.Y - end.Y * start.X) / Math.Sqrt(Math.Pow(end.Y - start.Y, 2) + Math.Pow(end.X - start.X, 2)));
 
-
-        public static Vector2 GetRotatedVector2(float angle, float length) => new Vector2((float)-Cos(angle) * length, (float)Sin(angle) * length);
-
-
-        public static Vector2 GetFormattedVector2(float angle, float length) => new Vector2((float)Cos(angle) * length, (float)Sin(angle) * length);
-
+        public static float Angle(this Vector2 v) => (float)Atan2(v.Y, v.X);
 
         public static bool TexContains(Texture2D tex, Point offset, Point point)
         {
@@ -430,11 +376,6 @@ namespace Crux
 
         public static Texture2D CutOut(Texture2D tex, Rectangle rect)
         {
-            //Rectangle r = rect;
-
-            //Point p = (r.Location) * new Point(-1);
-            //Rectangle rr = new Rectangle(0, 0, tex.Bounds.Size.X, tex.Bounds.Size.Y);
-            //var y = p.Y;
             var sheetbuf = new Color[rect.Width * rect.Height];
             tex.GetData(0, rect, sheetbuf, 0, rect.Width * rect.Height);
             Texture2D rtex = new Texture2D(graphics.GraphicsDevice, rect.Width, rect.Height);
@@ -444,11 +385,6 @@ namespace Crux
 
         public static Texture2D CutOut(Texture2D tex, Rectangle source, Rectangle target)
         {
-            //Rectangle r = rect;
-
-            //Point p = (r.Location) * new Point(-1);
-            //Rectangle rr = new Rectangle(0, 0, tex.Bounds.Size.X, tex.Bounds.Size.Y);
-            //var y = p.Y;
             var sheetbuf = new Color[source.Width * source.Height];
             tex.GetData(0, source, sheetbuf, 0, source.Width * source.Height);
             Texture2D rtex = new Texture2D(Game1.graphics.GraphicsDevice, target.Width, target.Height);
@@ -456,16 +392,21 @@ namespace Crux
             return rtex;
         }
 
-        public static Rectangle GetRectangleOffsetted(this Rectangle src, Point offset)
-        {
-            src.Location += offset;
-            return src;
-        }
+        #endregion
 
-        public static bool IsOnStream(u_ps pos)
-        {
-            return Simplex.OffsettedTexture(pos.TexEqBounds, pos).Intersects(Game1.GlobalDrawingBounds);
-        }
+        #region Vector2
+
+        public static Vector2 NAngle(float angle) => new Vector2((float)Cos(angle), (float)Sin(angle));
+
+        public static Vector2 ReflectNormal(Vector2 point, Line normal) => Vector2.Reflect(-point, normal.GetUnitAngle());
+
+        public static Vector2 GetWCenter() => new Vector2(Game1.PrimaryViewport.Width / 2, Game1.PrimaryViewport.Height / 2);
+
+        public static Vector2 GetWCentered(Vector2 v) => GetWCenter() + v;
+
+        public static Vector2 GetRotatedVector2(float angle, float length) => new Vector2((float)-Cos(angle) * length, (float)Sin(angle) * length);
+
+        public static Vector2 GetFormattedVector2(float angle, float length) => new Vector2((float)Cos(angle) * length, (float)Sin(angle) * length);
 
         public static Vector2 Trunc(this Vector2 v, float val)
         {
@@ -477,23 +418,28 @@ namespace Crux
 
         public static Vector2 GetVector2(this Vector3 v) => new Vector2(v.X, v.Y);
 
-        //public static Vector2 ToPoint(this (int, int) t) => new Vector2(t.Item1, t.Item2);
-
-        public static Vector2 Normal(this Vector2 v)
-        {
-            v.Normalize();
-            return v;
-        }
+        public static Vector2 Normal(this Vector2 v) { v.Normalize(); return v; }
 
         public static Vector3 GetVector3(this Vector2 v) => new Vector3(v, 0);
 
+        #endregion
 
-        public static float Angle(this Vector2 v) => (float)Atan2(v.Y, v.X);
+        #region Rectangle
 
+        public static Rectangle GetRectangleOffsetted(this Rectangle src, Point offset) { src.Location += offset; return src; }
 
+        public static Rectangle Rectangle(float x, float y, float w, float h) => new Rectangle((int)x, (int)y, (int)w, (int)h);
 
+        public static Rectangle Intersect(this Rectangle r1, Rectangle r2) => sRectangle.Intersect(r1, r2);
 
+        public static Rectangle Union(this Rectangle r1, Rectangle r2) => sRectangle.Intersect(r1, r2);
 
+        #endregion
+
+        public static void Swap<T>(this T a, T b) where T : class
+        {
+            var c = a; a = b; b = c;
+        }
 
         public static void AddRange<A, B>(this Dictionary<A, B> tgt, Dictionary<A, B> source)
         {
@@ -502,72 +448,6 @@ namespace Crux
                 tgt.Add(n.Key, n.Value);
             }
         }
-
-        public static bool DrawGrid;
-
-        public static void Sandbox(SpriteBatch batch)
-        {
-
-            //batch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied, SamplerState.AnisotropicClamp, null, null, null, Camera.transform);
-            //{
-            //    var s = Pl.CurrentSol;
-            //    var p = Pl.CurrentSol.Sattelites[4];
-            //    var c = CenteratorDevice;
-            //    var d = p.GetOriginPos.Length();
-            //    //Pl.Pos = p.GetMetaOrigin;
-            //    var r = p.GetMetaOrigin;
-            //    //var rr = ;
-            //    //batch.DrawLine(Centerator, r, Color.LimeGreen);
-            //}
-            //batch.End();
-            /*
-            DrawLine(batch, new Vector2(Game1.WindowBounds.Width / 2 - 50, Game1.WindowBounds.Height / 2), new Vector2(Game1.WindowBounds.Width / 2 + 50, Game1.WindowBounds.Height / 2 ), Color.Gray);
-            DrawLine(batch, new Vector2(Game1.WindowBounds.Width / 2, Game1.WindowBounds.Height / 2 - 50), new Vector2(Game1.WindowBounds.Width / 2, Game1.WindowBounds.Height / 2 + 50), Color.Gray);
-            VBi2 v = new VBi2(GetWCenter(), GetWCenter() - new Vector2(0, 70));
-            VBi2 mv = new VBi2(GetWCenter(), Game1.GlobalMousePos.Pos);
-            //v += 25;
-            DrawLine(batch, v, Color.Red);
-            batch.DrawString(Game1.font, 
-                "Red: " + v.ToString() + 
-                "\nGreen: " + mv.ToString() + 
-                "\nAngleBtw: " + VBi2.AngleBetween(mv, v), 
-                GetWCenter() + new Vector2(50), Color.White);
-            //*/
-            //if (DrawGrid)
-            //    for (int i = 0; i < 31; i++)
-            //    {
-            //        Simplex.DrawLine(batch, new Vector2(i * 100, 0), new Vector2(i * 100, 3000), Color.DarkGray);
-            //        Simplex.DrawLine(batch, new Vector2(0, i * 100), new Vector2(3000, i * 100), Color.DarkGray);
-            //    }
-
-            //{
-            //    batch.Draw(hud_gmap_bfly, new Vector2(0), Color.White);
-
-            //    Rectangle r = hud_gmap_bfly.Bounds;
-            //    r.Location += new Vector2(105, 181).ToPoint();
-            //    Color clr = Color.White;
-            //    if (r.Contains(GlobalMousePos.Pos.ToPoint()))
-            //    {
-            //        Point p = (r.Location - GlobalMousePos.Pos.ToPoint()) * new Point(-1);
-            //        Rectangle rr = new Rectangle(0, 0, hud_gmap_bfly.Bounds.Size.X, hud_gmap_bfly.Bounds.Size.Y);
-            //        var w = 88;
-            //        var h = 1;
-            //        var x = 0; var y = p.Y;
-            //        var sheetbuf = new Color[w * h];
-            //        hud_gmap_bfly.GetData(0, new Rectangle(x, y, w, h), sheetbuf, 0, w * h);
-            //        var tx = new Texture2D(Game1.graphics.GraphicsDevice, w, h);
-            //        tx.SetData(sheetbuf);
-
-            //        if (sheetbuf[p.X].A > 0)
-            //            clr = Color.Gray;
-            //    }
-            //    batch.Draw(hud_gmap_bfly, new Vector2(105, 181), clr);
-            //    //batch.Draw(tx, new Vector2(105, 181), null, clr, 0f, new Vector2(0f), new Vector2(1f), SpriteEffects.None, 0f);
-            //}
-            //batch.End();
-
-        }
-
     }
 
     public struct Line // PERF: Line to struct
@@ -663,105 +543,4 @@ namespace Crux
         public static implicit operator string(Line l) => l.Start + "<~>" + l.End + "\n<o>" + l.GetNormalAngle() + "<->" + l.Length;
 
     }
-
-    public static class Calc
-    {
-        public static float AngleTo(Vector2 point0, Vector2 point1)
-        {
-            return -(float)(Atan2(point1.X - point0.X, point1.Y - point0.Y));
-        }
-
-        public static float AngleTo(Line line)
-        {
-            return AngleTo(line.Start, line.End);
-        }
-
-        public static float AngleBetween(Vector2 start1, Vector2 end1, Vector2 start2, Vector2 end2)
-        {
-            return Abs(Abs(Simplex.GetAngle(end1, start1) - Abs(Simplex.GetAngle(end2, start2))));
-        }
-
-        public static float AngleBetween(Line l1, Line l2)
-        {
-            return AngleBetween(l1.Start, l1.End, l2.Start, l2.End);
-        }
-
-        public static Vector2 GetPredirection(u_ps node)
-        {
-            return new Vector2((float)Math.Cos(node.Angle + Math.PI / 2), (float)Math.Sin(node.Angle + Math.PI / 2));
-        }
-    }
-
-    //public class VBi2
-    //{
-    //    private Vector2 V1;
-    //    public Vector2 Start
-    //    {
-    //        set { V1 = value; }
-    //        get { return V1; }
-    //    }
-
-    //    private Vector2 V2;
-    //    public Vector2 End
-    //    {
-    //        set { V2 = value; }
-    //        get { return V2; }
-    //    }
-
-    //    public VBi2(Vector2 start, Vector2 end)
-    //    {
-    //        Start = start;
-    //        End = end;
-    //    }
-
-    //    public Vector2 ToVector2()
-    //    {
-    //        return V2 - V1;
-    //    }
-
-    //    public float GetAngle()
-    //    {
-    //        return Simplex.GetAngle(Start, End);
-    //    }
-
-    //    public static float AngleBetween(VBi2 v1, VBi2 v2)
-    //    {
-    //        return Simplex.AngleBetween(v1, v2);
-    //    }
-
-    //    public static implicit operator Vector2(VBi2 v)
-    //    {
-    //        return v.ToVector2();
-    //    }
-
-    //    public static VBi2 operator +(VBi2 mv, Vector2 v)
-    //    {
-    //        mv.Start += v; mv.End += v;
-    //        return mv;
-    //    }
-
-    //    public static VBi2 operator -(VBi2 mv, Vector2 v)
-    //    {
-    //        mv.Start -= v; mv.End -= v;
-    //        return mv;
-    //    }
-
-    //    public static VBi2 operator +(VBi2 mv, float v)
-    //    {
-    //        mv.Start += new Vector2(v); mv.End += new Vector2(v);
-    //        return mv;
-    //    }
-
-    //    public static VBi2 operator -(VBi2 mv, float v)
-    //    {
-    //        mv.Start -= new Vector2(v); mv.End -= new Vector2(v);
-    //        return mv;
-    //    }
-
-    //    public override string ToString()
-    //    {
-    //        return " [" + Start.ToString() + "]:[" + End.ToString() + "] (" + GetAngle() + ")";
-    //    }
-    //}
-
 }

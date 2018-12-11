@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
+using static Crux.Simplex;
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
@@ -15,18 +15,23 @@ namespace Crux
     /// Base control class.
     /// </summary>
     [DebuggerDisplay("Name: {Name}")]
-    public abstract class uControl : IMFControl
+    public abstract class uControl :  IMFControl, IDisposable
     {
         /// <summary>
         /// Returns the owner of this element.
         /// </summary>
         public abstract uControl Owner { get; set; }
+        Form originForm;
+        public Form MainForm => originForm;
         /// <summary>
         /// Returns id which is assigned once attached to the form.
         /// </summary>
         public abstract int GetID { get; }
         public Color FormColor;
+        protected Texture2D Tex;
+        protected Point InitialPosition;
         public Rectangle Bounds;
+        public Rectangle DrawingBounds => Bounds.Intersect(Owner.Bounds);
         public float X, Y, Width, Height;
         public string Name => GetType().ToString();
         /// <summary>
@@ -40,17 +45,18 @@ namespace Crux
 
         public bool EnterHold;
 
-        protected string text;
+        protected string text = "";
         public abstract string Text { get; set; }
 
         public enum Align
         {
             Left,
             Right,
-            Center,
+            Top,
+            Bottom,
             None
         }
-        public abstract Align CurrentAlign { set; }
+        public abstract Align CurrentAlign { set; get; }
 
         public abstract Action UpdateHandler { set; }
         public abstract event Action OnUpdate;
@@ -80,9 +86,7 @@ namespace Crux
         {
             foreach (var c in cl)
             {
-                c.Owner = this;
-                c.Initialize();
-                Controls.Add(c);
+                AddNewControl(c);
             }
         }
 
@@ -95,6 +99,7 @@ namespace Crux
             foreach (var c in cl)
             {
                 c.Owner = this;
+                
                 c.Initialize();
                 Controls.Add(c);
             }
@@ -112,6 +117,8 @@ namespace Crux
         /// Causes this control to reupdate itself and its content.
         /// </summary>
         public abstract void Invalidate();
+
+        public void UpdateBounds() => Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
 
         /// <summary>
         /// Describes update-per-frame logic.
@@ -142,7 +149,10 @@ namespace Crux
         /// <summary>
         /// Describes the sequence of actions once constructor called.
         /// </summary>
-        internal abstract void Initialize();
+        internal virtual void Initialize()
+        {
+            originForm = Owner is Form ? (Owner as Form) : Owner.MainForm;
+        }
 
         public SpriteBatch Batch = Game1.spriteBatch;
 
@@ -150,9 +160,48 @@ namespace Crux
         {
             ScissorTestEnable = true,
         };
+
+        public Rectangle GetRelativeBounds() => Rectangle((X + Owner.X + (Owner.Owner == null ? 0 : Owner.Owner.X)), (Y + Owner.Y + (Owner.Owner == null ? 0 : Owner.Owner.Y)), Width, Height);
+        
+        public Point GetOwnerClipping() => new Point((int)Width + (int)(Owner.Width - Width - X), (int)Height + (int)(Owner.Height - Height - Y));
+
         /// <summary>
         /// Describes draw-per-frame logic.
         /// </summary>
         public abstract void Draw();
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                    Tex.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        ~uControl()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(false);
+        }
+
+        void IDisposable.Dispose()
+        {
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

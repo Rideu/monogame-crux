@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-
+using static Crux.Simplex;
 using static Crux.Game1;
 
 /// <summary>
@@ -32,7 +32,7 @@ namespace Crux
     {
         public readonly bool LeftClick;
         public readonly bool RightClick;
-        public readonly List<Keys> KeysHandled = Control.GetPressedKeys().ToList();
+        //public readonly List<Keys> KeysHandled => Control.GetPressedKeys().ToList();
 
     }
 
@@ -103,7 +103,7 @@ namespace Crux
     /// </summary>
     public class Form : uControl // Derived for possible ability that WinForms has.
     {
-        // Make a static field which is responsible for Form Layering.
+        // TODO: Make a static field which is responsible for Form Layering.
 
         // TODO: wrap
         public override string Text { get => text; set { text = value; } }
@@ -121,12 +121,12 @@ namespace Crux
         private int id = 0; //TODO: field
         public override int GetID { get { return id; } }
 
-        private Align al;
-        public override Align CurrentAlign { set { al = value; } } // !Unused
+        private Align align;
+        public override Align CurrentAlign { set { align = value; } get => align; } // !Unused
 
         public delegate void ControlEventHandler(object sender, ControlArgs e);
 
-        public event EventHandler OnMouseLeftClicked;
+        public event ControlEventHandler OnMouseLeftClicked;
 
         public event ControlEventHandler OnKeyUp;
 
@@ -180,15 +180,8 @@ namespace Crux
             RightBorder = new Rectangle((int)X + (int)Width - 4, (int)Y, (int)4, (int)Height);
             LeftBorder = new Rectangle((int)X, (int)Y, (int)4, (int)Height);
             TopBorder = new Rectangle((int)X, (int)Y, (int)Width, (int)4);
+            Header = Rectangle(X, Y, Width, 20 + 8);
             Batch.GraphicsDevice.ScissorRectangle = Bounds;
-            // Assemble form texture here.
-            //FormTexture = new Texture2D(Batch.GraphicsDevice, (int)Width, (int)Height);
-            //var layer1 = new Color[(int)Width * (int)Height];
-            //for (int i = 0; i < layer1.Length; i++)
-            //    if ((i % Width == Width - 1) || (i % Width == 0) || (i > layer1.Length - Width) || (i < Width))
-            //        layer1[i] = Color.Gray;
-            //    else layer1[i] = FormColor;
-            //FormTexture.SetData(layer1);
 
             OnMouseEnter += delegate
             {
@@ -200,6 +193,7 @@ namespace Crux
             {
                 Invalidate();
             }; //Invalidation logic
+
         }
 
         void RenewBounds()
@@ -223,15 +217,21 @@ namespace Crux
             {
                 Height = pv.Height - Y;
             }
-            Bounds = new Rectangle((int)X, (int)Y, (int)Width, (int)Height);
-            BottomBorder = new Rectangle((int)X, (int)Y + (int)Height - 4, (int)Width, (int)4);
-            RightBorder = new Rectangle((int)X + (int)Width - 4, (int)Y, (int)4, (int)Height);
-            LeftBorder = new Rectangle((int)X, (int)Y, (int)4, (int)Height);
-            TopBorder = new Rectangle((int)X, (int)Y, (int)Width, (int)4);
+            Bounds = Rectangle(X, Y, Width, Height);
+            BottomBorder = Rectangle(X, Y + Height - 4, Width, 4);
+            RightBorder = Rectangle(X + Width - 4, Y, 4, Height);
+            LeftBorder = Rectangle(X, Y, 4, Height);
+            TopBorder = Rectangle(X, Y, Width, 4);
+            Header = Rectangle(X, Y, Width, 20 + 8);
             Batch.GraphicsDevice.ScissorRectangle = Bounds;
+
+            foreach (var n in Controls)
+            {
+                n.UpdateBounds();
+            }
         }
 
-        Rectangle RightBorder, LeftBorder, TopBorder, BottomBorder;
+        Rectangle RightBorder, LeftBorder, TopBorder, BottomBorder, Header;
         bool RBH, LBH, TBH, BBH;
         bool lockhold;
         Point OHP, NHP;
@@ -256,29 +256,118 @@ namespace Crux
 
         void Resize()
         {
-            if (RBL)
+            if (RBL && Width + HoldOffset.X > 67)
             {
                 Width += HoldOffset.X;
                 RenewBounds();
             }
-
-            if (LBL)
+            else if (RBL && Width + HoldOffset.X < 67)
             {
+                lockhold = RBH = false;
+            }
+
+            if (LBL && Width - HoldOffset.X > 67)
+            {
+
                 Width -= HoldOffset.X;
                 X += HoldOffset.X;
                 RenewBounds();
             }
-
-            if (TBL)
+            else if (LBL && Width - HoldOffset.X < 67)
             {
+                lockhold = LBH = false;
+            }
+
+            if (BBL && Height + HoldOffset.Y > 31)
+            {
+
+                Height += HoldOffset.Y;
+                RenewBounds();
+            }
+            else if (BBL && Height + HoldOffset.Y < 31)
+            {
+                lockhold = BBH = false;
+            }
+
+
+            if (TBL && Height - HoldOffset.Y > 31)
+            {
+
                 Height -= HoldOffset.Y;
                 Y += HoldOffset.Y;
                 RenewBounds();
             }
-            if (BBL)
+            else if (TBL && Height - HoldOffset.Y < 31)
             {
-                Height += HoldOffset.Y;
-                RenewBounds();
+                lockhold = TBH = false;
+            }
+            
+        }
+
+        bool UnsetResize() => lockhold = RBH = LBH = TBH = BBH = TBL = RBL = LBL = BBL = false;
+
+        bool AnyBorderHovered => TBH || RBH || LBH || BBH;
+
+        void SetupResize()
+        {
+
+            if (!lockhold && Control.LeftButtonPressed && AnyBorderHovered)
+            {
+                NHP = Control.MousePos.ToPoint();
+                lockhold = true;
+            }
+
+
+            if (lockhold)
+            {
+                OHP = NHP;
+                NHP = Control.MousePos.ToPoint();
+            }
+
+            if (lockhold)
+            {
+                if (RBH && lockhold)
+                {
+                    RBL = true;
+                }
+
+                if (LBH && lockhold)
+                {
+                    LBL = true;
+                }
+
+                if (TBH && lockhold)
+                {
+                    TBL = true;
+                }
+
+                if (BBH && lockhold)
+                {
+                    BBL = true;
+                }
+            }
+
+            if (!lockhold)
+            {
+                TBL = RBL = LBL = BBL = false;
+            }
+
+            var unhold = lockhold;
+
+            Resize();
+
+            if (lockhold && !Control.LeftButtonPressed)
+            {
+                UnsetResize();
+            }
+
+            if(unhold && !lockhold)
+            {
+                //OnResizeEnd
+                foreach (var n in Controls)
+                {
+                    n.UpdateBounds();
+                }
             }
         }
 
@@ -292,7 +381,8 @@ namespace Crux
                 }
                 if (!Batch.GraphicsDevice.Viewport.Bounds.Contains(Control.MousePos))
                 {
-                    RBH = LBH = TBH = BBH = TBL = RBL = LBL = BBL = false;
+                    TBH = RBH = LBH = BBH =
+                    TBL = RBL = LBL = BBL = false;
                 }
                 else if (!EnterHold)
                 {
@@ -303,56 +393,21 @@ namespace Crux
                         TBH = TopBorder.Contains(Control.MousePos);
                         BBH = BottomBorder.Contains(Control.MousePos);
                     }
-                    Resize();
                 }
 
                 IsActive = IsHovering = !true;
-                if (Bounds.Contains(Control.MousePos) || lockhold)
+
+                if (Bounds.Contains(Control.MousePos))
                 {
                     IsHovering = IgnoreControl == true ? true : !true;
                     IsActive = true;
                 }
-                if (!lockhold && Control.LeftButtonPressed)
-                {
-                    NHP = Control.MousePos.ToPoint();
-                    lockhold = true;
-                }
 
-                if (lockhold && !Control.LeftButtonPressed)
-                    lockhold = false;
-
-                if (lockhold)
-                {
-                    OHP = NHP;
-                    NHP = Control.MousePos.ToPoint();
-                }
+                SetupResize();
 
                 if ((IsActive && !MessageBox.IsOpened) || IsIndepend)
                 {
-                    if (RBH && lockhold)
-                    {
-                        RBL = true;
-                    }
 
-                    if (LBH && lockhold)
-                    {
-                        LBL = true;
-                    }
-
-                    if (TBH && lockhold)
-                    {
-                        TBL = true;
-                    }
-
-                    if (BBH && lockhold)
-                    {
-                        BBL = true;
-                    }
-
-                    if (!lockhold)
-                    {
-                        TBL = RBL = LBL = BBL = false;
-                    }
 
                     var picked = false;
                     foreach (uControl n in Controls)
@@ -377,11 +432,11 @@ namespace Crux
                     base.EventProcessor();
 
                     if (ActiveControl == null && IsActive && Control.LeftClick())
-                        OnMouseLeftClicked?.Invoke(new object(), new EventArgs());
+                        OnMouseLeftClicked?.Invoke(this, new ControlArgs());
 
 
                     if (IsActive && Control.AnyKeyPressed())
-                        OnKeyUp?.Invoke(new object(), new ControlArgs());
+                        OnKeyUp?.Invoke(this, new ControlArgs());
                 }
 
                 //OnUpdate?.Invoke();
@@ -399,37 +454,56 @@ namespace Crux
             if (IsVisible)
             {
                 Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)X, (int)Y), new Point((int)Width, (int)Height));
-                Batch.Begin(SpriteSortMode.Deferred, null, null, null, new RasterizerState() { ScissorTestEnable = true, }, null, null);
+                Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer, null, null);
                 {
                     Batch.GraphicsDevice.ScissorRectangle = Bounds;
-                    Batch.Draw(pixel, Bounds, IsActive ? FormColor : (IsFadable ? new Color(255, 255, 255, 200) : FormColor));
+                    Batch.DrawFill(Bounds, IsActive ? FormColor : (IsFadable ? new Color(255, 255, 255, 200) : FormColor));
                 }
                 Batch.End();
-                var c = Controls; c.Reverse();
-                c.ForEach(n => n.Draw());
-                c.Reverse();
+
+                for (int i = Controls.Count - 1; i >= 0; i--)
+                {
+                    Controls[i].Draw();
+
+                    if (false) // Drawing bounds debug
+                    {
+                        Batch.Begin(SpriteSortMode.Deferred, null, null, null);
+                        {
+                            Batch.DrawFill(Controls[i].DrawingBounds, new Color(73, 123, 63, 50));
+                        }
+                        Batch.End();
+                    }
+                }
+
+
 
                 Batch.Begin(SpriteSortMode.Deferred, null, null, null);
                 {
-                    Batch.DrawFill(LeftBorder, LBL ? new Color(75, 75, 75, 255) : LBH ? new Color(155, 155, 155, 255) : new Color(0));
-                    Batch.DrawFill(RightBorder, RBL ? new Color(75, 75, 75, 255) : RBH ? new Color(155, 155, 155, 255) : new Color(0));
-                    Batch.DrawFill(TopBorder, TBL ? new Color(75, 75, 75, 255) : TBH ? new Color(155, 155, 155, 255) : new Color(0));
-                    Batch.DrawFill(BottomBorder, BBL ? new Color(75, 75, 75, 255) : BBH ? new Color(155, 155, 155, 255) : new Color(0));
+                    //Batch.DrawFill(Header, new Color(175, 175, 175, 255));
+                    //Batch.DrawFill(Rectangle(X + Width - 56 - 6, Y + 6, 56, 20), new Color(135, 135, 135, 255));
+                    //Batch.DrawFill(Rectangle(X + Width - 18 - 6, Y + 4 + 4, 16, 16), new Color(0xff423bff));
+                    //Batch.DrawFill(Rectangle(X + Width - 18 - 18 - 6, Y + 4 + 4, 16, 16), new Color(0, 115, 230));
+                    //Batch.DrawFill(Rectangle(X + Width - 18 - 18 - 18 - 6, Y + 4 + 4, 16, 16), new Color(0, 115, 230));
+                    Batch.DrawFill(LeftBorder, LBL ? new Color(75, 75, 75, 255) : LBH ? new Color(155, 155, 155, 255) : FormColor);
+                    Batch.DrawFill(TopBorder, TBL ? new Color(75, 75, 75, 255) : TBH ? new Color(155, 155, 155, 255) : FormColor);
+                    Batch.DrawFill(RightBorder, RBL ? new Color(75, 75, 75, 255) : RBH ? new Color(155, 155, 155, 255) : FormColor);
+                    Batch.DrawFill(BottomBorder, BBL ? new Color(75, 75, 75, 255) : BBH ? new Color(155, 155, 155, 255) : FormColor);
                 }
                 Batch.End();
-                if (true)
+                if (false)
                 {
                     Batch.Begin(SpriteSortMode.Deferred, null, null, null);
                     {
                         Batch.DrawString(font,
                             $"{X} : {Y}\n" +
-                            $"{Width} : {Height}\n", 
+                            $"{Width} : {Height}\n",
                             new Vector2(X + Width, Y + Height), Color.White);
                     }
                     Batch.End();
                 }
             }
         }
+
 
         /// <summary>
         /// Returns true if any of the forms is hovered. Required for turning off controls handling inside the playable environment of the game.
@@ -441,7 +515,7 @@ namespace Crux
         }
     }
 
-    public class Container : uControl
+    public class Panel : uControl
     {
 
         #region Fields
@@ -452,7 +526,7 @@ namespace Crux
         public override int GetID { get { return ID; } }
 
         private Align align = Align.None;
-        public override Align CurrentAlign { set { align = value; } }
+        public override Align CurrentAlign { set { align = value; } get => align; }
 
         public override Action UpdateHandler { set { OnUpdate += value; } }
 
@@ -466,24 +540,23 @@ namespace Crux
         public override event Action OnUpdate;
         #endregion
 
-        public Container(Vector4 posform, Color color = default(Color))
+        public Panel(Vector4 posform, Color color = default(Color))
         {
             X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W; cl = color;
         }
 
-        public Container(Vector2 pos, Vector2 size, Color color = default(Color))
+        public Panel(Vector2 pos, Vector2 size, Color color = default(Color))
         {
             X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y; cl = color;
         }
 
-        public Container(float x, float y, float width, float height, Color color = default(Color))
+        public Panel(float x, float y, float width, float height, Color color = default(Color))
         {
             X = x; Y = y; Width = width; Height = height; cl = color;
         }
         Color cl;
         internal override void Initialize()
         {
-            cl = cl == default(Color) ? Owner.FormColor : cl;
             ID = Owner.GetControlsNum + 1;
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
             // Assemble form texture here.
@@ -494,6 +567,7 @@ namespace Crux
                     layer1[i] = Color.Black;
                 else layer1[i] = cl;
             Tex.SetData(layer1);
+            base.Initialize();
         }
 
         public override void Invalidate()
@@ -504,23 +578,54 @@ namespace Crux
             }
         }
 
+        public uControl ActiveControl;
+
         public override void Update()
         {
-            IsClicked = !true;
-            IsHovering = Bounds.Contains(Game1.MS.Position.ToVector2());
-            IsHolding = IsHovering && Game1.MS.LeftButton == ButtonState.Pressed;
-
-            if (IsHovering && Control.LeftClick())
+            //if (IsVisible)
             {
-                IsClicked = true;
-                OnLeftClick?.Invoke(this, EventArgs.Empty);
-                IsHovering = !true;
-            }
+                if (!Control.LeftButtonPressed)
+                {
+                    EnterHold = false;
+                }
+                else if (!EnterHold)
+                {
+                }
 
-            if (IsHovering && Control.RightClick())
-            {
-                IsClicked = true;
-                OnRightClick?.Invoke(this, EventArgs.Empty);
+                IsActive = IsHovering = !true;
+
+                if (Bounds.Contains(Control.MousePos))
+                {
+                    IsHovering =
+                    IsActive = true;
+                }
+
+
+                if (IsActive)
+                {
+                    var picked = false;
+                    foreach (uControl n in Controls)
+                    {
+                        n.UpdateBounds();
+                        n.IsActive = n.IsHovering = !true;
+                        if (n.Bounds.Contains(Game1.MS.Position) && !picked)
+                        {
+                            ActiveControl = n;
+                            ActiveControl.IsActive = picked = true;
+                        }
+                        n.InnerUpdate();
+                    }
+                    if (!picked)
+                        ActiveControl = null;
+                    ActiveControl?.Update();
+                }
+
+                // Events block
+                {
+                    base.EventProcessor();
+                }
+
+                InnerUpdate();
             }
 
         }
@@ -532,13 +637,29 @@ namespace Crux
 
         public override void Draw()
         {
-            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X + X), (int)(Owner.Y + Y)), new Point((int)Width, (int)Height));
-            Batch.Begin(SpriteSortMode.Deferred, null, null, null, Batch.GraphicsDevice.RasterizerState);
+            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X), (int)(Owner.Y)), new Point((int)Owner.Width, (int)Owner.Height));
+            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 Batch.Draw(Tex, new Vector2(Owner.X + X, Owner.Y + Y), IsHovering ? IsHolding ? new Color(0, 0, 0) : Color.White : new Color(133, 133, 133));
-                Batch.DrawString(Game1.font, Text, new Vector2(Owner.X + X, Owner.Y + Y) - Game1.font.MeasureString(Text) / 2 + new Vector2(Width, Height) / 2, Color.White);
+                //Batch.DrawString(Game1.font, Text, new Vector2(Owner.X + X, Owner.Y + Y) - Game1.font.MeasureString(Text) / 2 + new Vector2(Width, Height) / 2, Color.White);
             }
             Batch.End();
+
+
+            for (int i = Controls.Count - 1; i >= 0; i--)
+            {
+                Controls[i].Draw();
+
+                if (false) // Drawing bounds debug
+                {
+                    Batch.Begin(SpriteSortMode.Deferred, null, null, null);
+                    {
+                        Batch.DrawFill(Controls[i].DrawingBounds, new Color(123, 77, 63, 50));
+                    }
+                    Batch.End();
+                }
+            }
+
         }
     }
 
@@ -552,7 +673,7 @@ namespace Crux
         public override int GetID { get { return ID; } }
 
         private Align align = Align.None;
-        public override Align CurrentAlign { set { align = value; } }
+        public override Align CurrentAlign { set => align = value; get => align; }
 
         public override Action UpdateHandler { set { OnUpdate = value; } }
         public override event Action OnUpdate;
@@ -600,6 +721,7 @@ namespace Crux
                 if (Control.LeftButtonPressed) EnterHold = true;
             };
 
+            base.Initialize();
         }
 
         public override void Invalidate()
@@ -609,14 +731,14 @@ namespace Crux
                 c.Update();
             }
         }
-
+        
         public override void Update()
         {
             IsClicked = !true;
             IsHovering = Bounds.Contains(Game1.MS.Position.ToVector2());
             IsHolding = IsHovering && Control.LeftButtonPressed;
 
-            Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
+            UpdateBounds();
 
             if (IsHovering && Control.LeftClick() && !EnterHold)
             {
@@ -643,19 +765,18 @@ namespace Crux
             OnUpdate?.Invoke();
         }
 
-
         public override void Draw()
         {
-            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X), (int)(Owner.Y)), new Point((int)Owner.Width, (int)Owner.Height));
+
+            Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                Batch.Draw(Tex, new Vector2(Owner.X + X, Owner.Y + Y), IsHovering && !EnterHold ? IsHolding ? new Color(73, 73, 73) : new Color(133, 133, 133) : Color.White);
-
+                Batch.Draw(Tex, Bounds, IsHovering && !EnterHold ? IsHolding ? new Color(73, 73, 73) : new Color(133, 133, 133) : Color.White);
             }
             Batch.End();
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                Batch.DrawString(Game1.font1, Text, new Vector2(Owner.X + X, Owner.Y + Y) - Game1.font.MeasureString(Text) / 2 + new Vector2(Width, Height) / 2, Color.White, 0f, new Vector2(), 1f, SpriteEffects.None, 1f);
+                Batch.DrawString(Game1.font1, Text, Bounds.Location.ToVector2() + new Vector2(Width, Height) / 2 - Game1.font.MeasureString(Text) / 2, Color.White, 0f, new Vector2(), 1f, SpriteEffects.None, 1f);
             }
             Batch.End();
         }
@@ -672,7 +793,7 @@ namespace Crux
         public override int GetID { get { return ID; } }
 
         private Align align = Align.None;
-        public override Align CurrentAlign { set { align = value; } }
+        public override Align CurrentAlign { set { align = value; } get => align; }
 
         SpriteFont font = Game1.font;
         public SpriteFont Font { set { font = value; } get { return font; } }
@@ -733,6 +854,7 @@ namespace Crux
             {
                 Invalidate();
             };
+            base.Initialize();
         }
 
         public override void Invalidate()
@@ -744,10 +866,11 @@ namespace Crux
                 c.Update();
             }
         }
+        
 
         public override void Update()
         {
-            Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
+            UpdateBounds();
             IsHovering = !true;
             if ((Bounds.Contains(Game1.MS.Position.ToVector2())))
             {
@@ -807,25 +930,15 @@ namespace Crux
 
         public override void Draw()
         {
-            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X), (int)(Owner.Y)), new Point((int)Owner.Width, (int)Owner.Height));
+            Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                Batch.Draw(Tex, new Vector2(Owner.X + X, Owner.Y + Y), Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
+                Batch.Draw(Tex, Bounds, Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
                 Batch.DrawFill(new Rectangle((int)(Owner.X + X + Width - 5), (int)(Owner.Y + Y + 1), 4, (int)Height - 2), new Color(55, 55, 55, 255));
             }
             Batch.End();
 
-            Batch.GraphicsDevice.ScissorRectangle = new Rectangle((int)(Owner.X + X + Width - 5), (int)(Owner.Y + Y + 1), 4 + (int)(Owner.Width - Width - X), (int)Height - 2 + (int)(Owner.Height - Y - Height));
-            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
-            {
-                var h = (int)(Height * (float.IsInfinity(Height / ts.Y)?1: Height / ts.Y));
-                var scrollpos = new Point((int)(Owner.X + X + Width - 4), (int)(Owner.Y + Y + 1 - textpos.Y * (float.IsInfinity(Height / ts.Y) ? 1 : Height / ts.Y)));
-                var scrollsize = new Point(3, h > Height ? (int)Height - 2 : h);
-                Batch.DrawFill(new Rectangle(scrollpos, scrollsize), new Color(155, 155, 155, 255));
-            }
-            Batch.End();
 
-            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X + X), (int)(Owner.Y + Y + 1)), new Point((int)Owner.Width - (int)X, (int)Owner.Height - 2 - (int)Y));
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 text.Render(Batch, new Vector2(Owner.X, Owner.Y + 1) + textpos);
@@ -833,6 +946,15 @@ namespace Crux
             }
             Batch.End();
 
+            Batch.GraphicsDevice.ScissorRectangle = new Rectangle((int)(Owner.X + X + Width - 5), (int)(Owner.Y + Y + 1), 4 + (int)(Owner.Width - Width - X), (int)Height - 2 + (int)(Owner.Height - Y - Height));
+            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+            {
+                var h = (int)(Height * (float.IsInfinity(Height / ts.Y) ? 1 : Height / ts.Y));
+                var scrollpos = new Point((int)(Owner.X + X + Width - 4), (int)(Owner.Y + Y + 1 - textpos.Y * (float.IsInfinity(Height / ts.Y) ? 1 : Height / ts.Y)));
+                var scrollsize = new Point(3, h > Height ? (int)Height - 2 : h);
+                Batch.DrawFill(new Rectangle(scrollpos, scrollsize), new Color(155, 155, 155, 255));
+            }
+            Batch.End();
         }
     }
 
@@ -846,7 +968,7 @@ namespace Crux
         public override int GetID { get { return ID; } }
 
         private Align align = Align.None;
-        public override Align CurrentAlign { set { align = value; } }
+        public override Align CurrentAlign { set { align = value; } get => align; }
 
         //TODO: wrap
         public override string Text { get => text; set { text = value; } }
@@ -875,7 +997,7 @@ namespace Crux
 
 
 
-        private Texture2D Tex, slider;
+        private Texture2D Tex, slider; //PERF:
 
         public override Action UpdateHandler { set { OnUpdate = value; } }
         public override event Action OnUpdate;
@@ -936,6 +1058,7 @@ namespace Crux
                     else layer1[i] = new Color(0, 140, 255, 255);
                 slider.SetData(layer1);
             }
+            base.Initialize();
         }
 
         public override void Invalidate()
@@ -945,9 +1068,12 @@ namespace Crux
                 c.Update();
             }
         }
+        
 
         public override void Update()
         {
+            UpdateBounds();
+
             IsHovering = !true;
             if (Bounds.Contains(Game1.MS.Position.ToVector2()))
                 IsHovering = true;
@@ -990,7 +1116,7 @@ namespace Crux
         }
     }
 
-    public class Switch : uControl
+    public class CheckBox : uControl
     {
         #region Fields
         private uControl OwnerField;
@@ -1000,7 +1126,7 @@ namespace Crux
         public override int GetID { get { return ID; } }
 
         private Align align = Align.None;
-        public override Align CurrentAlign { set { align = value; } }
+        public override Align CurrentAlign { set { align = value; } get => align; }
 
         public bool IsChecked;
 
@@ -1010,20 +1136,20 @@ namespace Crux
         public override Action UpdateHandler { set { OnUpdate = value; } }
         public override event Action OnUpdate;
 
-        private Texture2D Tex, Mask;
+        private Texture2D Tex;
         #endregion
 
-        public Switch(Vector4 posform)
+        public CheckBox(Vector4 posform)
         {
             X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W;
         }
 
-        public Switch(Vector2 pos, Vector2 size)
+        public CheckBox(Vector2 pos, Vector2 size)
         {
             X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y;
         }
 
-        public Switch(float x, float y, float width, float height)
+        public CheckBox(float x, float y, float width, float height)
         {
             X = x; Y = y; Width = width; Height = height;
         }
@@ -1040,12 +1166,7 @@ namespace Crux
                     layer1[i] = Color.Black;
                 else layer1[i] = new Color(15, 15, 15, 111);
             Tex.SetData(layer1);
-
-            Mask = new Texture2D(Owner.Batch.GraphicsDevice, (int)Width - 2, (int)Height - 2);
-            layer1 = new Color[(int)(Width - 2) * (int)(Height - 2)];
-            for (int i = 0; i < layer1.Length; i++)
-                layer1[i] = new Color(111, 111, 111, 111);
-            Mask.SetData(layer1);
+            base.Initialize();
         }
 
         public override void Invalidate()
@@ -1056,8 +1177,11 @@ namespace Crux
             }
         }
 
+
         public override void Update()
         {
+            UpdateBounds();
+
             IsHovering = !true;
             if (Bounds.Contains(Game1.MS.Position.ToVector2()))
                 IsHovering = true;
@@ -1076,12 +1200,11 @@ namespace Crux
 
         public override void Draw()
         {
-            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X + X), (int)(Owner.Y + Y)), new Point((int)(Width + Game1.font.MeasureString(text).X + 3), (int)Height));
+            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X + X), (int)(Owner.Y + Y)), new Point((int)(Width + font.MeasureString(text).X + 3), (int)Height));
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, Batch.GraphicsDevice.RasterizerState);
             {
                 Batch.Draw(Tex, new Vector2(Owner.X + X, Owner.Y + Y), Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
-                Batch.Draw(Mask, new Vector2(Owner.X + X + 1, Owner.Y + Y + 1), Owner.IsActive && Owner.IsFadable ? IsChecked ? new Color(0, 255, 0, 100) : new Color(255, 0, 0, 100) : IsChecked ? new Color(0, 125, 0, 100) : new Color(125, 0, 0, 100));
-                Batch.DrawString(Game1.font, text, new Vector2(Owner.X + X + Width + 3, Owner.Y + Y - 2), Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
+                Batch.DrawString(font, text, new Vector2(Owner.X + X + Width + 3, Owner.Y + Y - 2), Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
             }
             Batch.End();
         }
@@ -1097,7 +1220,7 @@ namespace Crux
         public override int GetID { get { return ID; } }
 
         private Align align = Align.None;
-        public override Align CurrentAlign { set { align = value; Translate(); } }
+        public override Align CurrentAlign { set { align = value; Translate(); } get => align; }
 
         public override string Text { get { return text.Text; } set { text.UpdateText(value); } }
         SpriteFont font = Game1.font;
@@ -1108,7 +1231,6 @@ namespace Crux
         public override Action UpdateHandler { set { OnUpdate = value; } }
         public override event Action OnUpdate;
 
-        Texture2D Tex;
         #endregion
 
         public Textbox(Vector4 posform)
@@ -1177,6 +1299,7 @@ namespace Crux
                     //caretpos = text.CleanText.Length == 0 ? 0 : caretpos;
                 }
             };
+            base.Initialize();
         }
         Timer t;
         public override void Invalidate()
@@ -1233,14 +1356,12 @@ namespace Crux
         }
         public override void Draw()
         {
-            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X), (int)(Owner.Y)), new Point((int)Owner.Width, (int)Owner.Height));
+            Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 Batch.Draw(Tex, new Vector2(Owner.X + X, Owner.Y + Y), InputMode ? Color.White : new Color(255, 255, 255, 200));
             }
             Batch.End();
-
-            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X + X + 1), (int)(Owner.Y + Y + 1)), new Point((int)Width - 2 + (int)(Owner.Width - Width - X), (int)Height - 2 + (int)(Owner.Height - Y - Height)));
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 Vector2 cs = new Vector2(); ;
