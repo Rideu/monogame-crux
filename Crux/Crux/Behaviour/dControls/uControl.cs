@@ -31,7 +31,7 @@ namespace Crux
         protected Texture2D Tex;
         protected Point InitialPosition;
         public Rectangle Bounds;
-        public Rectangle DrawingBounds => Bounds.Intersect(Owner.Bounds);
+        public Rectangle DrawingBounds => Bounds.Intersect(Owner.Bounds).Intersect(MainForm.Bounds);
         public float X, Y, Width, Height;
         public string Name => GetType().ToString();
         /// <summary>
@@ -118,7 +118,12 @@ namespace Crux
         /// </summary>
         public abstract void Invalidate();
 
-        public void UpdateBounds() => Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
+        public void UpdateBounds()
+        {
+            X = Owner.X + InitialPosition.X;
+            Y = Owner.Y + InitialPosition.Y;
+            Bounds = Rectangle(X, Y, Width, Height);
+        }
 
         /// <summary>
         /// Describes update-per-frame logic.
@@ -152,6 +157,8 @@ namespace Crux
         internal virtual void Initialize()
         {
             originForm = Owner is Form ? (Owner as Form) : Owner.MainForm;
+            InitialPosition = new Point((int)X, (int)Y);
+            UpdateBounds();
         }
 
         public SpriteBatch Batch = Game1.spriteBatch;

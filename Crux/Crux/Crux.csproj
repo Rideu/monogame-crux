@@ -52,6 +52,12 @@
     <Compile Include="Behaviour\dControls\AMF.cs" />
     <Compile Include="Behaviour\Complex.cs" />
     <Compile Include="Behaviour\Control.cs" />
+    <Compile Include="Behaviour\dControls\Button.cs" />
+    <Compile Include="Behaviour\dControls\CheckBox.cs" />
+    <Compile Include="Behaviour\dControls\Label.cs" />
+    <Compile Include="Behaviour\dControls\Panel.cs" />
+    <Compile Include="Behaviour\dControls\Slider.cs" />
+    <Compile Include="Behaviour\dControls\Textbox.cs" />
     <Compile Include="Behaviour\IUnify.cs" />
     <Compile Include="Behaviour\Simplex.cs" />
     <Compile Include="Behaviour\Timing.cs" />
@@ -77,9 +83,6 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
