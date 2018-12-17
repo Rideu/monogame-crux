@@ -11,7 +11,7 @@ using static Crux.Game1;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux
+namespace Crux.dControls
 {
     public class Textbox : uControl // Unused
     {
@@ -165,6 +165,7 @@ namespace Crux
                 Batch.Draw(Tex, Bounds, InputMode ? Color.White : new Color(255, 255, 255, 200));
             }
             Batch.End();
+            Batch.GraphicsDevice.ScissorRectangle = Batch.GraphicsDevice.ScissorRectangle.InflateBy(-1);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 Vector2 cs = new Vector2();

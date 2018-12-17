@@ -10,6 +10,7 @@ using WinForms = System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Crux.dControls;
 
 using static System.Math;
 
@@ -58,7 +59,8 @@ namespace Crux
             IsMouseVisible = true;
             Form f = new Form(30, 100, 290, 500, new Color(70, 70, 70))
             {
-                //IsVisible = true
+                IsResizable = true,
+                
             };
             uControl mc, ml, mp;
             f.AddNewControl(mc = new Button(20, 20, 70, 20, new Color(100, 100, 100))
@@ -83,7 +85,7 @@ namespace Crux
             });
             (ml as Label).Text = "MonoGame is free software used by game developers to make Windows and Windows Phone games run on other systems.MonoGame is the evolution of XNA Touch (September 2009) started by Jose Antonio Farias[5] and Silver Sprite by Bill Reiss. The first official release of MonoGame was version 2.0 with a downloadable version 0.7 that was available from CodePlex. These early versions only supported 2D sprite based games. The last official 2D only version was released as 2.5.1 in June 2012. Since mid-2013, the framework has begun to be extended beyond XNA4 with the addition of new features like RenderTarget3D, support for multiple GameWindows, and a new cross-platform command line content building tool.";
             (mc as Button).OnLeftClick += delegate { MessageBox.Show("Clock!"); };
-            mp.AddNewControl(new Button(10, 10, 60, 20));
+            mp.AddNewControl(new Button(10, 10, 60, 20, new Color(140, 140, 140)) { Text = "Button3", });
 
             mp.AddNewControl(ml = new Label(10, 40, 60, 20)
             { Font = font1, });
@@ -93,9 +95,9 @@ namespace Crux
             { Font = font1, });
             ml.Text = "Textbox2";
 
-            GlobalForms.Add("SampleForm", f);
-
-            f = new Form(340, 100, 210, 250, new Color(70, 70, 70))
+            FormManager.AddForm("MainForm", f);
+            
+            f = new Form(340, 100, 210, 250, new Color(40, 40, 40))
             {
 
             };
@@ -170,7 +172,7 @@ namespace Crux
                 lb.Text = lb.Text.Length == 1 ? "0" : lb.Text.Substring(0, lb.Text.Length - 1);
             };
 
-            GlobalForms.Add("CalcForm", f);
+            FormManager.AddForm("CalcForm", f);
         }
 
         // Textures
@@ -201,7 +203,6 @@ namespace Crux
 
         #region Service Globals
 
-        public static Dictionary<string, Form> GlobalForms = new Dictionary<string, Form>();
         public static u_ps GlobalMousePos = new u_ps(0, 0);
         public static MouseState MS = new MouseState();
 
@@ -232,7 +233,7 @@ namespace Crux
 
             MessageBox.Update();
 
-            GlobalForms.Values.ToList().ForEach(n => n.Update());
+            FormManager.Update();
 
             simplexObjects.ForEach(n => n.Update());
 
@@ -262,8 +263,8 @@ namespace Crux
                 //spriteBatch.Draw(font.Texture, new Vector2(300), Color.White); 
             }
             spriteBatch.End();
-            GlobalForms.Values.ToList().ForEach(n => n.Draw());
             MessageBox.Draw();
+            FormManager.Draw();
             base.Draw(gameTime);
         }
     }

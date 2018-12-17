@@ -9,7 +9,7 @@ using static Crux.Game1;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux
+namespace Crux.dControls
 {
     public class CheckBox : uControl
     {

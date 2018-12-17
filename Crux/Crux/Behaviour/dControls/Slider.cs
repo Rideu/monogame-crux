@@ -9,7 +9,7 @@ using static Crux.Simplex;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux
+namespace Crux.dControls
 {
     public class Slider : uControl
     {

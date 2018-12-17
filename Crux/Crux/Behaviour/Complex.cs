@@ -11,6 +11,7 @@ using static System.Text.RegularExpressions.Regex;
 using static System.Math;
 using static Crux.Game1;
 
+using Crux.dControls;
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
 

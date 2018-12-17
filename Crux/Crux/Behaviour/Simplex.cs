@@ -426,7 +426,9 @@ namespace Crux
 
         #region Rectangle
 
-        public static Rectangle GetRectangleOffsetted(this Rectangle src, Point offset) { src.Location += offset; return src; }
+        public static Rectangle OffsetBy(this Rectangle src, Point offset) { src.Location += offset; return src; }
+
+        public static Rectangle OffsetBy(this Rectangle src, float x, float y) { src.Location += new Point((int)x, (int)y); return src; }
 
         public static Rectangle Rectangle(float x, float y, float w, float h) => new Rectangle((int)x, (int)y, (int)w, (int)h);
 
@@ -434,9 +436,18 @@ namespace Crux
 
         public static Rectangle InflateBy(this Rectangle r1, float v, float h) { r1.Inflate(v, h); return r1; }
 
+        public static Rectangle InflateBy(this Rectangle r1, float vh) { r1.Inflate(vh, vh); return r1; }
+
         public static Rectangle Union(this Rectangle r1, Rectangle r2) => sRectangle.Intersect(r1, r2);
 
         #endregion
+
+        public static class Palette
+        {
+            public static Color LightenGray => new Color(175, 175, 175, 255);
+
+            public static Color DarkenGray => new Color(85, 85, 85, 255);
+        }
 
         public static void Swap<T>(this T a, T b) where T : class
         {

@@ -9,13 +9,13 @@ using static Crux.Simplex;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux
+namespace Crux.dControls
 {
     /// <summary>
     /// Base control class.
     /// </summary>
     [DebuggerDisplay("Name: {Name}")]
-    public abstract class uControl :  IMFControl, IDisposable
+    public abstract class uControl : IControl, IDisposable
     {
         /// <summary>
         /// Returns the owner of this element.
@@ -33,17 +33,18 @@ namespace Crux
         public Rectangle Bounds;
         public Rectangle DrawingBounds => Bounds.Intersect(Owner.Bounds).Intersect(MainForm.Bounds);
         public float X, Y, Width, Height;
-        public string Name => GetType().ToString();
+        public string Name => GetType().ToString() + " : " + Alias;
+        internal protected string Alias;
         /// <summary>
         /// Returns true if mouse stays inside form's bounds.
         /// </summary>
-        public bool IsActive;  // If mouse entered in form zone (the form kinda became focused). Kinda overlap.
+        public bool IsActive { get; set; }  // TODO: Setter / (getter to public) to internal
         /// <summary>
         /// Same as "IsActive", but allows ignoring control handling in the game environment. Switches if "IgnoreControl" equals "true".
         /// </summary>
-        public bool IsFadable;
+        public bool IsFadable { get; set; }
 
-        public bool EnterHold;
+        public bool EnterHold { get; set; }
 
         protected string text = "";
         public abstract string Text { get; set; }
@@ -62,6 +63,11 @@ namespace Crux
         public abstract event Action OnUpdate;
         public event EventHandler OnMouseEnter; internal bool OMEOccured;
         public event EventHandler OnMouseLeave; internal bool OMLOccured = true;
+
+        internal bool F_Focus;
+        public event EventHandler OnFocus; 
+        public event EventHandler OnLeave;
+        public event EventHandler OnFocusChange;
 
         #region Controls
 
@@ -99,7 +105,7 @@ namespace Crux
             foreach (var c in cl)
             {
                 c.Owner = this;
-                
+
                 c.Initialize();
                 Controls.Add(c);
             }
@@ -131,20 +137,37 @@ namespace Crux
         public abstract void Update();
         public virtual void EventProcessor()
         {
-            if (!IsActive) OMEOccured = !true;
+            if (F_Focus != IsActive)
+            {
+                if (F_Focus == false && IsActive == true)
+                {
+                    OnFocus?.Invoke(this, EventArgs.Empty);
+                }
+                else
+                {
+                    Invalidate();
+                    OnLeave?.Invoke(this, EventArgs.Empty);
+                }
+                OnFocusChange?.Invoke(this, EventArgs.Empty);
+            }
+
+            if (!IsActive) OMEOccured = false;
             if (IsActive && !OMEOccured)
             {
-                OnMouseEnter?.Invoke(new object(), new EventArgs());
+                OnMouseEnter?.Invoke(this, EventArgs.Empty);
+                EnterHold = Control.LeftButtonPressed;
                 OMEOccured = true;
             }
 
 
-            if (IsActive) OMLOccured = !true;
+            if (IsActive) OMLOccured = false;
             if (!IsActive && !OMLOccured)
             {
-                OnMouseLeave?.Invoke(new object(), new EventArgs());
-                OMLOccured = true;
+                OnMouseLeave?.Invoke(this, EventArgs.Empty);
+                EnterHold = !(OMLOccured = true);
             }
+
+            F_Focus = IsActive;
         }
         public abstract void InnerUpdate();
 
@@ -169,7 +192,7 @@ namespace Crux
         };
 
         public Rectangle GetRelativeBounds() => Rectangle((X + Owner.X + (Owner.Owner == null ? 0 : Owner.Owner.X)), (Y + Owner.Y + (Owner.Owner == null ? 0 : Owner.Owner.Y)), Width, Height);
-        
+
         public Point GetOwnerClipping() => new Point((int)Width + (int)(Owner.Width - Width - X), (int)Height + (int)(Owner.Height - Height - Y));
 
         /// <summary>
