@@ -8,7 +8,7 @@ using static Crux.Simplex;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux
+namespace Crux.dControls
 {
     public class Button : uControl
     {
@@ -62,23 +62,19 @@ namespace Crux
                     layer1[i] = Color.Black;
                 else layer1[i] = cl;
             Tex.SetData(layer1);
-            OnMouseEnter += delegate
-            {
-                // This is required for checking, whether the LMB is being hold when cursor has entered into bounds. 
-                if (Control.LeftButtonPressed) EnterHold = true;
-            };
-
+            
             base.Initialize();
         }
 
         public override void Invalidate()
         {
+            IsActive = IsHovering = IsHolding = false;
             foreach (var c in Controls)
             {
                 c.Update();
             }
         }
-        
+
         public override void Update()
         {
             UpdateBounds();
@@ -86,16 +82,12 @@ namespace Crux
             IsClicked = !true;
             IsHovering = Bounds.Contains(Game1.MS.Position.ToVector2());
             IsHolding = IsHovering && Control.LeftButtonPressed;
-            
+
             if (IsHovering && Control.LeftClick() && !EnterHold)
             {
                 IsClicked = true;
                 OnLeftClick?.Invoke(this, EventArgs.Empty);
                 IsHovering = !true;
-            }
-            if (EnterHold && Control.LeftClick())
-            {
-                EnterHold = false;
             }
 
             if (IsHovering && Control.RightClick())
@@ -104,11 +96,16 @@ namespace Crux
                 OnRightClick?.Invoke(this, EventArgs.Empty);
             }
 
-            base.EventProcessor();
+            if (EnterHold && !Control.LeftButtonPressed)
+            {
+                EnterHold = false;
+            }
+
         }
 
         public override void InnerUpdate()
         {
+            base.EventProcessor();
             OnUpdate?.Invoke();
         }
 
@@ -118,9 +115,14 @@ namespace Crux
             Batch.GraphicsDevice.ScissorRectangle = drawb = DrawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                Batch.Draw(Tex, drawb.Location.ToVector2(), IsHovering && !EnterHold ? IsHolding ? new Color(73, 73, 73) : new Color(133, 133, 133) : Color.White);
+                var f = IsHovering && !EnterHold ? IsHolding ? 0.3f : 0.6f : 1f;
+                Batch.DrawFill(Bounds, IsHolding ? Palette.DarkenGray : Palette.LightenGray); // TL border
+                Batch.DrawFill(Bounds.OffsetBy(1, 1), IsHolding ? Palette.LightenGray : Palette.DarkenGray); // BR border
+                Batch.DrawFill(Bounds.InflateBy(-1), new Color(cl * f, 1f)); // Primary
             }
             Batch.End();
+
+            Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-1);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 var mea = Game1.font1.MeasureString(Text);
