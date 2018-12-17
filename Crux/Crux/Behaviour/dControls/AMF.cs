@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using static Crux.Simplex;
 using static Crux.Game1;
 
@@ -13,70 +14,66 @@ using static Crux.Game1;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux
+namespace Crux.dControls
 {
     /// <summary>
     /// Base interface that describes updatable and drawable Controls.
     /// </summary>
-    public interface IMFControl
+    public interface IControl
     {
         void Update();
         void Draw();
     }
 
     /// <summary>
-    /// Base event class for any MControl.
+    /// Base event class for any uControl.
     /// </summary>
-    public class ControlArgs : EventArgs // Currently unused
+    public class ControlArgs : EventArgs
     {
-        public readonly bool LeftClick;
-        public readonly bool RightClick;
-        //public readonly List<Keys> KeysHandled => Control.GetPressedKeys().ToList();
-
-    }
-
-    internal static class Xtensive
-    {
-        //internal static Rectangle Setup(this Rectangle r, int h, int v)
-        //{
-        //    r.Offset(r.Width, v);
-        //    return r;
-        //}
+        public bool LeftClick;
+        public bool RightClick;
+        public List<Keys> KeysHandled = Control.GetPressedKeys().ToList();
     }
 
     public static class MessageBox
     {
-        static int stdw = 160, stdh = 70, stdx = WinSize.X / 2 - stdw / 2, stdy = WinSize.Y / 2 - stdh / 2;
-        static int crtw = stdw, crth = stdh, crtx = WinSize.X / 2 - stdw / 2, crty = WinSize.Y / 2 - stdh / 2;
+        static int
+            stdw = 160,
+            stdh = 70,
+            stdx = WinSize.X / 2 - stdw / 2,
+            stdy = WinSize.Y / 2 - stdh / 2;
+        static int
+            crtw = stdw,
+            crth = stdh,
+            crtx = WinSize.X / 2 - stdw / 2,
+            crty = WinSize.Y / 2 - stdh / 2;
 
-        static Form form = new Form(stdx, stdy, stdw, stdh, new Color(0, 31, 56));
+        static Form form;
 
         public static bool IsOpened => form.IsVisible;
 
         static MessageBox()
         {
+            form = new Form(stdx, stdy, stdw, stdh, new Color(0, 31, 56));
             form.IsVisible = !true;
             form.IsIndepend = true;
+
+            var cl = new Label(0, 0, form.Width, 50);
+            form.AddNewControl(cl);
+
+            var cb = new Button(0, form.Height - 20, form.Width, 20)
             {
-                var c = new Button(0, form.Height - 20, form.Width, 20)
-                {
-                    Text = "OK"
-                };
-                c.OnLeftClick +=
-                    delegate
-                    {
-                        form.IsVisible = !true;
-                        //form.Bounds = new Rectangle(crtx = stdx, crty = stdy, crtw = stdw, crth = stdh);
-                    };
-                form.AddNewControl(c);
-            }
+                Text = "OK"
+            };
+            cb.OnLeftClick += delegate
             {
-                var c = new Label(0, 0, form.Width, 50);
-                form.AddNewControl(c);
-            }
+                form.IsActive = form.IsVisible = !true;
+                form.Bounds = new Rectangle(crtx = stdx, crty = stdy, crtw = stdw, crth = stdh);
+            };
+            form.AddNewControl(cb);
         }
 
-        public static void Update()
+        internal static void Update()
         {
             form.Update();
         }
@@ -88,22 +85,69 @@ namespace Crux
 
         public static void Show(string message)
         {
-            crtw = Math.Max((int)font.MeasureString(message).X + 20, crtw);
-            //Init();
-            (form.GetControl(2) as Label).Text = message;
-            form.IsVisible = true;
+            var tsize = font.MeasureString(message);
+            crtw = Math.Max((int)tsize.X + 20, crtw);
+            var l = form.GetControl(1) as Label;
+            l.Text = message;
+            form.IsActive = form.IsVisible = true;
         }
 
 
     }
 
+    public static class FormManager
+    {
+        public static Dictionary<string, Form> GlobalForms = new Dictionary<string, Form>();
+
+        public static void AddForm(string name, Form f)
+        {
+            GlobalForms.Add(name, f);
+            f.Alias = name;
+        }
+
+        public static Form ActiveForm, PrevForm = null;
+        public static void Update()
+        {
+            MessageBox.Update();
+            //if (ActiveForm == null ? true : !ActiveForm.Bounds.Contains(Control.MousePos))
+            ActiveForm = null;
+
+            foreach (var f in GlobalForms.Values)
+            {
+                f.IsActive = false;
+                if (f.Bounds.Contains(Control.MousePos) && ActiveForm == null)
+                {
+                    ActiveForm = PrevForm = f;
+                    ActiveForm.IsActive = true;
+                }
+                f.Update();
+            }
+        }
+
+        public static void Draw()
+        {
+            for (int i = GlobalForms.Count - 1; i >= 0; i--)
+            {
+                GlobalForms.ElementAt(i).Value.Draw();
+            }
+        }
+
+        static public bool AnyResizing()
+        {
+            return GlobalForms.Any(n => n.Value.AnyResizing);
+        }
+
+        static public bool AnyHovering()
+        {
+            return GlobalForms.Any(n => n.Value.IsHovering);
+        }
+    }
+
     /// <summary>
     /// Represents basic complex form with aggregate of specified interactive elements.
     /// </summary>
-    public class Form : uControl // Derived for possible ability that WinForms has.
+    public class Form : uControl
     {
-        // TODO: Make a static field which is responsible for Form Layering.
-
         // TODO: wrap
         public override string Text { get => text; set { text = value; } }
         public bool IsVisible { get; set; } = true;
@@ -112,7 +156,7 @@ namespace Crux
         /// <summary>
         /// Defines, whether this form updates it's controls, being inactive.
         /// </summary>
-        public bool IsIndepend;
+        public bool IsIndepend { get; set; }
 
         private uControl owner;
         public override uControl Owner { get { return owner; } set { owner = value; } }
@@ -126,11 +170,13 @@ namespace Crux
         public delegate void ControlEventHandler(object sender, ControlArgs e);
 
         public event ControlEventHandler OnMouseLeftClicked;
-
         public event ControlEventHandler OnKeyUp;
 
         public override Action UpdateHandler { set { OnUpdate = value; } }
         public override event Action OnUpdate;
+
+        #region Constructors
+
 
         /// <summary>
         /// Creates form using Vector4.
@@ -169,6 +215,8 @@ namespace Crux
             Initialize();
         }
 
+        #endregion
+
         /// <summary>
         /// Called after form created.
         /// </summary>
@@ -191,9 +239,28 @@ namespace Crux
             OnMouseLeave += delegate
             {
                 Invalidate();
-            }; //Invalidation logic
+            };
 
         }
+        /// <summary>
+        /// Deletes a Control that has specified id.
+        /// </summary>
+        /// <param name="id"></param>
+        public void DeleteControl(int id) => Controls.RemoveAt(id - 1);
+
+        public uControl ActiveControl;
+
+        public override void Invalidate()
+        {
+            IsActive = false;
+            foreach (var c in Controls)
+            {
+                c.Invalidate();
+                c.Update();
+            }
+        }
+
+        #region Transform
 
         void RenewBounds()
         {
@@ -236,22 +303,6 @@ namespace Crux
         Point OHP, NHP;
         Point HoldOffset => NHP - OHP;
         bool RBL, LBL, TBL, BBL;
-        /// <summary>
-        /// Deletes a Control that has specified id.
-        /// </summary>
-        /// <param name="id"></param>
-        public void DeleteControl(int id) => Controls.RemoveAt(id - 1);
-
-        public uControl ActiveControl;
-
-        public override void Invalidate()
-        {
-            foreach (var c in Controls)
-            {
-                c.Invalidate();
-                c.Update();
-            }
-        }
 
         void Resize()
         {
@@ -300,22 +351,23 @@ namespace Crux
             {
                 lockhold = TBH = false;
             }
-            
+
         }
 
         bool UnsetResize() => lockhold = RBH = LBH = TBH = BBH = TBL = RBL = LBL = BBL = false;
+
+        public bool AnyResizing => TBL || RBL || LBL || BBL;
 
         bool AnyBorderHovered => TBH || RBH || LBH || BBH;
 
         void SetupResize()
         {
 
-            if (!lockhold && Control.LeftButtonPressed && AnyBorderHovered)
+            if (!lockhold && Control.LeftButtonPressed && AnyBorderHovered && IsActive)
             {
                 NHP = Control.MousePos.ToPoint();
                 lockhold = true;
             }
-
 
             if (lockhold)
             {
@@ -360,7 +412,7 @@ namespace Crux
                 UnsetResize();
             }
 
-            if(unhold && !lockhold)
+            if (unhold && !lockhold)
             {
                 //OnResizeEnd
                 foreach (var n in Controls)
@@ -370,39 +422,19 @@ namespace Crux
             }
         }
 
+        public bool IsResizable { get; set; } = false;
+
+        #endregion
+
         public override void Update()
         {
-            if (IsVisible)
+            if (IsActive)
             {
-                if (!Control.LeftButtonPressed)
-                {
-                    EnterHold = false;
-                }
-                if (!Batch.GraphicsDevice.Viewport.Bounds.Contains(Control.MousePos))
-                {
-                    TBH = RBH = LBH = BBH =
-                    TBL = RBL = LBL = BBL = false;
-                }
-                else if (!EnterHold)
-                {
-                    if (!Control.LeftButtonPressed)
-                    {
-                        RBH = RightBorder.Contains(Control.MousePos);
-                        LBH = LeftBorder.Contains(Control.MousePos);
-                        TBH = TopBorder.Contains(Control.MousePos);
-                        BBH = BottomBorder.Contains(Control.MousePos);
-                    }
-                }
-
-                IsActive = IsHovering = !true;
-
-                if (Bounds.Contains(Control.MousePos))
+                if (Bounds.Contains(Control.MousePos) && !EnterHold)
                 {
                     IsHovering = IgnoreControl == true ? true : !true;
-                    IsActive = true;
                 }
 
-                SetupResize();
 
                 if ((IsActive && !MessageBox.IsOpened) || IsIndepend)
                 {
@@ -415,7 +447,6 @@ namespace Crux
                         n.IsActive = n.IsHovering = !true;
                         if (n.Bounds.Contains(Game1.MS.Position) && !picked)
                         {
-                            //ActiveControl?.Invalidate();
                             ActiveControl = n;
                             ActiveControl.IsActive = picked = true;
                         }
@@ -427,7 +458,6 @@ namespace Crux
 
                 // Events block
                 {
-                    base.EventProcessor();
 
                     if (ActiveControl == null && IsActive && Control.LeftClick())
                         OnMouseLeftClicked?.Invoke(this, new ControlArgs());
@@ -437,13 +467,33 @@ namespace Crux
                         OnKeyUp?.Invoke(this, new ControlArgs());
                 }
 
-                //OnUpdate?.Invoke();
-                InnerUpdate();
             }
+            InnerUpdate();
         }
 
         public override void InnerUpdate()
         {
+            base.EventProcessor();
+            if (!Control.LeftButtonPressed)
+            {
+                EnterHold = false;
+            }
+            if (!Batch.GraphicsDevice.Viewport.Bounds.Contains(Control.MousePos))
+            {
+                TBH = RBH = LBH = BBH =
+                TBL = RBL = LBL = BBL = false;
+            }
+            else if (!EnterHold)
+            {
+                if (!Control.LeftButtonPressed && IsResizable)
+                {
+                    RBH = RightBorder.Contains(Control.MousePos) && IsActive;
+                    LBH = LeftBorder.Contains(Control.MousePos) && IsActive;
+                    TBH = TopBorder.Contains(Control.MousePos) && IsActive;
+                    BBH = BottomBorder.Contains(Control.MousePos) && IsActive;
+                }
+            }
+            SetupResize();
             foreach (var c in Controls)
             {
                 c.InnerUpdate();
@@ -460,6 +510,8 @@ namespace Crux
                 {
                     Batch.GraphicsDevice.ScissorRectangle = Bounds;
                     Batch.DrawFill(Bounds, IsActive ? FormColor : (IsFadable ? new Color(255, 255, 255, 200) : FormColor));
+                    if (IsActive && false) // DBG: Debug
+                        Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
                 }
                 Batch.End();
 
@@ -467,7 +519,7 @@ namespace Crux
                 {
                     Controls[i].Draw();
 
-                    if (false) // Drawing bounds debug
+                    if (false) // DBG: Drawing bounds debug
                     {
                         Batch.Begin(SpriteSortMode.Deferred, null, null, null);
                         {
@@ -486,10 +538,13 @@ namespace Crux
                     //Batch.DrawFill(Rectangle(X + Width - 18 - 6, Y + 4 + 4, 16, 16), new Color(0xff423bff));
                     //Batch.DrawFill(Rectangle(X + Width - 18 - 18 - 6, Y + 4 + 4, 16, 16), new Color(0, 115, 230));
                     //Batch.DrawFill(Rectangle(X + Width - 18 - 18 - 18 - 6, Y + 4 + 4, 16, 16), new Color(0, 115, 230));
-                    Batch.DrawFill(LeftBorder, LBL ? new Color(75, 75, 75, 255) : LBH ? new Color(155, 155, 155, 255) : FormColor);
-                    Batch.DrawFill(TopBorder, TBL ? new Color(75, 75, 75, 255) : TBH ? new Color(155, 155, 155, 255) : FormColor);
-                    Batch.DrawFill(RightBorder, RBL ? new Color(75, 75, 75, 255) : RBH ? new Color(155, 155, 155, 255) : FormColor);
-                    Batch.DrawFill(BottomBorder, BBL ? new Color(75, 75, 75, 255) : BBH ? new Color(155, 155, 155, 255) : FormColor);
+                    if (IsResizable)
+                    {
+                        Batch.DrawFill(LeftBorder, LBL ? new Color(75, 75, 75, 255) : LBH ? new Color(155, 155, 155, 255) : FormColor);
+                        Batch.DrawFill(TopBorder, TBL ? new Color(75, 75, 75, 255) : TBH ? new Color(155, 155, 155, 255) : FormColor);
+                        Batch.DrawFill(RightBorder, RBL ? new Color(75, 75, 75, 255) : RBH ? new Color(155, 155, 155, 255) : FormColor);
+                        Batch.DrawFill(BottomBorder, BBL ? new Color(75, 75, 75, 255) : BBH ? new Color(155, 155, 155, 255) : FormColor);
+                    }
                 }
                 Batch.End();
                 if (false)
@@ -507,13 +562,5 @@ namespace Crux
         }
 
 
-        /// <summary>
-        /// Returns true if any of the forms is hovered. Required for turning off controls handling inside the playable environment of the game.
-        /// </summary>
-        /// <returns>Returns true if any of the elements is hovered.</returns>
-        static public bool AnyHovering()
-        {
-            return Game1.GlobalForms.Any(n => n.Value.IsHovering);
-        }
     }
 }
