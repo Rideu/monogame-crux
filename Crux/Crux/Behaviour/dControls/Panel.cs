@@ -8,11 +8,10 @@ using static Crux.Simplex;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux
+namespace Crux.dControls
 {
     public class Panel : uControl
     {
-
         #region Fields
         public override uControl Owner { get { return OwnerField; } set { OwnerField = value; } }
         private uControl OwnerField;
