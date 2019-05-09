@@ -128,7 +128,7 @@ namespace Crux.dControls
             UpdateBounds();
 
             IsHovering = !true;
-            if (Bounds.Contains(Game1.MS.Position.ToVector2()))
+            if (Bounds.Contains(Core.MS.Position.ToVector2()))
                 IsHovering = true;
 
             if (IsHovering)
@@ -136,9 +136,9 @@ namespace Crux.dControls
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed)
                 {
                     if (DispType == Type.Horizontal)
-                        val = (Game1.MS.Position.ToVector2().X - (Owner.X + (X)) - 1) / Width;
+                        val = (Core.MS.Position.ToVector2().X - (Owner.X + (X)) - 1) / Width;
                     else
-                        val = (Game1.MS.Position.ToVector2().Y - (Owner.Y + (Y)) - 1) / Height;
+                        val = (Core.MS.Position.ToVector2().Y - (Owner.Y + (Y)) - 1) / Height;
                 }
             }
         }

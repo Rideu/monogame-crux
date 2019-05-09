@@ -19,7 +19,7 @@ namespace Crux
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class Game1 : Game
+    public class Core : Game
     {
         public static GraphicsDeviceManager graphics;
         public static SpriteBatch spriteBatch;
@@ -28,11 +28,12 @@ namespace Crux
         public static GameWindow PrimaryWindow;
 
         public static ToolSet ts;
-        public Game1()
+        public Core()
         {
             graphics = new GraphicsDeviceManager(this);
             graphics.PreferredBackBufferWidth = 1280;
             graphics.PreferredBackBufferHeight = 720;
+            graphics.GraphicsProfile = GraphicsProfile.Reach;
             WinSize = new Point(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
             Content.RootDirectory = "Content";
             Window.TextInput += Window_TextInput;
@@ -75,7 +76,8 @@ namespace Crux
             {
                 Font = font1
             });
-            f.AddNewControl(new Textbox(20, 350, 260, 20)
+            
+            f.AddNewControl(new Textbox(20, 350, 100, 20)
             {
                 Font = font1
             });
@@ -83,7 +85,15 @@ namespace Crux
             {
 
             });
-            (ml as Label).Text = "MonoGame is free software used by game developers to make Windows and Windows Phone games run on other systems.MonoGame is the evolution of XNA Touch (September 2009) started by Jose Antonio Farias[5] and Silver Sprite by Bill Reiss. The first official release of MonoGame was version 2.0 with a downloadable version 0.7 that was available from CodePlex. These early versions only supported 2D sprite based games. The last official 2D only version was released as 2.5.1 in June 2012. Since mid-2013, the framework has begun to be extended beyond XNA4 with the addition of new features like RenderTarget3D, support for multiple GameWindows, and a new cross-platform command line content building tool.";
+            (ml as Label).Text = @"How to reference (Proto)
+^n ^nHow to... {#(0,204,255)}Warp :
+^n ^n1. Warp {#(0,204,255)}tech is commonly used to travel between {#(0,204,255)}star {#(0,204,255)}systems , but for certain amount of energy or specific fuel to feed your warp core. Press Galaxy Map button (M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
+^n ^n2. You also can initiate a wave overlap with the ship that has slower warp core, allowing you to stick with other ships during the travel. When this is possible, an notice appears, which displays current distance to the ship and possibility to do this maneuver: it uses significant amount of energy depending on initial warp jump point. 
+^n ^nHow to... Build:
+^n ^n1. Buildings are primary things that makes the world live, cycle and expand. They are subdivided by their functionality: common factories, research laboratories and energy stations. All of them are consuming various resources, depending on how it is organized and supplied. To manage its work in more simple manner, node mechanic is used. Each node requires specific amount of workers and energy to function. There are three types of nodes in the game: source, processing and storage. Source nodes are consuming local resources depending on its type (mining or farming). Processing nodes are used to process incoming resources and provide the result to the next ones. Storage nodes sends all the incoming resources to the planetary storage to be distributed among other factories or for local sales or intake resources for continued processing. If there is a lack of workers or energy, the production will be limited or, in worst case, disabled, so dependency compliance and optimization are very important. If node's inner storage is overfilled, it can cause blocking state - incoming connections are filling up, keep consuming energy and spending working time, calling continued blocking chain, so the losses are increasing.
+^n ^nBuilding sizes can be four types: small, large, complex or arcological. Small ones can contain up to 5 nodes plus one for storage, large can contain up to 20, complex up to 70 and arcological up to 160 nodes.
+^n ^n2. The common factories can be built on wide range of surfaces, even on non-atmosphere planets or asteroids. The size is varied by small (up to 6 processing nodes) They need abundant amount of workers and energy.
+";
             (mc as Button).OnLeftClick += delegate { MessageBox.Show("Clock!"); };
             mp.AddNewControl(new Button(10, 10, 60, 20, new Color(140, 140, 140)) { Text = "Button3", });
 
@@ -91,17 +101,17 @@ namespace Crux
             { Font = font1, });
             ml.Text = "Label2";
 
-            mp.AddNewControl(ml = new Textbox(10, 70, 60, 20)
-            { Font = font1, });
-            ml.Text = "Textbox2";
+            //mp.AddNewControl(ml = new Textbox(10, 70, 60, 20)
+            //{ Font = font1, });
+            //ml.Text = "Textbox2";
 
             FormManager.AddForm("MainForm", f);
-            
             f = new Form(340, 100, 210, 250, new Color(40, 40, 40))
             {
 
             };
 
+            f.IsVisible = false;
             Label lb;
 
             Button b1, b2, b3, b4, b5, b6, b7, b8, b9, b0,
@@ -147,7 +157,7 @@ namespace Crux
                 if (lb.Text == "0") lb.Text = n.Text;
                 else lb.Append = n.Text;
             });
-
+            
             acts.ForEach(n => n.OnLeftClick += delegate
             {
                 if (sel == null && lb.Text.Length > 0)
@@ -207,8 +217,7 @@ namespace Crux
         public static MouseState MS = new MouseState();
 
         #endregion
-
-        public static List<SimplexObject> simplexObjects = new List<SimplexObject>();
+        
 
         public static TextBuilder pssb;
         string htdoc =
@@ -234,8 +243,7 @@ namespace Crux
             MessageBox.Update();
 
             FormManager.Update();
-
-            simplexObjects.ForEach(n => n.Update());
+            
 
             base.Update(gt = gameTime);
         }
@@ -249,10 +257,6 @@ namespace Crux
         {
             GraphicsDevice.Clear(new Color(100, 100, 100));
             spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, null);
-
-            {
-                simplexObjects.ForEach(n => n.Draw());
-            }
             {
                 //spriteBatch.DrawRect(new Rectangle(new Vector2(100-5).ToPoint(), new Vector2(300, 400).ToPoint()), Color.Gray);
                 //sb.Render(spriteBatch);
@@ -264,7 +268,9 @@ namespace Crux
             }
             spriteBatch.End();
             MessageBox.Draw();
+            graphics.GraphicsProfile = GraphicsProfile.HiDef;
             FormManager.Draw();
+            graphics.GraphicsProfile = GraphicsProfile.Reach;
             base.Draw(gameTime);
         }
     }

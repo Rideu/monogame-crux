@@ -22,7 +22,7 @@ namespace Crux.dControls
         private Align align = Align.None;
         public override Align CurrentAlign { set { align = value; } get => align; }
 
-        SpriteFont font = Game1.font;
+        SpriteFont font = Core.font;
         public SpriteFont Font { set { font = value; } get { return font; } }
 
 
@@ -82,7 +82,7 @@ namespace Crux.dControls
             var scroll = new Rectangle(0, 0, 5, (int)Height);
             // left top right bottom
             var padding = new Rectangle(/*left*/2 + scroll.Width,/*top*/2,/*right*/3,/*bottom*/0);
-            text = new TextBuilder(Font, "{NULL TEXT}", new Vector2(X + (padding.X - scroll.Width), Y), new Vector2(Width - scroll.Width - padding.Width, Height), Color.White, false, this);
+            text = new TextBuilder(Font, "{NULL TEXT}", new Vector2(X + (padding.X - scroll.Width), Y), new Vector2(Width - scroll.Width - padding.Width, Height), Color.White, true, this);
 
             OnMouseLeave += delegate
             {
@@ -106,7 +106,7 @@ namespace Crux.dControls
         {
             UpdateBounds();
             IsHovering = !true;
-            if ((Bounds.Contains(Game1.MS.Position.ToVector2())))
+            if ((Bounds.Contains(Core.MS.Position.ToVector2())))
             {
                 IsHovering = true;
                 text.ScrollPosition = new Vector2(Owner.X, Owner.Y + 1) + textpos;

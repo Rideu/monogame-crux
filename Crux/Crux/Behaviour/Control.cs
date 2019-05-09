@@ -32,7 +32,7 @@ namespace Crux
             WheelVal = NMW - OMW;
         }
 
-        public static bool MouseHoverOverG(Rectangle zone) => (zone.Contains(Game1.GlobalMousePos.Pos));
+        public static bool MouseHoverOverG(Rectangle zone) => (zone.Contains(Core.GlobalMousePos.Pos));
 
         public static bool MouseHoverOverTex(Texture2D tex, Vector2 offset) => (Simplex.OffsettedTexture(tex, offset).Contains(Mouse.GetState().Position.ToVector2()));
 
@@ -50,7 +50,9 @@ namespace Crux
 
         public static bool MidClick() => (OMS.MiddleButton == ButtonState.Pressed && NMS.MiddleButton == ButtonState.Released);
 
-        public static bool PressedKey(Keys key) => (OKS.IsKeyDown(key) && NKS.IsKeyUp(key));
+        public static bool IsKeyUpPressedKey(Keys key) => (OKS.IsKeyDown(key) && NKS.IsKeyUp(key));
+
+        public static bool PressedDownKey(Keys key) => (OKS.IsKeyUp(key) && NKS.IsKeyDown(key));
 
         public static bool AnyKeyPressed() => OKS.GetPressedKeys().Length > 0;
 

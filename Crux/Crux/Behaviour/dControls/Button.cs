@@ -80,7 +80,7 @@ namespace Crux.dControls
             UpdateBounds();
 
             IsClicked = !true;
-            IsHovering = Bounds.Contains(Game1.MS.Position.ToVector2());
+            IsHovering = Bounds.Contains(Core.MS.Position.ToVector2());
             IsHolding = IsHovering && Control.LeftButtonPressed;
 
             if (IsHovering && Control.LeftClick() && !EnterHold)
@@ -125,14 +125,14 @@ namespace Crux.dControls
             Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-1);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                var mea = Game1.font1.MeasureString(Text);
+                var mea = Core.font1.MeasureString(Text);
                 // Overflow control proto 
                 // {
                 // var of = Width / mea.X;
                 // var am = of > 1 ? Text : Text.Substring(0, (int)(Text.Length*of));
                 // mea = Game1.font1.MeasureString(am);
                 // }
-                Batch.DrawString(Game1.font1, Text, Bounds.Location.ToVector2() + (new Vector2(Width, Height) / 2 - mea / 2).ToPoint().ToVector2(), Color.White, 0f, new Vector2(), 1f, SpriteEffects.None, 1f);
+                Batch.DrawString(Core.font1, Text, Bounds.Location.ToVector2() + (new Vector2(Width, Height) / 2 - mea / 2).ToPoint().ToVector2(), Color.White, 0f, new Vector2(), 1f, SpriteEffects.None, 1f);
             }
             Batch.End();
         }

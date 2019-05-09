@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 using System;
 using static System.Math;
-using static Crux.Game1;
+using static Crux.Core;
 using sRectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace Crux
@@ -72,107 +72,6 @@ namespace Crux
 
     }
 
-    public class SimplexObject : IEntity
-    {
-        public enum DrawMethod
-        {
-            Texture,
-            Rectangle
-        }
-
-        public DrawMethod drawMethod { get; set; }
-
-        public Texture2D objTexture { get; set; }
-        public Color objColor { get; set; }
-        public Rectangle objBounds { get; set; }
-        public bool objCollision { get; set; }
-
-        public string Text { get; set; }
-        public Color TextColor { get; set; }
-        public object Item { get; set; }
-
-        public event Action OnClick;
-
-        public SimplexObject(float x, float y, float w, float h)
-        {
-            objTexture = null;
-            objColor = new Color(128, 128, 128);
-            objBounds = new Rectangle((int)x, (int)y, (int)w, (int)h);
-            objCollision = false;
-            Text = "";
-            TextColor = Color.Black;
-            batch = new SpriteBatch(graphics.GraphicsDevice);
-            drawMethod = DrawMethod.Rectangle;
-
-            OnClick = new Action(delegate { });
-        }
-
-
-        public static void Renew()
-        {
-            if (IsDragging && Game1.MS.LeftButton == ButtonState.Released)
-            {
-                dragged = null;
-                IsDragging = !true;
-            }
-        }
-
-
-        static SimplexObject dragged;
-        static bool IsDragging;
-        public void Update()
-        {
-            if (objBounds.Contains(GlobalMousePos) && Control.LeftClick())
-                OnClick?.Invoke();
-            if (objBounds.Contains(GlobalMousePos) && Game1.MS.LeftButton == ButtonState.Pressed && dragged == null)
-            {
-                dragged = this;
-                IsDragging = true;
-            }
-
-            if (dragged == this)
-            {
-                if (Control.LeftClick())
-                {
-                    IsDragging = false;
-                    dragged = null;
-                }
-                if (objCollision)
-                {
-                    if (!Game1.simplexObjects.Exists(n => n != this && n.objBounds.Intersects(new Rectangle((int)GlobalMousePos.Pos.X - (int)objBounds.Width / 2, (int)GlobalMousePos.Pos.Y - (int)objBounds.Height / 2, objBounds.Width, (int)objBounds.Height))))
-                        objBounds = new Rectangle((int)GlobalMousePos.Pos.X - (int)objBounds.Width / 2, (int)GlobalMousePos.Pos.Y - (int)objBounds.Height / 2, objBounds.Width, (int)objBounds.Height);
-                }
-                else
-                    objBounds = new Rectangle((int)GlobalMousePos.Pos.X - (int)objBounds.Width / 2, (int)GlobalMousePos.Pos.Y - (int)objBounds.Height / 2, objBounds.Width, (int)objBounds.Height);
-            }
-        }
-
-        SpriteBatch batch;
-
-        public void Draw()
-        {
-            batch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, null, DepthStencilState.Default, RasterizerState.CullCounterClockwise, null, null);
-            switch (drawMethod)
-            {
-                case DrawMethod.Texture:
-                    batch.Draw(objTexture, objBounds, objColor);
-                    break;
-                case DrawMethod.Rectangle:
-                    batch.Draw(pixel, objBounds, objColor);
-                    break;
-                default:
-                    break;
-            }
-            //(Item as IEntity).Draw(batch);
-            if (Text.Length > 0)
-            {
-                batch.DrawString(Game1.font, Text, new Vector2(objBounds.X, objBounds.Y + objBounds.Height) - Game1.font.MeasureString(Text) / 2 + new Vector2(objBounds.Width, objBounds.Height) / 2, TextColor, 0f, Vector2.Zero, 0.77f, SpriteEffects.None, 1f);
-            }
-            batch.End();
-        }
-
-        public void Draw(SpriteBatch batch) { }
-    }
 
     public static class Simplex
     {
@@ -184,7 +83,7 @@ namespace Crux
 
         static Simplex()
         {
-            var graphicsDevice = Game1.graphics.GraphicsDevice;
+            var graphicsDevice = Core.graphics.GraphicsDevice;
             pixel = new Texture2D(graphicsDevice, 1, 1);
             pixel.SetData(new Color[] { new Color(255, 255, 255, 255) });
             var tc = new Color[]
@@ -387,7 +286,7 @@ namespace Crux
         {
             var sheetbuf = new Color[source.Width * source.Height];
             tex.GetData(0, source, sheetbuf, 0, source.Width * source.Height);
-            Texture2D rtex = new Texture2D(Game1.graphics.GraphicsDevice, target.Width, target.Height);
+            Texture2D rtex = new Texture2D(Core.graphics.GraphicsDevice, target.Width, target.Height);
             rtex.SetData(sheetbuf);
             return rtex;
         }
@@ -400,7 +299,7 @@ namespace Crux
 
         public static Vector2 ReflectNormal(Vector2 point, Line normal) => Vector2.Reflect(-point, normal.GetUnitAngle());
 
-        public static Vector2 GetWCenter() => new Vector2(Game1.PrimaryViewport.Width / 2, Game1.PrimaryViewport.Height / 2);
+        public static Vector2 GetWCenter() => new Vector2(Core.PrimaryViewport.Width / 2, Core.PrimaryViewport.Height / 2);
 
         public static Vector2 GetWCentered(Vector2 v) => GetWCenter() + v;
 
@@ -420,8 +319,10 @@ namespace Crux
 
         public static Vector2 Normal(this Vector2 v) { v.Normalize(); return v; }
 
-        public static Vector3 GetVector3(this Vector2 v) => new Vector3(v, 0);
+        public static Vector2 Snap(this Vector2 v) => v.ToPoint().ToVector2();
 
+        public static Vector3 GetVector3(this Vector2 v) => new Vector3(v, 0);
+        
         #endregion
 
         #region Rectangle
@@ -554,6 +455,7 @@ namespace Crux
         //}
 
         public static implicit operator string(Line l) => l.Start + "<~>" + l.End + "\n<o>" + l.GetNormalAngle() + "<->" + l.Length;
+        public override string ToString() => Start + "<~>" + End + "\n<o>" + GetNormalAngle() + "<->" + Length;
 
     }
 }

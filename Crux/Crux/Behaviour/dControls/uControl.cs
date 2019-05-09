@@ -184,7 +184,7 @@ namespace Crux.dControls
             UpdateBounds();
         }
 
-        public SpriteBatch Batch = Game1.spriteBatch;
+        public SpriteBatch Batch = Core.spriteBatch;
 
         protected RasterizerState rasterizer = new RasterizerState()
         {

@@ -6,10 +6,11 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 using System;
 using System.Text;
+using System.Text.RegularExpressions;
 
 using static System.Text.RegularExpressions.Regex;
 using static System.Math;
-using static Crux.Game1;
+using static Crux.Core;
 
 using Crux.dControls;
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
@@ -44,7 +45,7 @@ namespace Crux
         public Vector2 GetTotalSize => ts;
         Label owner; // TODO: to uControl
         bool af;
-
+        float fontscale = 1f;
         public TextBuilder(SpriteFont font, string text, Vector2 pos, Vector2 size, Color color = default, bool applyformat = true, Label label = null)
         {
             //gc = "";
@@ -61,49 +62,47 @@ namespace Crux
         {
             t = Replace(text, @"[}]\s", "}");
             t = Replace(t, @"[{]", " {");
-            t = Replace(t, @"\s+ (?!\n)", " ").Trim(' '); // Filter input to necessary view so commands can recgonize it properly
+            //t = Replace(t, @"\s+ (?!\n)", " ").Trim(' '); // Filter input to necessary view so commands can recgonize it properly
             Vector2 cp = new Vector2();
             //f.Spacing = .65f;
-            var sp = spc = f.MeasureString(" ") + new Vector2(3, 0);
+            var sp = spc = f.MeasureString(" ") * fontscale + new Vector2(2, 0);
             var l = 0;
-            var c = t.Split(' ');
-            ct = Replace(t = text, "{.+?}", "");
+            var c = Matches(t, @"[^\s]+|( +)");
+            ct = Replace(t = (text/*, @" +", " "*/), "{.+?}", "");
             w.Clear();
+            
             sub sb = null;
-            foreach (var n in c)
+            foreach (Match m in c)
             {
-                var ws = f.MeasureString(n);
+                var n = m.Value;
+                var sa = Match(n, " ").Captures.Count;
+                var ws = f.MeasureString(Replace(n, ".+?}+", "")) * fontscale + new Vector2(2 * sa, 0);
                 len += n.Length;
                 var rt = n;
                 var tsl = ws.X;// PERF: avoid FindAll with nulling tsl on new line and ++ it on each n iteration
-                w.FindAll(u => u.l == l).ForEach(u => { tsl += (int)u.b.Width + sp.X; });
-                if (s.X > 0 ? (rt.Contains("\n") || tsl + 2 > s.X) : false)
+                w.FindAll(u => u.l == l).ForEach(u => { tsl += (int)u.b.Width; });
+                if ((s.X > 0 ? (rt.Contains("^n") || tsl + 12 > s.X) : false) && !string.IsNullOrWhiteSpace(n))
                 {
-                    rt = n.Replace("\n", "");
+                    rt = n.Replace("^n", "");
                     // Move words that are newly filtered to left and one line lower
                     // {
                     cp.X = 0;
-                    cp.Y += ws.Y;
-                    l += 1; // }
+                    cp.Y += ws.Y; //
+                    l += 1; 
+                    // }
                 }
-                sb = new sub(p + cp, f, rt, col, ws.X, ws.Y, l);
-                if(af)
-                F_C_APPLY(sb);
-                ws = f.MeasureString(sb);
+                sb = new sub(p + cp, f, rt, col, ws.X, ws.Y, l, fontscale);
+                if (af)
+                    F_C_APPLY(sb);
+                ws = f.MeasureString(sb) * fontscale + new Vector2(2 * sa, 0);
                 sb.nw[0] = w.Count > 1 ? w[w.Count - 1] : null;
                 if (w.Count > 1)
                     w[w.Count - 1].nw[1] = sb;
-                //Match pm; // Proto-code, used to separate punctuation marks
-                //if ((pm = Match(rt, "[,.!@#$%^&*()]")).Success)
-                //{
-                //    var mw = f.MeasureString(pm.Value);
-                //    w.Add(new sub(pos + cp + ws /*extra bugged on .ws*/, f, pm.Value, Color.Black, mw.X, mw.Y, l));
-                //    cp += new Vector2(mw.X, 0);
-                //}
-                cp += new Vector2(ws.X + sp.X, 0);
-                w.Add(new sub((p + cp) - new Vector2(spc.X, 0), f, " ", col, spc.X, sp.Y, l));
+                cp += new Vector2(ws.X/* + sp.X*/, 0);
+                w.Add(new sub((p + cp) - new Vector2(spc.X, 0), f, " ", col, spc.X, sp.Y, l, fontscale));
                 w.Add(sb);
             }
+            if(sb != null) // TODO: clutch
             ts = new Vector2(s.X, sb.b.Y);
         }
 
@@ -123,10 +122,10 @@ namespace Crux
                 var pc = rule.al(s.t); // Parse command
                 if (pc.ct != null)
                 {
-                    var sp = f.MeasureString("  ").X;
+                    var sp = f.MeasureString("  ").X * fontscale;
                     s.t = Replace(s.t, ".+?}+", "");
                     // Set word's bounds width. Example: ":h" directive won't work properly if mouse hovers over this word
-                    s.b.Width = (int)f.MeasureString(s.t).X;
+                    s.b.Width = (int)(f.MeasureString(s.t).X * fontscale);
                     //s = pc.p(s, pc.ct); // Apply command processor
                     if (pc.ish)
                     {
@@ -194,10 +193,11 @@ namespace Crux
             public float ww; // Word width
             public float wh; // Word height
             public int l; // Word's line index
-            public sub(Vector2 p, SpriteFont f, string t, Color c, float ww, float wh, int l)
+            public float sc; // Word scale
+            public sub(Vector2 p, SpriteFont f, string t, Color c, float ww, float wh, int l, float sc)
             {
-                this.t = t; this.f = f; dc = this.c = c; this.ww = ww; this.wh = wh; this.l = l; nw = new object[] { null, null };
-                b = new Rectangle(p.ToPoint(), f.MeasureString(t).ToPoint());
+                this.t = t; this.f = f; dc = this.c = c; this.ww = ww; this.wh = wh; this.l = l; nw = new object[] { null, null }; this.sc = sc;
+                b = new Rectangle(p.ToPoint(), (f.MeasureString(t) * sc).ToPoint());
                 fc = true;
                 chs = new List<string>(t.Split(new string[] { "" }, StringSplitOptions.RemoveEmptyEntries)).ConvertAll(n => new ch() { chr = n.ToCharArray()[0], c = c });
                 hov = def = new rule()
@@ -228,7 +228,7 @@ namespace Crux
 
         //List<subgroup> subs = new List<subgroup>();
 
-        internal class subgroup : List<sub> {} // Proto
+        internal class subgroup : List<sub> { } // Proto
 
         internal struct ch // !Unused
         {
@@ -404,7 +404,7 @@ namespace Crux
     {
         internal static void DrawWord(this SpriteBatch b, TextBuilder.sub w)
         {
-            b.DrawString(w, w, w, w);
+            b.DrawString(w, w, w, w, 0f, Vector2.Zero, w.sc, SpriteEffects.None, 1f);
         }
 
         internal static void DrawWord(this SpriteBatch b, Vector2 pos, TextBuilder.sub w)
@@ -412,7 +412,7 @@ namespace Crux
             //var wb = w.b;
             //wb.Location += pos.ToPoint(); debug
             //b.DrawFill(wb, new Color(52, 115, 52, 40));
-            b.DrawString(w, w, w + pos, w);
+            b.DrawString(w, w, w + pos, w, 0f, Vector2.Zero, w.sc, SpriteEffects.None, 1f);
         }
     }
 }

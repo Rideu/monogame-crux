@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using static Crux.Simplex;
-using static Crux.Game1;
+using static Crux.Core;
 
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
@@ -78,7 +78,7 @@ namespace Crux.dControls
             UpdateBounds();
 
             IsHovering = !true;
-            if (Bounds.Contains(Game1.MS.Position.ToVector2()))
+            if (Bounds.Contains(Core.MS.Position.ToVector2()))
                 IsHovering = true;
 
             if (IsHovering && Control.LeftClick())

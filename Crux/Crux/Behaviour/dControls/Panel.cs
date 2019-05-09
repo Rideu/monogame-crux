@@ -29,8 +29,8 @@ namespace Crux.dControls
 
         private Texture2D Tex;
 
-        public event EventHandler OnLeftClick;
-        public event EventHandler OnRightClick;
+        //public event EventHandler OnLeftClick;
+        //public event EventHandler OnRightClick;
         public override event Action OnUpdate;
         #endregion
 
@@ -100,7 +100,7 @@ namespace Crux.dControls
                     foreach (uControl n in Controls)
                     {
                         n.IsActive = n.IsHovering = !true;
-                        if (n.Bounds.Contains(Game1.MS.Position) && !picked)
+                        if (n.Bounds.Contains(Core.MS.Position) && !picked)
                         {
                             ActiveControl = n;
                             ActiveControl.IsActive = picked = true;
@@ -148,11 +148,11 @@ namespace Crux.dControls
 
                 if (false) // Drawing bounds debug
                 {
-                    Batch.Begin(SpriteSortMode.Deferred, null, null, null);
-                    {
-                        Batch.DrawFill(Controls[i].DrawingBounds, new Color(123, 77, 63, 50));
-                    }
-                    Batch.End();
+                    //Batch.Begin(SpriteSortMode.Deferred, null, null, null);
+                    //{
+                    //    Batch.DrawFill(Controls[i].DrawingBounds, new Color(123, 77, 63, 50));
+                    //}
+                    //Batch.End();
                 }
             }
 

@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using static Crux.Simplex;
-using static Crux.Game1;
+using static Crux.Core;
 
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
@@ -445,7 +445,7 @@ namespace Crux.dControls
                     {
 
                         n.IsActive = n.IsHovering = !true;
-                        if (n.Bounds.Contains(Game1.MS.Position) && !picked)
+                        if (n.Bounds.Contains(Core.MS.Position) && !picked)
                         {
                             ActiveControl = n;
                             ActiveControl.IsActive = picked = true;
@@ -521,15 +521,14 @@ namespace Crux.dControls
 
                     if (false) // DBG: Drawing bounds debug
                     {
-                        Batch.Begin(SpriteSortMode.Deferred, null, null, null);
-                        {
-                            Batch.DrawFill(Controls[i].DrawingBounds, new Color(73, 123, 63, 50));
-                        }
-                        Batch.End();
+                        //Batch.Begin(SpriteSortMode.Deferred, null, null, null);
+                        //{
+                        //    Batch.DrawFill(Controls[i].DrawingBounds, new Color(73, 123, 63, 50));
+                        //}
+                        //Batch.End();
                     }
                 }
-
-
+                
 
                 Batch.Begin(SpriteSortMode.Deferred, null, null, null);
                 {
@@ -549,14 +548,14 @@ namespace Crux.dControls
                 Batch.End();
                 if (false)
                 {
-                    Batch.Begin(SpriteSortMode.Deferred, null, null, null);
-                    {
-                        Batch.DrawString(font,
-                            $"{X} : {Y}\n" +
-                            $"{Width} : {Height}\n",
-                            new Vector2(X + Width, Y + Height), Color.White);
-                    }
-                    Batch.End();
+                    //Batch.Begin(SpriteSortMode.Deferred, null, null, null);
+                    //{
+                    //    Batch.DrawString(font,
+                    //        $"{X} : {Y}\n" +
+                    //        $"{Width} : {Height}\n",
+                    //        new Vector2(X + Width, Y + Height), Color.White);
+                    //}
+                    //Batch.End();
                 }
             }
         }
