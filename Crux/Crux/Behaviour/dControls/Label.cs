@@ -10,7 +10,7 @@ using static Crux.Simplex;
 
 namespace Crux.dControls
 {
-    public class Label : uControl
+    public class Multiline : uControl
     {
         #region Fields        
         private uControl OwnerField;
@@ -50,17 +50,17 @@ namespace Crux.dControls
         public override event Action OnUpdate;
         #endregion
 
-        public Label(Vector4 posform)
+        public Multiline(Vector4 posform)
         {
             X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W;
         }
 
-        public Label(Vector2 pos, Vector2 size)
+        public Multiline(Vector2 pos, Vector2 size)
         {
             X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y;
         }
 
-        public Label(float x, float y, float width, float height)
+        public Multiline(float x, float y, float width, float height)
         {
             X = x; Y = y; Width = width; Height = height;
         }

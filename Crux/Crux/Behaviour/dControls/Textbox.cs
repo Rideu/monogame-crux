@@ -65,7 +65,7 @@ namespace Crux.dControls
             Tex.SetData(layer1);
             OnMouseLeave += delegate { Invalidate(); };
 
-            text = new TextBuilder(Font, "[Null text]", new Vector2(X /*+ (padding.X - scroll.Width)*/, Y), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, false/*, this*/);
+            text = new TextBuilder(Font, "[Null text]", new Vector2(X /*+ (padding.X - scroll.Width)*/, Y), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, true/*, this*/);
 
             t = new Timer(1000);
             t.OnFinish += delegate { t.Reset(false); t.Start(); };
@@ -234,7 +234,7 @@ namespace Crux.dControls
                     var cc = sub.Count(n => n == ' ');
                     var rep = sub.Replace(" ", "");
                     var mea = font.MeasureString(sub);
-                    cs = mea;//+ new Vector2(cc * (sp.X) /*+ font.Spacing * sub.Length*/, 0);
+                    cs = mea + new Vector2(cc * (sp.X) /*+ font.Spacing * sub.Length*/, 0);
                     var b = caretpos == text.Text.Length;
                 }
 

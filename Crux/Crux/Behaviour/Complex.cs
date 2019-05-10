@@ -43,10 +43,10 @@ namespace Crux
         Vector2 s; public Vector2 GetInitialSize => s;
         Vector2 ts;
         public Vector2 GetTotalSize => ts;
-        Label owner; // TODO: to uControl
+        Multiline owner; // TODO: to uControl
         bool af;
         float fontscale = 1f;
-        public TextBuilder(SpriteFont font, string text, Vector2 pos, Vector2 size, Color color = default, bool applyformat = true, Label label = null)
+        public TextBuilder(SpriteFont font, string text, Vector2 pos, Vector2 size, Color color = default, bool applyformat = true, Multiline label = null)
         {
             //gc = "";
             af = applyformat;
@@ -70,7 +70,7 @@ namespace Crux
             var c = Matches(t, @"[^\s]+|( +)");
             ct = Replace(t = (text/*, @" +", " "*/), "{.+?}", "");
             w.Clear();
-            
+
             sub sb = null;
             foreach (Match m in c)
             {
@@ -88,7 +88,7 @@ namespace Crux
                     // {
                     cp.X = 0;
                     cp.Y += ws.Y; //
-                    l += 1; 
+                    l += 1;
                     // }
                 }
                 sb = new sub(p + cp, f, rt, col, ws.X, ws.Y, l, fontscale);
@@ -102,8 +102,8 @@ namespace Crux
                 w.Add(new sub((p + cp) - new Vector2(spc.X, 0), f, " ", col, spc.X, sp.Y, l, fontscale));
                 w.Add(sb);
             }
-            if(sb != null) // TODO: clutch
-            ts = new Vector2(s.X, sb.b.Y);
+            if (sb != null) // TODO: clutch
+                ts = new Vector2(s.X, sb.b.Y);
         }
 
         public void Update()
@@ -122,11 +122,9 @@ namespace Crux
                 var pc = rule.al(s.t); // Parse command
                 if (pc.ct != null)
                 {
-                    var sp = f.MeasureString("  ").X * fontscale;
                     s.t = Replace(s.t, ".+?}+", "");
                     // Set word's bounds width. Example: ":h" directive won't work properly if mouse hovers over this word
                     s.b.Width = (int)(f.MeasureString(s.t).X * fontscale);
-                    //s = pc.p(s, pc.ct); // Apply command processor
                     if (pc.ish)
                     {
                         s.hov = pc;
@@ -136,48 +134,16 @@ namespace Crux
                         s.hov = s.def = pc; s = pc.aplog(s, pc.val);
                     };
                 }
-                if (IsMatch(s.t, "{.+?}"))
-                    s.t = Replace(s.t, "{.+?}", "");
+                //if (IsMatch(s.t, "{.+?}"))
+                //s.t = Replace(s.t, "{.+?}", "");
             }
-            //if (pc.pr) // Apply every next word, if ":p" directive defined
-            //{
-            //    s = pc.p(s);
-            //}
-            //if (gc.ct.Length > 0) //temp
-            //{
-            //    s = gc.p(s);
-            //}
-        }
-
-        void F_C_ASSOC() // !Unused
-        {
-            foreach (var c in rules)
+            if (pb)
             {
-                for (int i = 0; i < w.Count; i++)
-                {
-                    var n = w[i];
-                    while (n.t.Contains(c.ct))
-                    {
-                        var ic = n.t.IndexOf(c.ct);
-                        var ws = n.f.MeasureString(c.ct);
-                        var sp = f.MeasureString("  ").X;
-                        n.t = n.t.Remove(ic, c.ct.Length);
-                        for (var j = i; j < w.Count; j++)
-                        {
-                            var u = w[j];
-                            if (u.l == n.l)
-                                //u.b.X -= (int)ws.X/* + (int)n.*/;
-                                w[j] = u;
-                        }
-                        //n = c.p(n);
-                        n.b.Width -= (int)ws.X;
-                        w[i] = n;
-                    }
-                }
+                s.hov = s.def = pr; s = pr.aplog(s, pr.val);
             }
-            //Console.WriteLine(s);
-
         }
+
+        #region sub desc
 
         List<sub> w = new List<sub>();
 
@@ -228,13 +194,14 @@ namespace Crux
 
         //List<subgroup> subs = new List<subgroup>();
 
-        internal class subgroup : List<sub> { } // Proto
+        //internal class subgroup : List<sub> { } // Proto
 
         internal struct ch // !Unused
         {
             public char chr;
             public Color c;
         }
+        #endregion
 
         internal struct rule // A command
         {
@@ -246,6 +213,8 @@ namespace Crux
             //public bool pr; // Propagator flag that allows apply specified formatting for next words until new command defined.
             public static rule al(string c) // Command analyser. Selects proper command, applies directive for it if there is.
             {
+                //if (pb)
+                //    return pr;
                 var iv = Match(Replace(c, "((?<=}).+)", ""), @"\(.+(?:\))").Value; // Parse params of the command needed for further usage.
                 var re = Replace(c, @"\(.+(?:\))|((?<=}).+)", ""); // Select very first command inside string.
                 var dir = Matches(re, @"((?<=:|,)\w+)"); // Defines, whether there is any directive. Keeps the directive, if so.
@@ -254,53 +223,20 @@ namespace Crux
                 cm.val = iv;
                 if (dir.Count > 0)
                 {
-                    switch (dir[0].Value)
-                    {
-                        case "h": cm.ish = true; break;
-                    }
+                    foreach (Match d in dir)
+                        switch (d.Value)
+                        {
+                            case "h": cm.ish = true; break;
+                            case "p": pb = true; pr = cm; break;
+                        }
                 }
-                //if (cm.ct == null) throw new Exception("No such command found => " + re);
-                //if(iv.Length > 0)
-                //{
-                //    var conf = cm.onf;
-                //    cm.onf = delegate (sub s, string v)
-                //    {
-                //        conf.Invoke(s, iv); // Invoke the processor with defined command.
-                //        return s;
-                //    };
-                //}
-                //if (dir.Count > 0)
-                //    foreach (var n in dir)
-                //        switch ((n.GetType().GetProperty("Value").GetValue(n)))
-                //        {
-                //            case "p":
-                //                {
-                //                    cm.pr = true; // Enable propagator for this command.
-                //                    pc = cm;
-                //                }
-                //                break;
-                //            case "h":
-                //                {
-                //                    var conf = cm.onf; // Create delegate-formatter reference. Some kind of copy.
-                //                    cm.onf = delegate (sub s, string v) // Redefine 
-                //                    {
-                //                        if (Control.MouseHoverOverG(s) && !Control.LeftButtonPressed)
-                //                            return conf.Invoke(s, v); // Apply formatting when mouse hovers over the "s" word
-                //                        return s;
-                //                    };
-                //                    pc = cm;
-                //                }
-                //                break;
-                //                //default:
-                //                //throw new Exception("No such directive found => " + dir);
-                //        }
-                //else pc.pr = false;
                 return cm;
             }
         }
 
-        //static rule pc; // A primary command that applies formatting.
-        //static string gc; // 
+        static bool pb;
+        static rule pr; // A primary command that applies formatting.
+
         static List<sub> tg = new List<sub>();
 
         static List<rule> rules = new List<rule>() // A predefined list of commands
@@ -321,6 +257,7 @@ namespace Crux
                 aplog = delegate(sub s, string v)
                 {
                     var m = Matches(v, "\\d+");
+
                     s.c = new Color(int.Parse(m[0].Value), int.Parse(m[1].Value), int.Parse(m[2].Value));
                     return s;
                 }
@@ -364,6 +301,7 @@ namespace Crux
                 ct = "{@p}", // A null-command that prevents continued propagation
                 aplog = delegate(sub s, string v)
                 {
+                    pb = false;
                     return s;
                 }
             },

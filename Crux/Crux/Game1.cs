@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework.Input;
 using Crux.dControls;
 
 using static System.Math;
+using static Crux.Simplex;
 
 namespace Crux
 {
@@ -58,85 +59,102 @@ namespace Crux
         {
             base.Initialize();
             IsMouseVisible = true;
-            Form f = new Form(30, 100, 290, 500, new Color(70, 70, 70))
+            Form f = new Form(30, 100, 550, 500, new Color(70, 70, 70))
             {
                 IsResizable = true,
-                
-            };
-            uControl mc, ml, mp;
-            f.AddNewControl(mc = new Button(20, 20, 70, 20, new Color(100, 100, 100))
-            {
-                Text = "Button1"
-            });
-            f.AddNewControl(new Button(30, 30, 80, 70, new Color(100, 100, 100))
-            {
-                Text = "Button2"
-            });
-            f.AddNewControl(ml = new Label(20, 50, 260, 280)
-            {
-                Font = font1
-            });
-            
-            f.AddNewControl(new Textbox(20, 350, 100, 20)
-            {
-                Font = font1
-            });
-            f.AddNewControl(mp = new Panel(20, 380, 260, 80)
-            {
 
+            };
+            uControl ml;
+            f.AddNewControl(new Button(460, 450, 70, 20, new Color(50, 50, 50))
+            {
+                Text = "Continue"
             });
-            (ml as Label).Text = @"How to reference (Proto)
-^n ^nHow to... {#(0,204,255)}Warp :
-^n ^n1. Warp {#(0,204,255)}tech is commonly used to travel between {#(0,204,255)}star {#(0,204,255)}systems , but for certain amount of energy or specific fuel to feed your warp core. Press Galaxy Map button (M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
+            //f.AddNewControl(new Button(30, 30, 80, 70, new Color(100, 100, 100))
+            //{
+            //    Text = "Button2"
+            //});
+            f.AddNewControl(ml = new Multiline(20, 100, 520, 280)
+            {
+                Font = font1
+            });
+
+            //f.AddNewControl(new Textbox(20, 350, 100, 20)
+            //{
+            //    Font = font1
+            //});
+            //f.AddNewControl(mp = new Panel(20, 380, 260, 80)
+            //{
+
+            //});
+            f.CreateLayout(hud_form_headname,
+            hud_form_headseam,
+            hud_form_headend,
+            hud_form_leftborder,
+            hud_form_rightborder,
+            hud_form_bottomleft,
+            hud_form_bottomseam,
+            hud_form_bottomright);
+            (ml as Multiline).Text = 
+@"How to reference (Proto)
+^n ^nHow to... {#(65,160,216):p}Warp{@p}:
+^n ^n1. Warp {#(65,160,216):p,h}tech is commonly{@p} used to travel between star systems, but for certain amount of energy or specific fuel to feed your warp core. Press Galaxy Map button (M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
 ^n ^n2. You also can initiate a wave overlap with the ship that has slower warp core, allowing you to stick with other ships during the travel. When this is possible, an notice appears, which displays current distance to the ship and possibility to do this maneuver: it uses significant amount of energy depending on initial warp jump point. 
 ^n ^nHow to... Build:
 ^n ^n1. Buildings are primary things that makes the world live, cycle and expand. They are subdivided by their functionality: common factories, research laboratories and energy stations. All of them are consuming various resources, depending on how it is organized and supplied. To manage its work in more simple manner, node mechanic is used. Each node requires specific amount of workers and energy to function. There are three types of nodes in the game: source, processing and storage. Source nodes are consuming local resources depending on its type (mining or farming). Processing nodes are used to process incoming resources and provide the result to the next ones. Storage nodes sends all the incoming resources to the planetary storage to be distributed among other factories or for local sales or intake resources for continued processing. If there is a lack of workers or energy, the production will be limited or, in worst case, disabled, so dependency compliance and optimization are very important. If node's inner storage is overfilled, it can cause blocking state - incoming connections are filling up, keep consuming energy and spending working time, calling continued blocking chain, so the losses are increasing.
 ^n ^nBuilding sizes can be four types: small, large, complex or arcological. Small ones can contain up to 5 nodes plus one for storage, large can contain up to 20, complex up to 70 and arcological up to 160 nodes.
 ^n ^n2. The common factories can be built on wide range of surfaces, even on non-atmosphere planets or asteroids. The size is varied by small (up to 6 processing nodes) They need abundant amount of workers and energy.
 ";
-            (mc as Button).OnLeftClick += delegate { MessageBox.Show("Clock!"); };
-            mp.AddNewControl(new Button(10, 10, 60, 20, new Color(140, 140, 140)) { Text = "Button3", });
+            //(mc as Button).OnLeftClick += delegate { MessageBox.Show("Clock!"); };
+            //mp.AddNewControl(new Button(10, 10, 60, 20, new Color(140, 140, 140)) { Text = "Button3", });
 
-            mp.AddNewControl(ml = new Label(10, 40, 60, 20)
-            { Font = font1, });
-            ml.Text = "Label2";
+            //mp.AddNewControl(ml = new Label(10, 40, 60, 20)
+            //{ Font = font1, });
+            //ml.Text = "Label2";
 
             //mp.AddNewControl(ml = new Textbox(10, 70, 60, 20)
             //{ Font = font1, });
             //ml.Text = "Textbox2";
 
             FormManager.AddForm("MainForm", f);
-            f = new Form(340, 100, 210, 250, new Color(40, 40, 40))
+            f = new Form(340, 100, 310, 320, new Color(40, 40, 40))
             {
 
             };
-
-            f.IsVisible = false;
-            Label lb;
+            f.CreateLayout(hud_form_headname,
+            hud_form_headseam,
+            hud_form_headend,
+            hud_form_leftborder,
+            hud_form_rightborder,
+            hud_form_bottomleft,
+            hud_form_bottomseam,
+            hud_form_bottomright);
+            f.IsVisible = true;
+            Multiline lb;
 
             Button b1, b2, b3, b4, b5, b6, b7, b8, b9, b0,
-                bex, bdiv, bmul, bsub, bsum, 
+                bex, bdiv, bmul, bsub, bsum,
                 er;
 
-
+            var buttonx = 50;
+            var buttony = 40;
             f.AddNewControl(
-                lb = new Label(10, 10, 140, 30) { Font = font1 },
-                er = new Button(160, 10, 40, 30) { Text = "<=" },
-                b1 = new Button(10, 50, 40, 40) { Text = "1" },
-                b2 = new Button(60, 50, 40, 40) { Text = "2" },
-                b3 = new Button(110, 50, 40, 40) { Text = "3" },
-                b4 = new Button(10, 100, 40, 40) { Text = "4" },
-                b5 = new Button(60, 100, 40, 40) { Text = "5" },
-                b6 = new Button(110, 100, 40, 40) { Text = "6" },
-                b7 = new Button(10, 150, 40, 40) { Text = "7" },
-                b8 = new Button(60, 150, 40, 40) { Text = "8" },
-                b9 = new Button(110, 150, 40, 40) { Text = "9" },
-                b0 = new Button(10, 200, 90, 40) { Text = "0" },
-                bex = new Button(110, 200, 40, 40) { Text = "=" },
-                bdiv = new Button(160, 50, 40, 40) { Text = "/" },
-                bmul = new Button(160, 100, 40, 40) { Text = "*" },
-                bsub = new Button(160, 150, 40, 40) { Text = "-" },
-                bsum = new Button(160, 200, 40, 40) { Text = "+" }
+                lb = new Multiline(buttonx + 10, buttony + 10, 140, 30) { Font = font1 },
+                er = new Button(buttonx + 160, buttony + 10, 40, 30) { Text = "<=" },
+                b1 = new Button(buttonx + 10, buttony + 50, 40, 40) { Text = "1" },
+                b2 = new Button(buttonx + 60, buttony + 50, 40, 40) { Text = "2" },
+                b3 = new Button(buttonx + 110, buttony + 50, 40, 40) { Text = "3" },
+                b4 = new Button(buttonx + 10, buttony + 100, 40, 40) { Text = "4" },
+                b5 = new Button(buttonx + 60, buttony + 100, 40, 40) { Text = "5" },
+                b6 = new Button(buttonx + 110, buttony + 100, 40, 40) { Text = "6" },
+                b7 = new Button(buttonx + 10, buttony + 150, 40, 40) { Text = "7" },
+                b8 = new Button(buttonx + 60, buttony + 150, 40, 40) { Text = "8" },
+                b9 = new Button(buttonx + 110, buttony + 150, 40, 40) { Text = "9" },
+                b0 = new Button(buttonx + 10, buttony + 200, 90, 40) { Text = "0" },
+                bex = new Button(buttonx + 110, buttony + 200, 40, 40) { Text = "=" },
+                bdiv = new Button(buttonx + 160, buttony + 50, 40, 40) { Text = "/" },
+                bmul = new Button(buttonx + 160, buttony + 100, 40, 40) { Text = "*" },
+                bsub = new Button(buttonx + 160, buttony + 150, 40, 40) { Text = "-" },
+                bsum = new Button(buttonx + 160, buttony + 200, 40, 40) { Text = "+" }
                 );
 
             lb.Text = "0";
@@ -157,7 +175,7 @@ namespace Crux
                 if (lb.Text == "0") lb.Text = n.Text;
                 else lb.Append = n.Text;
             });
-            
+
             acts.ForEach(n => n.OnLeftClick += delegate
             {
                 if (sel == null && lb.Text.Length > 0)
@@ -187,6 +205,18 @@ namespace Crux
 
         // Textures
         public static Texture2D pixel;
+        public static Texture2D form_layout;
+
+        public static Texture2D
+            hud_formbase,
+            hud_form_headname,
+            hud_form_headseam,
+            hud_form_headend,
+            hud_form_leftborder,
+            hud_form_rightborder,
+            hud_form_bottomleft,
+            hud_form_bottomseam,
+            hud_form_bottomright;
 
         // Fonts
         public static SpriteFont font, font1;
@@ -202,8 +232,24 @@ namespace Crux
 
             #endregion
 
+            #region Textures
+
             pixel = new Texture2D(graphics.GraphicsDevice, 1, 1);
             pixel.SetData(new Color[] { Color.White });
+
+
+            { // TODO: Form Layout
+                hud_formbase = Content.Load<Texture2D>("images\\form_layout");
+                hud_form_headname = CutOut(hud_formbase, new Rectangle(1, 1, 230, 42));
+                hud_form_headseam = CutOut(hud_formbase, new Rectangle(232, 1, 1, 42));
+                hud_form_headend = CutOut(hud_formbase, new Rectangle(234, 1, 60, 42));
+                hud_form_leftborder = CutOut(hud_formbase, new Rectangle(1, 44, 10, 1));
+                hud_form_rightborder = CutOut(hud_formbase, new Rectangle(284, 44, 10, 1));
+                hud_form_bottomleft = CutOut(hud_formbase, new Rectangle(1, 46, 230, 20));
+                hud_form_bottomseam = CutOut(hud_formbase, new Rectangle(232, 46, 1, 20));
+                hud_form_bottomright = CutOut(hud_formbase, new Rectangle(234, 46, 60, 20));
+            }
+            #endregion
 
             doc.innerHTML(htdoc);
 
@@ -217,7 +263,7 @@ namespace Crux
         public static MouseState MS = new MouseState();
 
         #endregion
-        
+
 
         public static TextBuilder pssb;
         string htdoc =
@@ -243,7 +289,7 @@ namespace Crux
             MessageBox.Update();
 
             FormManager.Update();
-            
+
 
             base.Update(gt = gameTime);
         }

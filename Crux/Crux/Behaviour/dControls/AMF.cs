@@ -35,6 +35,7 @@ namespace Crux.dControls
         public List<Keys> KeysHandled = Control.GetPressedKeys().ToList();
     }
 
+    #region Message Box
     public static class MessageBox
     {
         static int
@@ -58,7 +59,7 @@ namespace Crux.dControls
             form.IsVisible = !true;
             form.IsIndepend = true;
 
-            var cl = new Label(0, 0, form.Width, 50);
+            var cl = new Multiline(0, 0, form.Width, 50);
             form.AddNewControl(cl);
 
             var cb = new Button(0, form.Height - 20, form.Width, 20)
@@ -87,14 +88,16 @@ namespace Crux.dControls
         {
             var tsize = font.MeasureString(message);
             crtw = Math.Max((int)tsize.X + 20, crtw);
-            var l = form.GetControl(1) as Label;
+            var l = form.GetControl(1) as Multiline;
             l.Text = message;
             form.IsActive = form.IsVisible = true;
         }
 
 
     }
+    #endregion
 
+    #region FormManager
     public static class FormManager
     {
         public static Dictionary<string, Form> GlobalForms = new Dictionary<string, Form>();
@@ -142,6 +145,7 @@ namespace Crux.dControls
             return GlobalForms.Any(n => n.Value.IsHovering);
         }
     }
+    #endregion
 
     /// <summary>
     /// Represents basic complex form with aggregate of specified interactive elements.
@@ -217,6 +221,30 @@ namespace Crux.dControls
 
         #endregion
 
+        public Texture2D
+
+            form_lefttop,
+            form_top,
+            form_righttop,
+            form_left,
+            form_right,
+            form_leftbottom,
+            form_bottom,
+            form_rightbottom;
+
+        bool hasLayout;
+        public void CreateLayout(Texture2D lefttop, Texture2D top, Texture2D rigttop, Texture2D left, Texture2D right, Texture2D leftbottom, Texture2D bottom, Texture2D rightbottom)
+        {
+            form_lefttop = lefttop;
+            form_top = top;
+            form_righttop = rigttop;
+            form_left = left;
+            form_right = right;
+            form_leftbottom = leftbottom;
+            form_bottom = bottom;
+            form_rightbottom = rightbottom;
+            hasLayout = true;
+        }
         /// <summary>
         /// Called after form created.
         /// </summary>
@@ -506,12 +534,36 @@ namespace Crux.dControls
             if (IsVisible)
             {
                 Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)X, (int)Y), new Point((int)Width, (int)Height));
-                Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer, null, null);
+                Batch.Begin(SpriteSortMode.Deferred/*, null, null, null, rasterizer, null, null*/);
                 {
                     Batch.GraphicsDevice.ScissorRectangle = Bounds;
-                    Batch.DrawFill(Bounds, IsActive ? FormColor : (IsFadable ? new Color(255, 255, 255, 200) : FormColor));
-                    if (IsActive && false) // DBG: Debug
-                        Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
+                    if (!hasLayout)
+                    {
+                        Batch.DrawFill(Bounds, IsActive ? FormColor : (IsFadable ? new Color(255, 255, 255, 200) : FormColor));
+                        if (IsActive && false) // DBG: Debug
+                            Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
+                    }
+                    else
+                    {
+                        var fw = Bounds.Width;
+                        var fh = Bounds.Height;
+                        var top = fw - form_lefttop.Width - form_righttop.Width;
+                        var bottom = fw - form_lefttop.Width - form_righttop.Width;
+
+                        Batch.DrawFill(Bounds, new Color(15, 15, 15));
+
+                        Batch.Draw(form_lefttop, Bounds.Location.ToVector2(), Color.White);
+                        Batch.Draw(form_top, new Rectangle(Bounds.X + form_lefttop.Width, Bounds.Y, fw - form_lefttop.Width - form_righttop.Width, form_top.Height), Color.White);
+                        Batch.Draw(form_righttop, new Vector2(Bounds.X + form_lefttop.Width + top, Bounds.Y), Color.White);
+
+                        Batch.Draw(form_left, new Rectangle(Bounds.X, Bounds.Y + form_lefttop.Height, form_left.Width, fh - form_leftbottom.Height - form_lefttop.Height), Color.White);
+                        Batch.Draw(form_right, new Rectangle(Bounds.X + fw - form_right.Width, Bounds.Y + form_lefttop.Height, form_right.Width, fh - form_righttop.Height), Color.White);
+
+                        Batch.Draw(form_leftbottom, new Vector2(Bounds.X, Bounds.Y + fh - form_leftbottom.Height), Color.White);
+                        Batch.Draw(form_bottom, new Rectangle(Bounds.X + form_leftbottom.Width, Bounds.Y + fh - form_bottom.Height, fw - form_leftbottom.Width - form_rightbottom.Width, form_bottom.Height), Color.White);
+                        Batch.Draw(form_rightbottom, new Vector2(Bounds.X + form_leftbottom.Width + bottom, Bounds.Y + fh - form_rightbottom.Height), Color.White);
+
+                    }
                 }
                 Batch.End();
 
@@ -528,7 +580,7 @@ namespace Crux.dControls
                         //Batch.End();
                     }
                 }
-                
+
 
                 Batch.Begin(SpriteSortMode.Deferred, null, null, null);
                 {
@@ -539,10 +591,10 @@ namespace Crux.dControls
                     //Batch.DrawFill(Rectangle(X + Width - 18 - 18 - 18 - 6, Y + 4 + 4, 16, 16), new Color(0, 115, 230));
                     if (IsResizable)
                     {
-                        Batch.DrawFill(LeftBorder, LBL ? new Color(75, 75, 75, 255) : LBH ? new Color(155, 155, 155, 255) : FormColor);
-                        Batch.DrawFill(TopBorder, TBL ? new Color(75, 75, 75, 255) : TBH ? new Color(155, 155, 155, 255) : FormColor);
-                        Batch.DrawFill(RightBorder, RBL ? new Color(75, 75, 75, 255) : RBH ? new Color(155, 155, 155, 255) : FormColor);
-                        Batch.DrawFill(BottomBorder, BBL ? new Color(75, 75, 75, 255) : BBH ? new Color(155, 155, 155, 255) : FormColor);
+                        Batch.DrawFill(LeftBorder, (LBL ? new Color(75, 75, 75, 255) : LBH ? new Color(155, 155, 155, 255) : FormColor) * (hasLayout ? 0.3f : 1f));
+                        Batch.DrawFill(TopBorder, (TBL ? new Color(75, 75, 75, 255) : TBH ? new Color(155, 155, 155, 255) : FormColor) * (hasLayout ? 0.3f : 1f));
+                        Batch.DrawFill(RightBorder, (RBL ? new Color(75, 75, 75, 255) : RBH ? new Color(155, 155, 155, 255) : FormColor) * (hasLayout ? 0.3f : 1f));
+                        Batch.DrawFill(BottomBorder, (BBL ? new Color(75, 75, 75, 255) : BBH ? new Color(155, 155, 155, 255) : FormColor) * (hasLayout ? 0.3f : 1f));
                     }
                 }
                 Batch.End();
