@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using static Crux.Simplex;
-using static Crux.Core;
+using static CruxNS.Simplex;
+using static CruxNS.Core;
 
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux.dControls
+namespace CruxNS.dControls
 {
     /// <summary>
     /// Base interface that describes updatable and drawable Controls.
@@ -59,7 +59,7 @@ namespace Crux.dControls
             form.IsVisible = !true;
             form.IsIndepend = true;
 
-            var cl = new Multiline(0, 0, form.Width, 50);
+            var cl = new Label(0, 0, form.Width, 50);
             form.AddNewControl(cl);
 
             var cb = new Button(0, form.Height - 20, form.Width, 20)
@@ -88,7 +88,7 @@ namespace Crux.dControls
         {
             var tsize = font.MeasureString(message);
             crtw = Math.Max((int)tsize.X + 20, crtw);
-            var l = form.GetControl(1) as Multiline;
+            var l = form.GetControl(1) as Label;
             l.Text = message;
             form.IsActive = form.IsVisible = true;
         }
@@ -269,6 +269,9 @@ namespace Crux.dControls
                 Invalidate();
             };
 
+            #region Debug
+            dbg_initsTotal++;
+            #endregion
         }
         /// <summary>
         /// Deletes a Control that has specified id.

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Text.RegularExpressions.Regex;
 
-namespace Crux
+namespace CruxNS
 {
     public partial class ToolSet : System.Windows.Forms.Form
     {

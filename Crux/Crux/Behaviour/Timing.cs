@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using static Crux.Simplex;
-using static Crux.Core;
+using static CruxNS.Simplex;
+using static CruxNS.Core;
 using static System.Math;
 
-namespace Crux
+namespace CruxNS
 {
     public struct Timer
     {

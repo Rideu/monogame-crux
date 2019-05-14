@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System;
 
-namespace Crux
+namespace CruxNS
 {
     public static class Control
     {

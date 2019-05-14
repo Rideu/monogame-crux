@@ -3,13 +3,13 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using static Crux.Simplex;
+using static CruxNS.Simplex;
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux.dControls
+namespace CruxNS.dControls
 {
     /// <summary>
     /// Base control class.
@@ -126,6 +126,7 @@ namespace Crux.dControls
 
         public void UpdateBounds()
         {
+            dbg_boundsUpdates++;
             X = Owner.X + InitialPosition.X;
             Y = Owner.Y + InitialPosition.Y;
             Bounds = Rectangle(X, Y, Width, Height);
@@ -135,8 +136,11 @@ namespace Crux.dControls
         /// Describes update-per-frame logic.
         /// </summary>
         public abstract void Update();
+
         public virtual void EventProcessor()
         {
+            
+            dbg_eventUpdates++;
             if (F_Focus != IsActive)
             {
                 if (F_Focus == false && IsActive == true)
@@ -230,8 +234,48 @@ namespace Crux.dControls
         {
             Dispose(true);
             // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
+            GC.SuppressFinalize(this);
         }
         #endregion
+
+        internal protected static int dbg_boundsUpdates;
+        internal protected static int dbg_eventUpdates;
+        internal protected static int dbg_boundsUpdatesTotal;
+        internal protected static int dbg_eventUpdatesTotal;
+        internal protected static int dbg_initsTotal;
+
+    }
+
+    partial class DebugDevice
+    {
+        static bool updCalled;
+        static int bu, eu;
+        static SpriteFont dbgFont = Core.font;
+        public static void Update()
+        {
+            uControl.dbg_boundsUpdatesTotal += uControl.dbg_boundsUpdates;
+            uControl.dbg_eventUpdatesTotal += uControl.dbg_eventUpdates;
+            bu = uControl.dbg_boundsUpdates;
+            uControl.dbg_boundsUpdates = 0;
+            eu = uControl.dbg_eventUpdates;
+            uControl.dbg_eventUpdates = 0;
+            updCalled = true;
+        }
+
+        public static void Draw(SpriteBatch batch)
+        {
+            batch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, null);
+            if (updCalled)
+            {
+                batch.DrawString(dbgFont, GetDebugInfo(), new Vector2(10), Color.White);
+            }
+            batch.End();
+            updCalled = false;
+        }
+        
+        public static string GetDebugInfo()
+        {
+            return $"iT: {uControl.dbg_initsTotal} \nbU: {bu} eU: {eu} \nbUT: {uControl.dbg_boundsUpdatesTotal} eUT: {uControl.dbg_eventUpdatesTotal}";
+        }
     }
 }

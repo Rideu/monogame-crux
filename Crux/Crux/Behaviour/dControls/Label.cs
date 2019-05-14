@@ -1,16 +1,16 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using static Crux.Simplex;
+using static CruxNS.Simplex;
 
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux.dControls
+namespace CruxNS.dControls
 {
-    public class Multiline : uControl
+    public class Label : uControl
     {
         #region Fields        
         private uControl OwnerField;
@@ -23,11 +23,23 @@ namespace Crux.dControls
         public override Align CurrentAlign { set { align = value; } get => align; }
 
         SpriteFont font = Core.font;
-        public SpriteFont Font { set { font = value; } get { return font; } }
-
+        public SpriteFont Font
+        {
+            set
+            {
+                if (text != null && !string.IsNullOrEmpty(text.Text))
+                {
+                    text.Font = value;
+                    text.UpdateText(text.Text);
+                }
+            }
+            get => font;
+        }
+        public float FontSize { set => text.FontSize = value; get => text.FontSize; }
+        public bool Multiline { set { text.Multiline = value; } get => text.Multiline; }
 
         //TODO: wrap
-        public new TextBuilder text;
+        new TextBuilder text;
         string tc;
         public override string Text
         {
@@ -50,17 +62,17 @@ namespace Crux.dControls
         public override event Action OnUpdate;
         #endregion
 
-        public Multiline(Vector4 posform)
+        public Label(Vector4 posform)
         {
             X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W;
         }
 
-        public Multiline(Vector2 pos, Vector2 size)
+        public Label(Vector2 pos, Vector2 size)
         {
             X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y;
         }
 
-        public Multiline(float x, float y, float width, float height)
+        public Label(float x, float y, float width, float height)
         {
             X = x; Y = y; Width = width; Height = height;
         }
@@ -181,7 +193,7 @@ namespace Crux.dControls
             }
             Batch.End();
 
-            Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-1,-1);
+            Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-1, -1);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 var h = (int)(Height * (float.IsInfinity(Height / ts.Y) ? 1 : Height / ts.Y));

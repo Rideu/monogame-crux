@@ -1,15 +1,15 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using static Crux.Simplex;
-using static Crux.Core;
+using static CruxNS.Simplex;
+using static CruxNS.Core;
 
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux.dControls
+namespace CruxNS.dControls
 {
     public class CheckBox : uControl
     {

@@ -59,6 +59,7 @@
     <Compile Include="Behaviour\dControls\Panel.cs" />
     <Compile Include="Behaviour\dControls\Slider.cs" />
     <Compile Include="Behaviour\dControls\Textbox.cs" />
+    <Compile Include="Behaviour\DebugDevice.cs" />
     <Compile Include="Behaviour\IUnify.cs" />
     <Compile Include="Behaviour\Simplex.cs" />
     <Compile Include="Behaviour\Timing.cs" />

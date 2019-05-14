@@ -6,10 +6,10 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 using System;
 using static System.Math;
-using static Crux.Core;
+using static CruxNS.Core;
 using sRectangle = Microsoft.Xna.Framework.Rectangle;
 
-namespace Crux
+namespace CruxNS
 {
     public class u_ps
     {
@@ -322,7 +322,7 @@ namespace Crux
         public static Vector2 Snap(this Vector2 v) => v.ToPoint().ToVector2();
 
         public static Vector3 GetVector3(this Vector2 v) => new Vector3(v, 0);
-        
+
         #endregion
 
         #region Rectangle
@@ -345,6 +345,20 @@ namespace Crux
 
         public static class Palette
         {
+            public static Color ToColor(string hex)
+            {
+                return new Color(
+                    int.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.AllowHexSpecifier),
+                    int.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.AllowHexSpecifier),
+                    int.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.AllowHexSpecifier),
+                    int.Parse(hex.Substring(6, 2), System.Globalization.NumberStyles.AllowHexSpecifier));
+            }
+
+            public static Color ToColor(uint val)
+            {
+                return new Color(val);
+            }
+
             public static Color LightenGray => new Color(175, 175, 175, 255);
 
             public static Color DarkenGray => new Color(85, 85, 85, 255);

@@ -10,12 +10,12 @@ using WinForms = System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Crux.dControls;
+using CruxNS.dControls;
 
 using static System.Math;
-using static Crux.Simplex;
+using static CruxNS.Simplex;
 
-namespace Crux
+namespace CruxNS
 {
     /// <summary>
     /// This is the main type for your game.
@@ -34,26 +34,17 @@ namespace Crux
             graphics = new GraphicsDeviceManager(this);
             graphics.PreferredBackBufferWidth = 1280;
             graphics.PreferredBackBufferHeight = 720;
-            graphics.GraphicsProfile = GraphicsProfile.Reach;
+            graphics.GraphicsProfile = GraphicsProfile.HiDef;
             WinSize = new Point(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
             Content.RootDirectory = "Content";
-            Window.TextInput += Window_TextInput;
             GameForm = (WinForms.Form)WinForms.Form.FromHandle(Window.Handle);
             var scr = WinForms.Screen.PrimaryScreen.WorkingArea.Size;
             Window.Position = new Point(scr.Width / 2 - graphics.PreferredBackBufferWidth / 2, scr.Height / 2 - graphics.PreferredBackBufferHeight / 2);
             PrimaryWindow = Window;
 
             ts = new ToolSet();
-            ts.Show();
+            //ts.Show();
         }
-
-
-        private void Window_TextInput(object sender, TextInputEventArgs e)
-        {
-
-        }
-
-
 
         protected override void Initialize()
         {
@@ -73,19 +64,19 @@ namespace Crux
             //{
             //    Text = "Button2"
             //});
-            f.AddNewControl(ml = new Multiline(20, 100, 520, 280)
-            {
-                Font = font1
-            });
+            f.AddNewControl(ml = new Label(20, 55, 520, 280));
+            
+            (ml as Label).Text = 
+@"How to... {#(65,160,216):p}Warp{@p}:
+^n ^n1. Warp {#(65,160,216):p,h}tech{@p} is commonly used to travel between star systems, but for certain amount of energy or specific fuel to feed your warp core. Press Galaxy Map button (M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
+^n ^n2. You also can initiate a wave overlap with the ship that has slower warp core, allowing you to stick with other ships during the travel. When this is possible, an notice appears, which displays current distance to the ship and possibility to do this maneuver: it uses significant amount of energy depending on initial warp jump point. 
+^n ^nHow to... Build:
+^n ^n1. Buildings are primary things that makes the world live, cycle and expand. They are subdivided by their functionality: common factories, research laboratories and energy stations. All of them are consuming various resources, depending on how it is organized and supplied. To manage its work in more simple manner, node mechanic is used. Each node requires specific amount of workers and energy to function. There are three types of nodes in the game: source, processing and storage. Source nodes are consuming local resources depending on its type (mining or farming). Processing nodes are used to process incoming resources and provide the result to the next ones. Storage nodes sends all the incoming resources to the planetary storage to be distributed among other factories or for local sales or intake resources for continued processing. If there is a lack of workers or energy, the production will be limited or, in worst case, disabled, so dependency compliance and optimization are very important. If node's inner storage is overfilled, it can cause blocking state - incoming connections are filling up, keep consuming energy and spending working time, calling continued blocking chain, so the losses are increasing.
+^n ^nBuilding sizes can be four types: small, large, complex or arcological. Small ones can contain up to 5 nodes plus one for storage, large can contain up to 20, complex up to 70 and arcological up to 160 nodes.
+^n ^n2. The common factories can be built on wide range of surfaces, even on non-atmosphere planets or asteroids. The size is varied by small (up to 6 processing nodes) They need abundant amount of workers and energy.
+";
 
-            //f.AddNewControl(new Textbox(20, 350, 100, 20)
-            //{
-            //    Font = font1
-            //});
-            //f.AddNewControl(mp = new Panel(20, 380, 260, 80)
-            //{
-
-            //});
+            (ml as Label).Font = font1;
             f.CreateLayout(hud_form_headname,
             hud_form_headseam,
             hud_form_headend,
@@ -94,27 +85,12 @@ namespace Crux
             hud_form_bottomleft,
             hud_form_bottomseam,
             hud_form_bottomright);
-            (ml as Multiline).Text = 
-@"How to reference (Proto)
-^n ^nHow to... {#(65,160,216):p}Warp{@p}:
-^n ^n1. Warp {#(65,160,216):p,h}tech is commonly{@p} used to travel between star systems, but for certain amount of energy or specific fuel to feed your warp core. Press Galaxy Map button (M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
-^n ^n2. You also can initiate a wave overlap with the ship that has slower warp core, allowing you to stick with other ships during the travel. When this is possible, an notice appears, which displays current distance to the ship and possibility to do this maneuver: it uses significant amount of energy depending on initial warp jump point. 
-^n ^nHow to... Build:
-^n ^n1. Buildings are primary things that makes the world live, cycle and expand. They are subdivided by their functionality: common factories, research laboratories and energy stations. All of them are consuming various resources, depending on how it is organized and supplied. To manage its work in more simple manner, node mechanic is used. Each node requires specific amount of workers and energy to function. There are three types of nodes in the game: source, processing and storage. Source nodes are consuming local resources depending on its type (mining or farming). Processing nodes are used to process incoming resources and provide the result to the next ones. Storage nodes sends all the incoming resources to the planetary storage to be distributed among other factories or for local sales or intake resources for continued processing. If there is a lack of workers or energy, the production will be limited or, in worst case, disabled, so dependency compliance and optimization are very important. If node's inner storage is overfilled, it can cause blocking state - incoming connections are filling up, keep consuming energy and spending working time, calling continued blocking chain, so the losses are increasing.
-^n ^nBuilding sizes can be four types: small, large, complex or arcological. Small ones can contain up to 5 nodes plus one for storage, large can contain up to 20, complex up to 70 and arcological up to 160 nodes.
-^n ^n2. The common factories can be built on wide range of surfaces, even on non-atmosphere planets or asteroids. The size is varied by small (up to 6 processing nodes) They need abundant amount of workers and energy.
-";
-            //(mc as Button).OnLeftClick += delegate { MessageBox.Show("Clock!"); };
-            //mp.AddNewControl(new Button(10, 10, 60, 20, new Color(140, 140, 140)) { Text = "Button3", });
 
-            //mp.AddNewControl(ml = new Label(10, 40, 60, 20)
-            //{ Font = font1, });
-            //ml.Text = "Label2";
-
-            //mp.AddNewControl(ml = new Textbox(10, 70, 60, 20)
-            //{ Font = font1, });
-            //ml.Text = "Textbox2";
-
+            f.AddNewControl(ml = new Label(7, 10, 170, 20)
+            {
+                Font = font1
+            });
+            ml.Text = "{#(238,195,114):p}How to Reference{@p}";
             FormManager.AddForm("MainForm", f);
             f = new Form(340, 100, 310, 320, new Color(40, 40, 40))
             {
@@ -129,7 +105,7 @@ namespace Crux
             hud_form_bottomseam,
             hud_form_bottomright);
             f.IsVisible = true;
-            Multiline lb;
+            Label lb;
 
             Button b1, b2, b3, b4, b5, b6, b7, b8, b9, b0,
                 bex, bdiv, bmul, bsub, bsum,
@@ -138,7 +114,7 @@ namespace Crux
             var buttonx = 50;
             var buttony = 40;
             f.AddNewControl(
-                lb = new Multiline(buttonx + 10, buttony + 10, 140, 30) { Font = font1 },
+                lb = new Label(buttonx + 10, buttony + 10, 140, 30) { Font = font1 },
                 er = new Button(buttonx + 160, buttony + 10, 40, 30) { Text = "<=" },
                 b1 = new Button(buttonx + 10, buttony + 50, 40, 40) { Text = "1" },
                 b2 = new Button(buttonx + 60, buttony + 50, 40, 40) { Text = "2" },
@@ -290,6 +266,7 @@ namespace Crux
 
             FormManager.Update();
 
+            DebugDevice.Update();
 
             base.Update(gt = gameTime);
         }
@@ -313,11 +290,13 @@ namespace Crux
                 //spriteBatch.Draw(font.Texture, new Vector2(300), Color.White); 
             }
             spriteBatch.End();
-            MessageBox.Draw();
-            graphics.GraphicsProfile = GraphicsProfile.HiDef;
+            //MessageBox.Draw();
+
             FormManager.Draw();
-            graphics.GraphicsProfile = GraphicsProfile.Reach;
+            
+            DebugDevice.Draw(spriteBatch);
             base.Draw(gameTime);
         }
+        int s0;
     }
 }

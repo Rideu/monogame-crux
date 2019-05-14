@@ -13,7 +13,7 @@ using Microsoft.Xna.Framework.Input;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux
+namespace CruxNS
 {
     public interface IEntity
     {
