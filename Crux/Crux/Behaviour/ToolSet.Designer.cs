@@ -1,4 +1,4 @@
-﻿namespace CruxNS
+﻿namespace Crux
 {
     partial class ToolSet
     {

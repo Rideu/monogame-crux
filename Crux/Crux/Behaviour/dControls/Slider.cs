@@ -2,14 +2,14 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using static CruxNS.Simplex;
+using static Crux.Simplex;
 
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace CruxNS.dControls
+namespace Crux.dControls
 {
     public class Slider : uControl
     {
@@ -76,10 +76,10 @@ namespace CruxNS.dControls
 
         internal override void Initialize()
         {
-            ID = Owner.GetControlsNum + 1;
+            ID = Owner.GetControlsCount + 1;
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
             // Assemble form texture here.
-            Tex = new Texture2D(Owner.Batch.GraphicsDevice, (int)Width, (int)Height);
+            Tex = new Texture2D(Batch.GraphicsDevice, (int)Width, (int)Height);
             var layer1 = new Color[(int)Width * (int)Height];
             for (int i = 0; i < layer1.Length; i++)
                 if ((i % Width == Width - 1) || (i % Width == 0) || (i > layer1.Length - Width) || (i < Width))
@@ -91,7 +91,7 @@ namespace CruxNS.dControls
             {
                 int w = (int)(Width * .02f) == 0 ? (int)(Width * .02f) + 1 : (int)(Width * .02f);
                 int h = (int)Height + 2;
-                slider = new Texture2D(Owner.Batch.GraphicsDevice, w, h);//down+up
+                slider = new Texture2D(Batch.GraphicsDevice, w, h);//down+up
                 layer1 = new Color[w * h];
                 for (int i = 0; i < layer1.Length; i++)
                     if ((i % Width == Width - 1) || (i % Width == 0) || (i > layer1.Length - Width) || (i < Width))
@@ -103,7 +103,7 @@ namespace CruxNS.dControls
             {
                 int w = (int)(Width + 2);
                 int h = (int)(Height * 0.02f) == 0 ? (int)(Height * 0.02f) + 1 : (int)(Height * 0.02f);
-                slider = new Texture2D(Owner.Batch.GraphicsDevice, w, h);//down+up
+                slider = new Texture2D(Batch.GraphicsDevice, w, h);//down+up
                 layer1 = new Color[w * h];
                 for (int i = 0; i < layer1.Length; i++)
                     if ((i % Width == Width - 1) || (i % Width == 0) || (i > layer1.Length - Width) || (i < Width))

@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System;
 
-namespace CruxNS
+namespace Crux
 {
     public static class Control
     {
@@ -32,7 +32,7 @@ namespace CruxNS
             WheelVal = NMW - OMW;
         }
 
-        public static bool MouseHoverOverG(Rectangle zone) => (zone.Contains(Core.GlobalMousePos.Pos));
+        public static bool MouseHoverOverG(Rectangle zone) => (zone.Contains(Core.MS.Position));
 
         public static bool MouseHoverOverTex(Texture2D tex, Vector2 offset) => (Simplex.OffsettedTexture(tex, offset).Contains(Mouse.GetState().Position.ToVector2()));
 

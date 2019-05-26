@@ -10,12 +10,12 @@ using WinForms = System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using CruxNS.dControls;
+using Crux.dControls;
 
 using static System.Math;
-using static CruxNS.Simplex;
+using static Crux.Simplex;
 
-namespace CruxNS
+namespace Crux
 {
     /// <summary>
     /// This is the main type for your game.
@@ -50,6 +50,8 @@ namespace CruxNS
         {
             base.Initialize();
             IsMouseVisible = true;
+
+            uControl.SetDefaultFont = font1;
             Form f = new Form(30, 100, 550, 500, new Color(70, 70, 70))
             {
                 IsResizable = true,
@@ -64,11 +66,11 @@ namespace CruxNS
             //{
             //    Text = "Button2"
             //});
-            f.AddNewControl(ml = new Label(20, 55, 520, 280));
+            f.AddNewControl(ml = new Textarea(20, 55, 520, 280));
             
-            (ml as Label).Text = 
+            (ml as Textarea).Text = 
 @"How to... {#(65,160,216):p}Warp{@p}:
-^n ^n1. Warp {#(65,160,216):p,h}tech{@p} is commonly used to travel between star systems, but for certain amount of energy or specific fuel to feed your warp core. Press Galaxy Map button (M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
+^n ^n1. Warp {#(65,160,216):h}tech{@p} is commonly used to travel between star systems, but for certain amount of energy or specific fuel to feed your warp core. Press Galaxy Map button (M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
 ^n ^n2. You also can initiate a wave overlap with the ship that has slower warp core, allowing you to stick with other ships during the travel. When this is possible, an notice appears, which displays current distance to the ship and possibility to do this maneuver: it uses significant amount of energy depending on initial warp jump point. 
 ^n ^nHow to... Build:
 ^n ^n1. Buildings are primary things that makes the world live, cycle and expand. They are subdivided by their functionality: common factories, research laboratories and energy stations. All of them are consuming various resources, depending on how it is organized and supplied. To manage its work in more simple manner, node mechanic is used. Each node requires specific amount of workers and energy to function. There are three types of nodes in the game: source, processing and storage. Source nodes are consuming local resources depending on its type (mining or farming). Processing nodes are used to process incoming resources and provide the result to the next ones. Storage nodes sends all the incoming resources to the planetary storage to be distributed among other factories or for local sales or intake resources for continued processing. If there is a lack of workers or energy, the production will be limited or, in worst case, disabled, so dependency compliance and optimization are very important. If node's inner storage is overfilled, it can cause blocking state - incoming connections are filling up, keep consuming energy and spending working time, calling continued blocking chain, so the losses are increasing.
@@ -76,7 +78,7 @@ namespace CruxNS
 ^n ^n2. The common factories can be built on wide range of surfaces, even on non-atmosphere planets or asteroids. The size is varied by small (up to 6 processing nodes) They need abundant amount of workers and energy.
 ";
 
-            (ml as Label).Font = font1;
+            (ml as Textarea).Font = font1;
             f.CreateLayout(hud_form_headname,
             hud_form_headseam,
             hud_form_headend,
@@ -86,11 +88,14 @@ namespace CruxNS
             hud_form_bottomseam,
             hud_form_bottomright);
 
-            f.AddNewControl(ml = new Label(7, 10, 170, 20)
-            {
-                Font = font1
-            });
-            ml.Text = "{#(238,195,114):p}How to Reference{@p}";
+            f.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 0.9f, ForeColor = new Color(238, 195, 114)  });
+
+            //f.AddNewControl(ml = new Textarea(7, 10, 170, 20)
+            //{
+            //    Font = font1
+            //});
+             
+            //ml.Text = "{#(238,195,114):p}How to Reference{@p}";
             FormManager.AddForm("MainForm", f);
             f = new Form(340, 100, 310, 320, new Color(40, 40, 40))
             {
@@ -105,7 +110,7 @@ namespace CruxNS
             hud_form_bottomseam,
             hud_form_bottomright);
             f.IsVisible = true;
-            Label lb;
+            Textarea lb;
 
             Button b1, b2, b3, b4, b5, b6, b7, b8, b9, b0,
                 bex, bdiv, bmul, bsub, bsum,
@@ -114,7 +119,7 @@ namespace CruxNS
             var buttonx = 50;
             var buttony = 40;
             f.AddNewControl(
-                lb = new Label(buttonx + 10, buttony + 10, 140, 30) { Font = font1 },
+                lb = new Textarea(buttonx + 10, buttony + 10, 140, 30) { Font = font1 },
                 er = new Button(buttonx + 160, buttony + 10, 40, 30) { Text = "<=" },
                 b1 = new Button(buttonx + 10, buttony + 50, 40, 40) { Text = "1" },
                 b2 = new Button(buttonx + 60, buttony + 50, 40, 40) { Text = "2" },
@@ -177,6 +182,8 @@ namespace CruxNS
             };
 
             FormManager.AddForm("CalcForm", f);
+
+            Simplex.Init(GraphicsDevice);
         }
 
         // Textures
@@ -210,8 +217,8 @@ namespace CruxNS
 
             #region Textures
 
-            pixel = new Texture2D(graphics.GraphicsDevice, 1, 1);
-            pixel.SetData(new Color[] { Color.White });
+            //pixel = new Texture2D(graphics.GraphicsDevice, 1, 1);
+            //pixel.SetData(new Color[] { Color.White });
 
 
             { // TODO: Form Layout
@@ -234,8 +241,7 @@ namespace CruxNS
         }
 
         #region Service Globals
-
-        public static u_ps GlobalMousePos = new u_ps(0, 0);
+        
         public static MouseState MS = new MouseState();
 
         #endregion
@@ -258,11 +264,6 @@ namespace CruxNS
 
         protected override void Update(GameTime gameTime)
         {
-            MS = Mouse.GetState();
-            GlobalMousePos.Pos = MS.Position.ToVector2();
-            Control.Update();
-
-            MessageBox.Update();
 
             FormManager.Update();
 

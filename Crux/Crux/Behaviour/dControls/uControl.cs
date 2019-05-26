@@ -3,13 +3,13 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using static CruxNS.Simplex;
+using static Crux.Simplex;
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace CruxNS.dControls
+namespace Crux.dControls
 {
     /// <summary>
     /// Base control class.
@@ -17,6 +17,9 @@ namespace CruxNS.dControls
     [DebuggerDisplay("Name: {Name}")]
     public abstract class uControl : IControl, IDisposable
     {
+        public static SpriteFont SetDefaultFont { set => font = value; }
+        protected static SpriteFont font;
+
         /// <summary>
         /// Returns the owner of this element.
         /// </summary>
@@ -31,7 +34,7 @@ namespace CruxNS.dControls
         protected Texture2D Tex;
         protected Point InitialPosition;
         public Rectangle Bounds;
-        public Rectangle DrawingBounds => Bounds.Intersect(Owner.Bounds).Intersect(MainForm.Bounds);
+        public Rectangle DrawingBounds => Bounds.Intersect(Owner.Bounds).Intersect(MainForm.FillingArea);
         public float X, Y, Width, Height;
         public string Name => GetType().ToString() + " : " + Alias;
         internal protected string Alias;
@@ -72,7 +75,7 @@ namespace CruxNS.dControls
         #region Controls
 
         public List<uControl> Controls = new List<uControl>();
-        public int GetControlsNum => Controls.Count;
+        public int GetControlsCount => Controls.Count;
         /// <summary>
         /// Adds specified Control.
         /// </summary>
@@ -188,15 +191,17 @@ namespace CruxNS.dControls
             UpdateBounds();
         }
 
-        public SpriteBatch Batch = Core.spriteBatch;
+        public static SpriteBatch Batch = Core.spriteBatch;
 
         protected RasterizerState rasterizer = new RasterizerState()
         {
             ScissorTestEnable = true,
         };
 
+        // TODO: deprecated
         public Rectangle GetRelativeBounds() => Rectangle((X + Owner.X + (Owner.Owner == null ? 0 : Owner.Owner.X)), (Y + Owner.Y + (Owner.Owner == null ? 0 : Owner.Owner.Y)), Width, Height);
 
+        // TODO: deprecated
         public Point GetOwnerClipping() => new Point((int)Width + (int)(Owner.Width - Width - X), (int)Height + (int)(Owner.Height - Height - Y));
 
         /// <summary>

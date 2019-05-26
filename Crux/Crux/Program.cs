@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CruxNS
+namespace Crux
 {
 #if WINDOWS || LINUX
     /// <summary>

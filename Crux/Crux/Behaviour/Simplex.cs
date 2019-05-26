@@ -5,73 +5,12 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 using System;
-using static System.Math;
-using static CruxNS.Core;
 using sRectangle = Microsoft.Xna.Framework.Rectangle;
+using static System.Math;
+using static Crux.Core;
 
-namespace CruxNS
+namespace Crux
 {
-    public class u_ps
-    {
-        public Vector2 Pos;
-        public Vector2 ToScreen => -((CenteratorDevice - Pos) - LocalDrawingBounds.Center.ToVector2());
-
-        public Vector2 Pred;
-        public float Angle;
-
-        public float Scale = 1f;
-        public Vector2 VectorScale = new Vector2(1f);
-
-        public float Speed;
-        public Color DrawColor = Color.White;
-        protected Color BaseColor;
-        public Rectangle TexEqBounds;
-
-        Texture2D Tex;
-        public Texture2D Texture { get => Tex; set { Tex = value; TexEqBounds.Size = new Point(Max(value.Bounds.Size.X, value.Bounds.Size.Y)); tex_size = value.Bounds.Size; } }
-
-        Point tex_size;
-        public Point TextureSize { get => TexEqBounds.Size; }
-
-        public bool IsSelected;
-        public bool IsClicked;
-        public bool DrawProp;
-
-        public u_ps(float X, float Y)
-        {
-            Pos = new Vector2(X, Y);
-        }
-
-        public u_ps(Vector2 v)
-        {
-            Pos = v;
-        }
-
-        public u_ps(Vector2 v, Texture2D tex)
-        {
-            //GlobalObjects.Add(this);
-            if (tex != null)
-                Texture = tex;
-            else
-            {
-
-            }
-            Pos = v;
-        }
-
-        public virtual void Update()
-        {
-            Pos += Pred;
-            //Pos = v;
-        }
-
-        public static implicit operator Vector2(u_ps p) => p.Pos;
-
-
-        public static implicit operator string(u_ps p) => p.Pos.ToString();
-
-    }
-
 
     public static class Simplex
     {
@@ -81,16 +20,15 @@ namespace CruxNS
         public const float fPI = (float)PI;
         public delegate void VoidFunc();
 
-        static Simplex()
+        public static void Init(GraphicsDevice graphicsDevice)
         {
-            var graphicsDevice = Core.graphics.GraphicsDevice;
             pixel = new Texture2D(graphicsDevice, 1, 1);
             pixel.SetData(new Color[] { new Color(255, 255, 255, 255) });
             var tc = new Color[]
             {
-                //new Color(0, 0, 0, 0),
+                new Color(0, 0, 0, 0),
                 new Color(255, 255, 255, 255),
-                //new Color(0, 0, 0, 0)
+                new Color(0, 0, 0, 0)
             };
             px = new Texture2D(graphicsDevice, 1, tc.Length);
             px.SetData(tc);
@@ -106,19 +44,17 @@ namespace CruxNS
             rpx.SetData(tc);
         }
 
-        #region Simplexes
-
         public static void DrawLine(this SpriteBatch sb, Vector2 start, Vector2 end, Color col) => DrawLine(start, end, col, sb);
+
 
         public static void DrawLine(Vector2 start, Vector2 end, Color col, SpriteBatch sb) => D_L(sb, new Line(start, end), col);
 
+
         public static void DrawLine(this SpriteBatch sb, Vector2 start, Vector2 end, Texture2D tex, Color col) => D_L(sb, new Line(start, end), tex, col);
+
 
         public static void DrawLine(this SpriteBatch sb, Line line, Color col) => DrawLine(line.Start, line.End, col, sb);
 
-        internal static void D_L(this SpriteBatch batch, Line l, Color col) => batch.Draw(px, l.Start, null, col, l.Angle, new Vector2(0f, 1.5f), new Vector2(l.Length, 1), SpriteEffects.None, 0);
-
-        internal static void D_L(this SpriteBatch batch, Line l, Texture2D tex, Color col) => batch.Draw(tex, l.Start, null, col, l.Angle, new Vector2(0), new Vector2(l.Length, 1), SpriteEffects.None, 0);
 
         public static void DrawPath(SpriteBatch sb, Vector2[] pos, Color col)
         {
@@ -153,16 +89,26 @@ namespace CruxNS
             sb.Draw(pixel, new Rectangle(pos, size), col);
         }
 
+        public static void DrawFill(this SpriteBatch sb, Vector2 pos, Vector2 size, Color col)
+        {
+            sb.Draw(pixel, pos, col, 0, size);
+        }
+
         public static void DrawPixel(this SpriteBatch sb, Vector2 pos, Color col)
         {
             sb.Draw(pixel, pos, col);
         }
 
-        public static void DrawCircle(this SpriteBatch sb, Vector2 center, float diameter, Color col, Texture2D special = null, int precise = 25)
+        public static void DrawCircle(this SpriteBatch sb, Vector2 center, float diameter, Color col, Texture2D special = null, int thick = 15, Matrix? transform = null)
         {
-            var p = new List<Vector2>();
+            //var p = new List<Vector2>();
             //var v = (int)((GlobalForms["Test"].GetComponent(3) as MonoSlider).Value * 100);
-            DrawPolygon(sb, center, precise, diameter / 2, col);
+            //Primitives.Parameters["bounds"].SetValue(new Vector2(diameter * 2, diameter * 2));
+            //Primitives.Parameters["val1"].SetValue(thick);
+            //sb.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend/*, effect: Primitives, transformMatrix: transform*/);
+            //sb.DrawFill(new Vector2(center.X - diameter , center.Y - diameter ), new Vector2(diameter*2, diameter*2), col);
+            DrawPolygon(sb, center, thick - 1, diameter / 2, col);
+            //sb.End();
         }
 
         public static void DrawPolygon(this SpriteBatch sb, Vector2 center, int vertexes, float radius, Color col, Texture2D special = null)
@@ -178,6 +124,136 @@ namespace CruxNS
             }
         }
 
+        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 p, Color c, float a)
+        {
+            batch.Draw(tex, p, null, c, a, tex.Center(), 1f, SpriteEffects.None, 0f);
+        }
+
+        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 p, Color c, float a, float s)
+        {
+            batch.Draw(tex, p, null, c, a, Vector2.Zero, s, SpriteEffects.None, 0f);
+        }
+
+        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 p, Color c, float a, float s, Vector2 origin)
+        {
+            batch.Draw(tex, p, null, c, a, origin, s, SpriteEffects.None, 0f);
+        }
+
+        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 p, Color c, float a, Vector2 origin, Vector2 scale)
+        {
+            batch.Draw(tex, p, null, c, a, origin, scale, SpriteEffects.None, 0f);
+        }
+
+        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 p, Color c, float a, Vector2 s)
+        {
+            batch.Draw(tex, p, null, c, a, tex.Center(), s, SpriteEffects.None, 0f);
+        }
+
+        public static void DrawString(this SpriteBatch batch, SpriteFont font, string text, Vector2 pos, Color col, float a, float s)
+        {
+            batch.DrawString(font, text, pos, col, a, Vector2.Zero, s, SpriteEffects.None, 0f);
+        }
+
+
+        internal static void D_L(this SpriteBatch batch, Line l, Color col) => batch.Draw(px, l.Start, null, col, l.Angle, new Vector2(0f, 1.5f), new Vector2(l.Length, 1), SpriteEffects.None, 0);
+
+
+        internal static void D_L(this SpriteBatch batch, Line l, Texture2D tex, Color col) => batch.Draw(tex, l.Start, null, col, l.Angle, new Vector2(0), new Vector2(l.Length, 1), SpriteEffects.None, 0);
+
+
+        //public static void BatchDraw(this SpriteBatch batch, BatchSet bs, Action a, Matrix? t = null)
+        //{
+        //    batch.Begin(bs.sortMode, bs.blendState, bs.samplerState, bs.stencilState, bs.rasterizerState, bs.effect, t);
+        //    {
+        //        a?.Invoke();
+        //    }
+        //    batch.End();
+        //}
+
+        public static float ease(float t)
+        {
+            return -t * (t - 1) * 4;
+        }
+
+        public static Rectangle FitInto(this Rectangle source, Rectangle target)
+        {
+            if (target.Contains(source))
+            {
+                return source;
+            }
+            else
+            {
+                var lt = source.Location - target.Location;
+                if (lt.X < 0)
+                    source.Offset(-lt.X, 0);
+                if (lt.Y < 0)
+                    source.Offset(0, -lt.Y);
+                var br = (source.Location + source.Size) - (target.Location + target.Size);
+                if (br.X > 0)
+                    source.Offset(-br.X, 0);
+                if (br.Y > 0)
+                    source.Offset(0, -br.Y);
+                return source;
+            }
+        }
+
+        public static Rectangle FitOut(this Rectangle source, Rectangle target)
+        {
+            if (target.Intersects(source))
+            {
+                var of = (target.Center - source.Center).ToVector2();
+                var c = of.Normal();
+                var va = of * (float)source.Height / source.Width;
+                var vb = of * -(float)source.Height / source.Width;
+
+                //if (c.X < c.Y)
+                {
+                    if (of.Y >= va.X && of.Y <= vb.X)
+                        source.Offset(-(source.Left - target.Right), 0);
+                    else
+                    if (of.Y <= va.X && of.Y >= vb.X)
+                        source.Offset(-(source.Right - target.Left), 0);
+                    else
+                    if (of.Y >= va.X && of.Y >= vb.X)
+                        source.Offset(0, -(source.Bottom - target.Top));
+                    else
+                    if (of.Y <= va.X && of.Y <= vb.X)
+                        source.Offset(0, -(source.Top - target.Bottom));
+                    //if (c.X < 0 && c.Y < 0)
+                    //    source.Offset(0, -(source.Bottom - target.Top));
+                    //source.Offset(-(source.Right - target.Left), 0);
+                }
+                //else
+                {
+                    //if (c.Y > 0)
+                    //    source.Offset(0, -(source.Top - target.Bottom));
+                    //else
+                    //    source.Offset(0, -(source.Bottom - target.Top));
+
+                }
+                //else
+                //if (c.Y > source.Height / 2)
+                //{
+                //    source.Offset(0, -(source.Bottom - target.Top));
+                //}
+                //else
+                //{
+                //    source.Offset(0, -(source.Top - target.Bottom));
+                //}
+
+                //var lt = source.Location - target.Location;
+                //if (lt.X < 0)
+                //    source.Offset(-(source.Right - target.Left), 0);
+                //if (lt.Y < 0)
+                //    source.Offset(0, -(source.Bottom - target.Top));
+                //var br = (source.Location + source.Size) - (target.Location + target.Size);
+                //if (br.X > 0)
+                //    source.Offset(-(source.Left - target.Right), 0);
+                //if (br.Y > 0)
+                //    source.Offset(0, -(source.Top - target.Bottom));
+            }
+            return source;
+        }
         /// <summary>
         /// Submit a sprite to draw in the current batch with white color by default.
         /// </summary>
@@ -185,36 +261,60 @@ namespace CruxNS
         /// <param name="position"></param>
         public static void Draw(this SpriteBatch batch, Texture2D texture, Vector2 position) => batch.Draw(texture, position, Color.White);
 
-        #endregion
+
+        public static void Swap<T>(ref T a, ref T b)
+        {
+            var c = a; a = b; b = c;
+        }
+
+        public static bool PtInsideRect(Rectangle rect, Vector2 dot) => rect.Contains(dot);
+
+
+        public static bool RectColl(Rectangle rect1, Rectangle rect2) => rect1.Intersects(rect2);
+
 
         /// <summary>
         /// Returns relative positioned rectangle with texture's size bounds.
         /// </summary>
         public static Rectangle OffsettedTexture(Texture2D texture, Vector2 offset) => new Rectangle((int)offset.X + texture.Bounds.X, (int)offset.Y + texture.Bounds.Y, texture.Width, texture.Height);
 
+
         /// <summary>
-        /// Returns left-up position of the centered rectangle.
+        /// Returns relative positioned rectangle with source's size bounds.
         /// </summary>
-        public static Vector2 SnapToWindowCenter(Vector2 size) => (LocalDrawingBounds.Size).ToVector2() / 2 - (size) / 2;
+        public static Rectangle OffsettedTexture(Rectangle src, Vector2 offset) => new Rectangle((int)offset.X + src.X, (int)offset.Y + src.Y, src.Width, src.Height);
+
+
+        //public static Vector2 SetLength(Vector2 target, float len)
+        //{
+        //    return new Vector2((float)Math.Cos(GetAngle(target) * len), (float)Math.Sin(GetAngle(target) * len));
+        //}
 
         /// <summary>
         /// Returns left-up position of the centered rectangle.
         /// </summary>
-        public static Point SnapToWindowCenterP(Vector2 size) => ((LocalDrawingBounds.Size).ToVector2() / 2 - (size) / 2).ToPoint();
+        //public static Vector2 SnapToWindowCenter(Vector2 size) => (LocalDrawingBounds.Size).ToVector2() / 2 - (size) / 2;
+
 
         /// <summary>
         /// Returns left-up position of the centered rectangle.
         /// </summary>
-        public static Vector2 SnapToWindowCenter(Point size) => SnapToWindowCenter(size.ToVector2());
+        //public static Point SnapToWindowCenterP(Vector2 size) => ((LocalDrawingBounds.Size).ToVector2() / 2 - (size) / 2).ToPoint();
+
 
         /// <summary>
         /// Returns left-up position of the centered rectangle.
         /// </summary>
-        public static Point SnapToWindowCenterP(Point size) => SnapToWindowCenterP(size.ToVector2());
+        //public static Vector2 SnapToWindowCenter(Point size) => SnapToWindowCenter(size.ToVector2());
 
-        #region float
+        /// <summary>
+        /// Returns left-up position of the centered rectangle.
+        /// </summary>
+        //public static Point SnapToWindowCenterP(Point size) => SnapToWindowCenterP(size.ToVector2());
+
 
         public static float GetLength(Vector2 target) => (float)Math.Sqrt((target.X * target.X) - (target.Y * target.Y));
+
 
         public static float AngleBetween(Vector2 v1, Vector2 v2)
         {
@@ -224,15 +324,46 @@ namespace CruxNS
 
         public static float Dot(Vector2 v1, Vector2 v2) => (v1.X * v2.X) + (v1.Y * v2.Y);
 
+
         public static float GetAngle(Vector2 start, Vector2 end) => (float)Math.Atan2(end.Y - start.Y, end.X - start.X); // norevert
+
 
         public static float GetAngle(Vector2 point) => (float)Math.Atan2(point.Y, point.X);// norevert 
 
-        public static float AngleDiff(Vector2 v1, Vector2 v2) => (float)((Math.Atan2(v1.X, v1.Y)) - (Math.Atan2(v2.X, v2.Y)));
+        public static float TryInfinity(float val1, float val2) => float.IsInfinity(val2) ? val1 : val2;
+
+
+        public static Vector2 NAngle(float angle) => new Vector2((float)Cos(angle), (float)Sin(angle));
+
+
+        public static float AngleDiff(Vector2 v1, Vector2 v2) => (float)(fPI - Abs(Abs(v2.Angle() - v1.Angle()) - fPI));
+
+
+        /// <summary>
+        /// Use Line().ReflectPoint instead
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="normal"></param>
+        /// <returns></returns>
+        public static Vector2 ReflectNormal(Vector2 point, Line normal) => Vector2.Reflect(-point, normal.GetUnitAngle());
+
+
+        public static Vector2 GetWCenter() => new Vector2(Core.PrimaryViewport.Width / 2, Core.PrimaryViewport.Height / 2);
+
+
+        public static Vector2 GetWCentered(Vector2 v) => GetWCenter() + v;
+
+
+
 
         public static float PtDistLine(Vector2 start, Vector2 end, Vector2 pt) => (float)(((end.Y - start.Y) * pt.X - (end.X - start.X) * pt.Y + end.X * start.Y - end.Y * start.X) / Math.Sqrt(Math.Pow(end.Y - start.Y, 2) + Math.Pow(end.X - start.X, 2)));
 
-        public static float Angle(this Vector2 v) => (float)Atan2(v.Y, v.X);
+
+        public static Vector2 GetRotatedVector2(float angle, float length) => new Vector2((float)-Cos(angle) * length, (float)Sin(angle) * length);
+
+
+        public static Vector2 GetFormattedVector2(float angle, float length) => new Vector2((float)Cos(angle) * length, (float)Sin(angle) * length);
+
 
         public static bool TexContains(Texture2D tex, Point offset, Point point)
         {
@@ -275,6 +406,11 @@ namespace CruxNS
 
         public static Texture2D CutOut(Texture2D tex, Rectangle rect)
         {
+            //Rectangle r = rect;
+
+            //Point p = (r.Location) * new Point(-1);
+            //Rectangle rr = new Rectangle(0, 0, tex.Bounds.Size.X, tex.Bounds.Size.Y);
+            //var y = p.Y;
             var sheetbuf = new Color[rect.Width * rect.Height];
             tex.GetData(0, rect, sheetbuf, 0, rect.Width * rect.Height);
             Texture2D rtex = new Texture2D(graphics.GraphicsDevice, rect.Width, rect.Height);
@@ -284,48 +420,26 @@ namespace CruxNS
 
         public static Texture2D CutOut(Texture2D tex, Rectangle source, Rectangle target)
         {
+            //Rectangle r = rect;
+
+            //Point p = (r.Location) * new Point(-1);
+            //Rectangle rr = new Rectangle(0, 0, tex.Bounds.Size.X, tex.Bounds.Size.Y);
+            //var y = p.Y;
             var sheetbuf = new Color[source.Width * source.Height];
             tex.GetData(0, source, sheetbuf, 0, source.Width * source.Height);
-            Texture2D rtex = new Texture2D(Core.graphics.GraphicsDevice, target.Width, target.Height);
+            Texture2D rtex = new Texture2D(graphics.GraphicsDevice, target.Width, target.Height);
             rtex.SetData(sheetbuf);
             return rtex;
         }
 
-        #endregion
-
-        #region Vector2
-
-        public static Vector2 NAngle(float angle) => new Vector2((float)Cos(angle), (float)Sin(angle));
-
-        public static Vector2 ReflectNormal(Vector2 point, Line normal) => Vector2.Reflect(-point, normal.GetUnitAngle());
-
-        public static Vector2 GetWCenter() => new Vector2(Core.PrimaryViewport.Width / 2, Core.PrimaryViewport.Height / 2);
-
-        public static Vector2 GetWCentered(Vector2 v) => GetWCenter() + v;
-
-        public static Vector2 GetRotatedVector2(float angle, float length) => new Vector2((float)-Cos(angle) * length, (float)Sin(angle) * length);
-
-        public static Vector2 GetFormattedVector2(float angle, float length) => new Vector2((float)Cos(angle) * length, (float)Sin(angle) * length);
-
-        public static Vector2 Trunc(this Vector2 v, float val)
+        public static Vector2 Center(this Texture2D tex)
         {
-            float i;
-            return v * (i = (i = val / v.Length()) < 1.0f ? i : 1.0f);
+            return tex.Bounds.Center.ToVector2();
         }
 
-        public static Vector2 Transform(this Vector2 v, Matrix m) => Vector2.Transform(v, m);
-
-        public static Vector2 GetVector2(this Vector3 v) => new Vector2(v.X, v.Y);
-
-        public static Vector2 Normal(this Vector2 v) { v.Normalize(); return v; }
-
-        public static Vector2 Snap(this Vector2 v) => v.ToPoint().ToVector2();
-
-        public static Vector3 GetVector3(this Vector2 v) => new Vector3(v, 0);
-
-        #endregion
 
         #region Rectangle
+
 
         public static Rectangle OffsetBy(this Rectangle src, Point offset) { src.Location += offset; return src; }
 
@@ -364,21 +478,72 @@ namespace CruxNS
             public static Color DarkenGray => new Color(85, 85, 85, 255);
         }
 
-        public static void Swap<T>(this T a, T b) where T : class
+        public static Vector2 Trunc(this Vector2 v, float val)
         {
-            var c = a; a = b; b = c;
+            float i;
+            return v * (i = (i = val / v.Length()) < 1.0f ? i : 1.0f);
         }
 
-        public static void AddRange<A, B>(this Dictionary<A, B> tgt, Dictionary<A, B> source)
+        public static Vector2 Transform(this Vector2 v, Matrix m) => Vector2.Transform(v, m);
+
+        public static Vector2 GetVector2(this Vector3 v) => new Vector2(v.X, v.Y);
+
+        //public static Vector2 ToPoint(this (int, int) t) => new Vector2(t.Item1, t.Item2);
+
+        public static Vector2 Normal(this Vector2 v)
+        {
+            v.Normalize();
+            return v;
+        }
+
+        public static Vector3 GetVector3(this Vector2 v) => new Vector3(v, 0);
+
+        public static Vector2 Angle(this float v) => Vector2.Normalize(new Vector2((float)Cos(v), (float)Sin(v)));
+        public static float Angle(this Vector2 v) => (float)Atan2(v.Y, v.X);
+        public static float Trunc(this float v, float by) => v > by ? by : v;
+        public static float Clamp(this float v, float l, float r) => v > r ? r : v < l ? l : v;
+
+
+
+        public static void Swap<A>(this A from, A to)
+        {
+            var a = from;
+            from = to;
+            to = a;
+        }
+
+        public static void AddRange<A, B>(this IDictionary<A, B> tgt, IDictionary<A, B> source)
         {
             foreach (var n in source)
             {
                 tgt.Add(n.Key, n.Value);
             }
         }
+
+        public static void MoveToStart<A>(this IList<A> list, A item)
+        {
+            if (list.Contains(item))
+            {
+                if (!list[0].Equals(item))
+                {
+                    var i = list.IndexOf(item);
+                    var a = list[0];
+                    list[0] = item;
+                    list[i] = a;
+                }
+            }
+        }
+
+        public static bool DrawGrid;
+
+        public static void Sandbox(SpriteBatch batch)
+        {
+
+        }
+
     }
 
-    public struct Line // PERF: Line to struct
+    public struct Line
     {
         public Vector2 Start, End;
         public float Length
@@ -421,6 +586,7 @@ namespace CruxNS
             Start = new Vector2(x1, y1); End = new Vector2(x2, y2);
         }
 
+
         public float GetNormalAngle() => -(float)Atan2(ToVector2.X, ToVector2.Y);
 
 
@@ -451,7 +617,8 @@ namespace CruxNS
         public bool Intersects(Vector2 p1, Vector2 p2) => Intersects(new Line(p1, p2));
 
 
-        public void Rotate(float add) => End = Simplex.GetFormattedVector2(add, Length);
+        public void Rotate(float add) => End = Start + Simplex.GetFormattedVector2(Angle + add, Length);
+        public Line Rotate(double add) => new Line(Start, Start + Simplex.GetFormattedVector2(Angle + (float)add, Length));
 
 
         public static float AngleBetween(Line l1, Line l2) => l1.AngleTo(l2);
@@ -459,8 +626,20 @@ namespace CruxNS
 
         public static Line GetToXLineByOrdinateNormal(Line normal, Vector2 point) => new Line(normal.Start, normal.Start - Simplex.GetRotatedVector2(normal.Angle - (float)PI / 2, normal.PointDistance(point)));
 
+        public static Line AltLength(Line l, float length)
+        {
+            l.Length = length;
+            return l;
+        }
 
         public static implicit operator Vector2(Line l) => l.ToVector2;
+
+        public static Line operator +(Line l, Vector2 v)
+        {
+            l.Start += v;
+            l.End += v;
+            return l;
+        }
 
 
         //public static implicit operator float(Line l)
@@ -469,7 +648,31 @@ namespace CruxNS
         //}
 
         public static implicit operator string(Line l) => l.Start + "<~>" + l.End + "\n<o>" + l.GetNormalAngle() + "<->" + l.Length;
-        public override string ToString() => Start + "<~>" + End + "\n<o>" + GetNormalAngle() + "<->" + Length;
 
     }
+
+    public static class Calc
+    {
+        public static float AngleTo(Vector2 point0, Vector2 point1)
+        {
+            return -(float)(Atan2(point1.X - point0.X, point1.Y - point0.Y));
+        }
+
+        public static float AngleTo(Line line)
+        {
+            return AngleTo(line.Start, line.End);
+        }
+
+        public static float AngleBetween(Vector2 start1, Vector2 end1, Vector2 start2, Vector2 end2)
+        {
+            return Abs(Abs(Simplex.GetAngle(end1, start1) - Abs(Simplex.GetAngle(end2, start2))));
+        }
+
+        public static float AngleBetween(Line l1, Line l2)
+        {
+            return AngleBetween(l1.Start, l1.End, l2.Start, l2.End);
+        }
+
+    }
+    
 }

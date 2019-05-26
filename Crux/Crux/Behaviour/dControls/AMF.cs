@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using static CruxNS.Simplex;
-using static CruxNS.Core;
+using static Crux.Simplex;
+using static Crux.Core;
 
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace CruxNS.dControls
+namespace Crux.dControls
 {
     /// <summary>
     /// Base interface that describes updatable and drawable Controls.
@@ -53,13 +53,14 @@ namespace CruxNS.dControls
 
         public static bool IsOpened => form.IsVisible;
 
-        static MessageBox()
+        internal static void InitMessageBox()
         {
+            return;
             form = new Form(stdx, stdy, stdw, stdh, new Color(0, 31, 56));
             form.IsVisible = !true;
             form.IsIndepend = true;
 
-            var cl = new Label(0, 0, form.Width, 50);
+            var cl = new Textarea(0, 0, form.Width, 50);
             form.AddNewControl(cl);
 
             var cb = new Button(0, form.Height - 20, form.Width, 20)
@@ -88,7 +89,7 @@ namespace CruxNS.dControls
         {
             var tsize = font.MeasureString(message);
             crtw = Math.Max((int)tsize.X + 20, crtw);
-            var l = form.GetControl(1) as Label;
+            var l = form.GetControl(1) as Textarea;
             l.Text = message;
             form.IsActive = form.IsVisible = true;
         }
@@ -101,7 +102,10 @@ namespace CruxNS.dControls
     public static class FormManager
     {
         public static Dictionary<string, Form> GlobalForms = new Dictionary<string, Form>();
-
+        internal static void Init()
+        {
+            MessageBox.InitMessageBox();
+        }
         public static void AddForm(string name, Form f)
         {
             GlobalForms.Add(name, f);
@@ -111,7 +115,9 @@ namespace CruxNS.dControls
         public static Form ActiveForm, PrevForm = null;
         public static void Update()
         {
-            MessageBox.Update();
+            Core.MS = Mouse.GetState();
+            Control.Update();
+            //MessageBox.Update();
             //if (ActiveForm == null ? true : !ActiveForm.Bounds.Contains(Control.MousePos))
             ActiveForm = null;
 
@@ -152,7 +158,11 @@ namespace CruxNS.dControls
     /// </summary>
     public class Form : uControl
     {
-        // TODO: wrap
+        static Form()
+        {
+            FormManager.Init();
+        }
+
         public override string Text { get => text; set { text = value; } }
         public bool IsVisible { get; set; } = true;
         public bool IgnoreControl { get; set; } = !true;
@@ -222,7 +232,6 @@ namespace CruxNS.dControls
         #endregion
 
         public Texture2D
-
             form_lefttop,
             form_top,
             form_righttop,
@@ -329,6 +338,8 @@ namespace CruxNS.dControls
         }
 
         Rectangle RightBorder, LeftBorder, TopBorder, BottomBorder, Header;
+        // PERF: x1 hop
+        public Rectangle FillingArea => new Rectangle(Bounds.X + form_left.Width, Bounds.Y + form_top.Height, Bounds.Width - form_right.Width - form_left.Width, Bounds.Height - form_bottom.Height - form_top.Height);
         bool RBH, LBH, TBH, BBH;
         bool lockhold;
         Point OHP, NHP;
@@ -467,7 +478,7 @@ namespace CruxNS.dControls
                 }
 
 
-                if ((IsActive && !MessageBox.IsOpened) || IsIndepend)
+                if ((IsActive/* && !MessageBox.IsOpened*/) || IsIndepend)
                 {
 
 
@@ -539,9 +550,9 @@ namespace CruxNS.dControls
                 Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)X, (int)Y), new Point((int)Width, (int)Height));
                 Batch.Begin(SpriteSortMode.Deferred/*, null, null, null, rasterizer, null, null*/);
                 {
-                    Batch.GraphicsDevice.ScissorRectangle = Bounds;
                     if (!hasLayout)
                     {
+                        Batch.GraphicsDevice.ScissorRectangle = Bounds;
                         Batch.DrawFill(Bounds, IsActive ? FormColor : (IsFadable ? new Color(255, 255, 255, 200) : FormColor));
                         if (IsActive && false) // DBG: Debug
                             Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
@@ -552,15 +563,16 @@ namespace CruxNS.dControls
                         var fh = Bounds.Height;
                         var top = fw - form_lefttop.Width - form_righttop.Width;
                         var bottom = fw - form_lefttop.Width - form_righttop.Width;
-
-                        Batch.DrawFill(Bounds, new Color(15, 15, 15));
+                        var fa = FillingArea;
+                        Batch.GraphicsDevice.ScissorRectangle = fa;
+                        Batch.DrawFill(fa, new Color(115, 115, 115));
 
                         Batch.Draw(form_lefttop, Bounds.Location.ToVector2(), Color.White);
                         Batch.Draw(form_top, new Rectangle(Bounds.X + form_lefttop.Width, Bounds.Y, fw - form_lefttop.Width - form_righttop.Width, form_top.Height), Color.White);
                         Batch.Draw(form_righttop, new Vector2(Bounds.X + form_lefttop.Width + top, Bounds.Y), Color.White);
 
                         Batch.Draw(form_left, new Rectangle(Bounds.X, Bounds.Y + form_lefttop.Height, form_left.Width, fh - form_leftbottom.Height - form_lefttop.Height), Color.White);
-                        Batch.Draw(form_right, new Rectangle(Bounds.X + fw - form_right.Width, Bounds.Y + form_lefttop.Height, form_right.Width, fh - form_righttop.Height), Color.White);
+                        Batch.Draw(form_right, new Rectangle(Bounds.X + fw - form_right.Width, Bounds.Y + form_lefttop.Height, form_right.Width, fh - form_righttop.Height - form_rightbottom.Height), Color.White);
 
                         Batch.Draw(form_leftbottom, new Vector2(Bounds.X, Bounds.Y + fh - form_leftbottom.Height), Color.White);
                         Batch.Draw(form_bottom, new Rectangle(Bounds.X + form_leftbottom.Width, Bounds.Y + fh - form_bottom.Height, fw - form_leftbottom.Width - form_rightbottom.Width, form_bottom.Height), Color.White);

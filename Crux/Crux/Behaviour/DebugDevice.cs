@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CruxNS.Behaviour
+namespace Crux.Behaviour
 {
     public static partial class DebugDevice
     {

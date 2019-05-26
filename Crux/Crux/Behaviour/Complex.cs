@@ -10,16 +10,16 @@ using System.Text.RegularExpressions;
 
 using static System.Text.RegularExpressions.Regex;
 using static System.Math;
-using static CruxNS.Core;
+using static Crux.Core;
 
-using CruxNS.dControls;
+using Crux.dControls;
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
 
 // NOTE: The following listing contains code which is too complex for perception. It has done of personal preferences. 
 //       I'll reduce the maintainability index soon when it gets eligible for directional usage.
 
-namespace CruxNS
+namespace Crux
 {
     /// <summary>
     /// Represents complex text formatter and renderer.
@@ -43,12 +43,12 @@ namespace CruxNS
         Vector2 s; public Vector2 GetInitialSize => s;
         Vector2 ts;
         public Vector2 GetTotalSize => ts;
-        Label owner; // TODO: to uControl
+        Textarea owner; // TODO: to uControl
         bool af; 
         float fontscale = 1f; public float FontSize { get => fontscale; set { fontscale = value; UpdateText(Text); } }
         bool multiline = true; public bool Multiline { get => multiline; set { multiline = value; UpdateText(Text); } }
 
-        public TextBuilder(SpriteFont font, string text, Vector2 pos, Vector2 size, Color color = default, bool applyformat = true, Label label = null)
+        public TextBuilder(SpriteFont font, string text, Vector2 pos, Vector2 size, Color color = default, bool applyformat = true, Textarea label = null)
         {
             //gc = "";
             af = applyformat;

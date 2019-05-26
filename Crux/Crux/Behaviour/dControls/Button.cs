@@ -1,14 +1,14 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using static CruxNS.Simplex;
+using static Crux.Simplex;
 
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace CruxNS.dControls
+namespace Crux.dControls
 {
     public class Button : uControl
     {
@@ -52,10 +52,10 @@ namespace CruxNS.dControls
         internal override void Initialize()
         {
             cl = cl == default(Color) ? Owner.FormColor : cl;
-            ID = Owner.GetControlsNum + 1;
+            ID = Owner.GetControlsCount + 1;
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
             // Assemble form texture here.
-            Tex = new Texture2D(Owner.Batch.GraphicsDevice, (int)Width, (int)Height);
+            Tex = new Texture2D(Batch.GraphicsDevice, (int)Width, (int)Height);
             var layer1 = new Color[(int)Width * (int)Height];
             for (int i = 0; i < layer1.Length; i++)
                 if ((i % Width == Width - 1) || (i % Width == 0) || (i > layer1.Length - Width) || (i < Width))
@@ -125,14 +125,14 @@ namespace CruxNS.dControls
             Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-1);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                var mea = Core.font1.MeasureString(Text);
+                var mea = font.MeasureString(Text);
                 // Overflow control proto 
                 // {
                 // var of = Width / mea.X;
                 // var am = of > 1 ? Text : Text.Substring(0, (int)(Text.Length*of));
                 // mea = Game1.font1.MeasureString(am);
                 // }
-                Batch.DrawString(Core.font1, Text, Bounds.Location.ToVector2() + (new Vector2(Width, Height) / 2 - mea / 2).ToPoint().ToVector2(), Color.White, 0f, new Vector2(), 1f, SpriteEffects.None, 1f);
+                Batch.DrawString(font, Text, Bounds.Location.ToVector2() + (new Vector2(Width, Height) / 2 - mea / 2).ToPoint().ToVector2(), Color.White, 0f, new Vector2(), 1f, SpriteEffects.None, 1f);
             }
             Batch.End();
         }

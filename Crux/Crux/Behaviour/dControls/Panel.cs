@@ -1,14 +1,14 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using static CruxNS.Simplex;
+using static Crux.Simplex;
 
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace CruxNS.dControls
+namespace Crux.dControls
 {
     public class Panel : uControl
     {
@@ -51,10 +51,10 @@ namespace CruxNS.dControls
         Color cl;
         internal override void Initialize()
         {
-            ID = Owner.GetControlsNum + 1;
+            ID = Owner.GetControlsCount + 1;
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
             // Assemble form texture here.
-            Tex = new Texture2D(Owner.Batch.GraphicsDevice, (int)Width, (int)Height);
+            Tex = new Texture2D(Batch.GraphicsDevice, (int)Width, (int)Height);
             var layer1 = new Color[(int)Width * (int)Height];
             for (int i = 0; i < layer1.Length; i++)
                 if ((i % Width == Width - 1) || (i % Width == 0) || (i > layer1.Length - Width) || (i < Width))

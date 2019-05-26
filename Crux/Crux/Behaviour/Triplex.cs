@@ -8,10 +8,10 @@ using HtmlAgilityPack;
 using System;
 using static System.Text.RegularExpressions.Regex;
 using static System.Math;
-using static CruxNS.Core;
-using CruxNS.dControls;
+using static Crux.Core;
+using Crux.dControls;
 
-namespace CruxNS
+namespace Crux
 {
     public class HTML
     {
