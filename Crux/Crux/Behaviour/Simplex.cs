@@ -101,14 +101,7 @@ namespace Crux
 
         public static void DrawCircle(this SpriteBatch sb, Vector2 center, float diameter, Color col, Texture2D special = null, int thick = 15, Matrix? transform = null)
         {
-            //var p = new List<Vector2>();
-            //var v = (int)((GlobalForms["Test"].GetComponent(3) as MonoSlider).Value * 100);
-            //Primitives.Parameters["bounds"].SetValue(new Vector2(diameter * 2, diameter * 2));
-            //Primitives.Parameters["val1"].SetValue(thick);
-            //sb.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend/*, effect: Primitives, transformMatrix: transform*/);
-            //sb.DrawFill(new Vector2(center.X - diameter , center.Y - diameter ), new Vector2(diameter*2, diameter*2), col);
             DrawPolygon(sb, center, thick - 1, diameter / 2, col);
-            //sb.End();
         }
 
         public static void DrawPolygon(this SpriteBatch sb, Vector2 center, int vertexes, float radius, Color col, Texture2D special = null)
@@ -285,6 +278,7 @@ namespace Crux
         public static Rectangle OffsettedTexture(Rectangle src, Vector2 offset) => new Rectangle((int)offset.X + src.X, (int)offset.Y + src.Y, src.Width, src.Height);
 
 
+
         //public static Vector2 SetLength(Vector2 target, float len)
         //{
         //    return new Vector2((float)Math.Cos(GetAngle(target) * len), (float)Math.Sin(GetAngle(target) * len));
@@ -441,12 +435,12 @@ namespace Crux
         #region Rectangle
 
 
+        public static Rectangle Rectangle(float x, float y, float w, float h) => new Rectangle((int)x, (int)y, (int)w, (int)h);
+
         public static Rectangle OffsetBy(this Rectangle src, Point offset) { src.Location += offset; return src; }
 
         public static Rectangle OffsetBy(this Rectangle src, float x, float y) { src.Location += new Point((int)x, (int)y); return src; }
-
-        public static Rectangle Rectangle(float x, float y, float w, float h) => new Rectangle((int)x, (int)y, (int)w, (int)h);
-
+        
         public static Rectangle Intersect(this Rectangle r1, Rectangle r2) => sRectangle.Intersect(r1, r2);
 
         public static Rectangle InflateBy(this Rectangle r1, float v, float h) { r1.Inflate(v, h); return r1; }
@@ -455,10 +449,30 @@ namespace Crux
 
         public static Rectangle Union(this Rectangle r1, Rectangle r2) => sRectangle.Intersect(r1, r2);
 
+        public static Point Edging(this Rectangle src) => src.Location + src.Size;
+
         #endregion
 
         public static class Palette
         {
+            static float nhsv(float n, float h, float s, float v)
+            {
+                var k = (n + h / 60) % 6;
+                return v - v * s * Max(Min(Min(k, 4 - k), 1), 0);
+            }
+
+            /// <summary>
+            /// Converts hue-saturation-value-color to RGB.
+            /// </summary>
+            /// <param name="h">Hue value (in range of 0-360)</param>
+            /// <param name="s">Saturation value (0-1)</param>
+            /// <param name="v">Value (0-1)</param>
+            /// <returns>RGB color</returns>
+            public static Color HSV2RGB(float h, float s, float v)
+            {
+                return new Color(nhsv(5, h, s, v), nhsv(3, h, s, v), nhsv(1, h, s, v));
+            }
+
             public static Color ToColor(string hex)
             {
                 return new Color(
@@ -473,9 +487,9 @@ namespace Crux
                 return new Color(val);
             }
 
-            public static Color LightenGray => new Color(175, 175, 175, 255);
+            public static Color LightenGray => new Color(125, 125, 125, 255);
 
-            public static Color DarkenGray => new Color(85, 85, 85, 255);
+            public static Color DarkenGray => new Color(65, 65, 65, 255);
         }
 
         public static Vector2 Trunc(this Vector2 v, float val)

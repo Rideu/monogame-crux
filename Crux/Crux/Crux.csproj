@@ -74,6 +74,7 @@
     <Compile Include="Behaviour\Control.cs" />
     <Compile Include="Behaviour\dControls\Button.cs" />
     <Compile Include="Behaviour\dControls\CheckBox.cs" />
+    <Compile Include="Behaviour\dControls\Combobox.cs" />
     <Compile Include="Behaviour\dControls\Label.cs" />
     <Compile Include="Behaviour\dControls\Textarea.cs" />
     <Compile Include="Behaviour\dControls\Panel.cs" />
@@ -91,7 +92,8 @@
     </Compile>
     <Compile Include="Behaviour\Triplex.cs" />
     <Compile Include="Behaviour\dControls\uControl.cs" />
-    <Compile Include="Game1.cs" />
+    <Compile Include="Core.cs" />
+    <Compile Include="Examples.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

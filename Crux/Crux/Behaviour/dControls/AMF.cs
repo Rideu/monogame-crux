@@ -16,24 +16,6 @@ using static Crux.Core;
 
 namespace Crux.dControls
 {
-    /// <summary>
-    /// Base interface that describes updatable and drawable Controls.
-    /// </summary>
-    public interface IControl
-    {
-        void Update();
-        void Draw();
-    }
-
-    /// <summary>
-    /// Base event class for any uControl.
-    /// </summary>
-    public class ControlArgs : EventArgs
-    {
-        public bool LeftClick;
-        public bool RightClick;
-        public List<Keys> KeysHandled = Control.GetPressedKeys().ToList();
-    }
 
     #region Message Box
     public static class MessageBox
@@ -117,12 +99,14 @@ namespace Crux.dControls
         {
             Core.MS = Mouse.GetState();
             Control.Update();
+
             //MessageBox.Update();
             //if (ActiveForm == null ? true : !ActiveForm.Bounds.Contains(Control.MousePos))
             ActiveForm = null;
 
             foreach (var f in GlobalForms.Values)
             {
+                if (!f.IsVisible) continue;
                 f.IsActive = false;
                 if (f.Bounds.Contains(Control.MousePos) && ActiveForm == null)
                 {
@@ -177,6 +161,8 @@ namespace Crux.dControls
 
         private int id = 0; //TODO: field
         public override int GetID { get { return id; } }
+
+        public override Rectangle DrawingBounds => Bounds;
 
         private Align align;
         public override Align CurrentAlign { set { align = value; } get => align; } // !Unused
@@ -265,6 +251,7 @@ namespace Crux.dControls
             LeftBorder = new Rectangle((int)X, (int)Y, (int)4, (int)Height);
             TopBorder = new Rectangle((int)X, (int)Y, (int)Width, (int)4);
             Header = Rectangle(X, Y, Width, 20 + 8);
+            BorderColor = Color.LightGray;
             Batch.GraphicsDevice.ScissorRectangle = Bounds;
 
             OnMouseEnter += delegate
@@ -278,6 +265,7 @@ namespace Crux.dControls
                 Invalidate();
             };
 
+            Owner = originForm = this;
             #region Debug
             dbg_initsTotal++;
             #endregion
@@ -302,7 +290,7 @@ namespace Crux.dControls
 
         #region Transform
 
-        void RenewBounds()
+        public void RenewBounds()
         {
             var pv = Batch.GraphicsDevice.Viewport;
             if (X < 0)
@@ -334,12 +322,16 @@ namespace Crux.dControls
             foreach (var n in Controls)
             {
                 n.UpdateBounds();
+                n.Invalidate();
             }
         }
 
         Rectangle RightBorder, LeftBorder, TopBorder, BottomBorder, Header;
         // PERF: x1 hop
-        public Rectangle FillingArea => new Rectangle(Bounds.X + form_left.Width, Bounds.Y + form_top.Height, Bounds.Width - form_right.Width - form_left.Width, Bounds.Height - form_bottom.Height - form_top.Height);
+        public Rectangle FillingArea =>
+            hasLayout ?
+            new Rectangle(Bounds.X + form_left.Width, Bounds.Y + form_top.Height, Bounds.Width - form_right.Width - form_left.Width, Bounds.Height - form_bottom.Height - form_top.Height) :
+            Bounds;
         bool RBH, LBH, TBH, BBH;
         bool lockhold;
         Point OHP, NHP;
@@ -487,7 +479,7 @@ namespace Crux.dControls
                     {
 
                         n.IsActive = n.IsHovering = !true;
-                        if (n.Bounds.Contains(Core.MS.Position) && !picked)
+                        if (!(n is Label) && n.Bounds.Contains(Core.MS.Position) && !picked)
                         {
                             ActiveControl = n;
                             ActiveControl.IsActive = picked = true;
@@ -543,12 +535,19 @@ namespace Crux.dControls
             OnUpdate?.Invoke();
         }
 
+        public event Action OnDraw;
+
         public override void Draw()
         {
             if (IsVisible)
             {
+                Batch.Begin(SpriteSortMode.Deferred);
+                {
+                    Batch.DrawRect(Bounds, BorderColor);
+                }
+                Batch.End();
                 Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)X, (int)Y), new Point((int)Width, (int)Height));
-                Batch.Begin(SpriteSortMode.Deferred/*, null, null, null, rasterizer, null, null*/);
+                Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState:rasterizer*/);
                 {
                     if (!hasLayout)
                     {
@@ -565,7 +564,7 @@ namespace Crux.dControls
                         var bottom = fw - form_lefttop.Width - form_righttop.Width;
                         var fa = FillingArea;
                         Batch.GraphicsDevice.ScissorRectangle = fa;
-                        Batch.DrawFill(fa, new Color(115, 115, 115));
+                        Batch.DrawFill(fa, FormColor);
 
                         Batch.Draw(form_lefttop, Bounds.Location.ToVector2(), Color.White);
                         Batch.Draw(form_top, new Rectangle(Bounds.X + form_lefttop.Width, Bounds.Y, fw - form_lefttop.Width - form_righttop.Width, form_top.Height), Color.White);
@@ -581,6 +580,8 @@ namespace Crux.dControls
                     }
                 }
                 Batch.End();
+
+                OnDraw?.Invoke();
 
                 for (int i = Controls.Count - 1; i >= 0; i--)
                 {

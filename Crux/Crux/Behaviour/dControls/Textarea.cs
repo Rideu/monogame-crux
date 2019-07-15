@@ -36,7 +36,7 @@ namespace Crux.dControls
             get => font;
         }
         public float FontSize { set => text.FontSize = value; get => text.FontSize; }
-        public bool Multiline { set { text.Multiline = value; } get => text.Multiline; }
+        public bool Multiline { set => text.Multiline = value; get => text.Multiline; }
 
         //TODO: wrap
         new TextBuilder text;
@@ -47,7 +47,7 @@ namespace Crux.dControls
             set
             {
                 text.UpdateText(tc = value);
-                ts = text.GetTotalSize;
+                ContentBounds = text.GetTotalSize;
             }
         }
 
@@ -135,14 +135,14 @@ namespace Crux.dControls
 
         public override void InnerUpdate()
         {
-            ts = text.GetTotalSize;
-            if (ts.Y > Height)
+            ContentBounds = text.GetTotalSize;
+            if (ContentBounds.Y > Height) // TODO: renaming
             {
                 if (textpos.Y > 0)
                     textpos.Y = 0;
 
-                if (textpos.Y + ts.Y < Height)
-                    textpos.Y = Height - ts.Y - 2;
+                if (textpos.Y + ContentBounds.Y < Height)
+                    textpos.Y = Height - ContentBounds.Y - 2;
 
                 textpos += textposspeed;
                 if (textposspeed.Length() > .1f)
@@ -153,8 +153,8 @@ namespace Crux.dControls
             OnUpdate?.Invoke();
         }
 
-        Vector2 ts;
-        public Vector2 TextSize => ts;
+        Vector2 ContentBounds;
+        public Vector2 TextSize => ContentBounds;
         private void Wrap()
         {
             string wrapped = "", sumtext = "";
@@ -171,7 +171,7 @@ namespace Crux.dControls
             }
             wrapped += sumtext.Trim();
             base.text = wrapped;
-            ts = font.MeasureString(base.text);
+            ContentBounds = font.MeasureString(base.text);
         }
 
         public override void Draw()
@@ -196,8 +196,8 @@ namespace Crux.dControls
             Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-1, -1);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                var h = (int)(Height * (float.IsInfinity(Height / ts.Y) ? 1 : Height / ts.Y));
-                var scrollpos = new Point((int)(X + Width - 4), (int)(Y + 1 - textpos.Y * (float.IsInfinity(Height / ts.Y) ? 1 : Height / ts.Y)));
+                var h = (int)(Height * (float.IsInfinity(Height / ContentBounds.Y) ? 1 : Height / ContentBounds.Y));
+                var scrollpos = new Point((int)(X + Width - 4), (int)(Y + 1 - textpos.Y * (float.IsInfinity(Height / ContentBounds.Y) ? 1 : Height / ContentBounds.Y)));
                 var scrollsize = new Point(3, h > Height ? (int)Height - 2 : h);
                 Batch.DrawFill(new Rectangle(scrollpos, scrollsize), new Color(155, 155, 155, 255));
             }

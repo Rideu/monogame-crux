@@ -23,7 +23,7 @@ namespace Crux.dControls
         public override Align CurrentAlign { set { align = value; } get => align; }
 
         public override Action UpdateHandler { set { OnUpdate += value; } }
-
+        public string Alias { get; set; } = "Panel";
         //TODO: wrap
         public override string Text { get => text; set { text = value; } }
 
@@ -36,31 +36,28 @@ namespace Crux.dControls
 
         public Panel(Vector4 posform, Color color = default(Color))
         {
-            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W; cl = color;
+            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W; FormColor = color;
         }
 
         public Panel(Vector2 pos, Vector2 size, Color color = default(Color))
         {
-            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y; cl = color;
+            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y; FormColor = color;
         }
 
         public Panel(float x, float y, float width, float height, Color color = default(Color))
         {
-            X = x; Y = y; Width = width; Height = height; cl = color;
+            X = x; Y = y; Width = width; Height = height; FormColor = color;
         }
-        Color cl;
         internal override void Initialize()
         {
             ID = Owner.GetControlsCount + 1;
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
+            BorderColor = FormColor * 1.5f;
+            OnMouseScroll += (uControl c, ControlArgs e) =>
+            {
+                SlideSpeed.Y += Control.WheelVal / 50;
+            };
             // Assemble form texture here.
-            Tex = new Texture2D(Batch.GraphicsDevice, (int)Width, (int)Height);
-            var layer1 = new Color[(int)Width * (int)Height];
-            for (int i = 0; i < layer1.Length; i++)
-                if ((i % Width == Width - 1) || (i % Width == 0) || (i > layer1.Length - Width) || (i < Width))
-                    layer1[i] = Color.Black;
-                else layer1[i] = cl;
-            Tex.SetData(layer1);
             base.Initialize();
         }
 
@@ -68,6 +65,7 @@ namespace Crux.dControls
         {
             foreach (var c in Controls)
             {
+                c.Invalidate();
                 c.Update();
             }
         }
@@ -78,20 +76,11 @@ namespace Crux.dControls
         {
             //if (IsVisible)
             {
-                if (!Control.LeftButtonPressed)
-                {
-                    EnterHold = false;
-                }
-                else if (!EnterHold)
-                {
-                }
-
                 IsActive = IsHovering = !true;
 
                 if (Bounds.Contains(Control.MousePos))
                 {
-                    IsHovering =
-                    IsActive = true;
+                    IsHovering = IsActive = true;
                 }
 
                 if (IsActive)
@@ -111,24 +100,35 @@ namespace Crux.dControls
                         ActiveControl = null;
                     ActiveControl?.Update();
                 }
-
-                // Events block
-                {
-                    base.EventProcessor();
-                }
             }
-
         }
+
+        Vector2 SlideSpeed;
 
         public override void InnerUpdate()
         {
             UpdateBounds();
+
+            if (ContentBounds.Y > Height)
+            {
+                if (MappingOffset.Y > 0)
+                    MappingOffset.Y = 0;
+
+                if (MappingOffset.Y + ContentBounds.Y < Height)
+                    MappingOffset.Y = Height - ContentBounds.Y - 2;
+
+                MappingOffset += SlideSpeed;
+                if (SlideSpeed.Length() > .1f)
+                    SlideSpeed *= 0.86f;
+                else SlideSpeed *= 0;
+            }
             foreach (var c in Controls)
             {
                 c.UpdateBounds();
                 c.InnerUpdate();
             }
             OnUpdate?.Invoke();
+            base.EventProcessor();
         }
 
         public override void Draw()
@@ -136,7 +136,8 @@ namespace Crux.dControls
             Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                Batch.Draw(Tex, Bounds, IsHovering ? IsHolding ? new Color(0, 0, 0) : Color.White : new Color(133, 133, 133));
+                Batch.DrawFill(Bounds, FormColor);
+                Batch.DrawFill(Bounds.InflateBy(-2), BorderColor); // Primary
                 //Batch.DrawString(Game1.font, Text, new Vector2(Owner.X + X, Owner.Y + Y) - Game1.font.MeasureString(Text) / 2 + new Vector2(Width, Height) / 2, Color.White);
             }
             Batch.End();

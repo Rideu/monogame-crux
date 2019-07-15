@@ -27,8 +27,7 @@ namespace Crux.dControls
 
         //PERF: wrap; precalculate text position in getter, then alter it's drawing code
         public override string Text { get => text; set { text = value; } }
-
-        private Texture2D Tex;
+        
 
         public event EventHandler OnLeftClick;
         public event EventHandler OnRightClick;
@@ -48,21 +47,20 @@ namespace Crux.dControls
         {
             X = x; Y = y; Width = width; Height = height; cl = color;
         }
+
+        public Button(float x, float y, Texture2D image)
+        {
+            X = x; Y = y; Width = image.Width; Height = image.Height; cl = Color.White;
+            Tex = image;
+        }
+
         Color cl;
         internal override void Initialize()
         {
             cl = cl == default(Color) ? Owner.FormColor : cl;
             ID = Owner.GetControlsCount + 1;
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
-            // Assemble form texture here.
-            Tex = new Texture2D(Batch.GraphicsDevice, (int)Width, (int)Height);
-            var layer1 = new Color[(int)Width * (int)Height];
-            for (int i = 0; i < layer1.Length; i++)
-                if ((i % Width == Width - 1) || (i % Width == 0) || (i > layer1.Length - Width) || (i < Width))
-                    layer1[i] = Color.Black;
-                else layer1[i] = cl;
-            Tex.SetData(layer1);
-            
+            BorderColor = cl * 1.5f;
             base.Initialize();
         }
 
@@ -116,9 +114,13 @@ namespace Crux.dControls
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 var f = IsHovering && !EnterHold ? IsHolding ? 0.3f : 0.6f : 1f;
-                Batch.DrawFill(Bounds, IsHolding ? Palette.DarkenGray : Palette.LightenGray); // TL border
-                Batch.DrawFill(Bounds.OffsetBy(1, 1), IsHolding ? Palette.LightenGray : Palette.DarkenGray); // BR border
-                Batch.DrawFill(Bounds.InflateBy(-1), new Color(cl * f, 1f)); // Primary
+                // Uncomment lines below to enable 3d-like border style
+                //Batch.DrawFill(Bounds, IsHolding ? Palette.DarkenGray : Palette.LightenGray); // TL border
+                //Batch.DrawFill(Bounds.OffsetBy(1, 1), IsHolding ? Palette.LightenGray : Palette.DarkenGray); // BR border
+                Batch.DrawFill(Bounds, BorderColor); // Primary
+                Batch.DrawFill(Bounds.InflateBy(-2), new Color(cl * f, 1f)); // Primary
+                if (Tex != null)
+                    Batch.Draw(Tex, Bounds, FormColor);
             }
             Batch.End();
 

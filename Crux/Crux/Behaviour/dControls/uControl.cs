@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using static Crux.Simplex;
+using static Crux.Core;
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
@@ -11,6 +16,33 @@ using static Crux.Simplex;
 
 namespace Crux.dControls
 {
+    /// <summary>
+    /// Base interface that describes updatable and drawable Controls.
+    /// </summary>
+    public interface IControl
+    {
+        void Update();
+        void Draw();
+    }
+
+    /// <summary>
+    /// Base event class for any uControl.
+    /// </summary>
+    public class ControlArgs : EventArgs
+    {
+        public static ControlArgs GetState => new ControlArgs
+        {
+            LeftClick = Control.LeftClick(),
+            RightClick = Control.RightClick(),
+            WheelValue = Control.WheelVal,
+        };
+
+        public bool LeftClick { get; internal set; }
+        public bool RightClick { get; internal set; }
+        public List<Keys> KeysHandled { get; } = Control.GetPressedKeys().ToList();
+        public float WheelValue { get; internal set; }
+    }
+
     /// <summary>
     /// Base control class.
     /// </summary>
@@ -24,20 +56,21 @@ namespace Crux.dControls
         /// Returns the owner of this element.
         /// </summary>
         public abstract uControl Owner { get; set; }
-        Form originForm;
+        protected Form originForm;
         public Form MainForm => originForm;
         /// <summary>
         /// Returns id which is assigned once attached to the form.
         /// </summary>
         public abstract int GetID { get; }
         public Color FormColor;
+        public Color BorderColor;
         protected Texture2D Tex;
         protected Point InitialPosition;
         public Rectangle Bounds;
-        public Rectangle DrawingBounds => Bounds.Intersect(Owner.Bounds).Intersect(MainForm.FillingArea);
+        public virtual Rectangle DrawingBounds => Bounds.Intersect(Owner.DrawingBounds)/*.Intersect(MainForm.FillingArea)*/; // TODO: include border inflation for both owner and mainform
         public float X, Y, Width, Height;
         public string Name => GetType().ToString() + " : " + Alias;
-        internal protected string Alias;
+        internal protected string Alias = "uControl";
         /// <summary>
         /// Returns true if mouse stays inside form's bounds.
         /// </summary>
@@ -46,11 +79,14 @@ namespace Crux.dControls
         /// Same as "IsActive", but allows ignoring control handling in the game environment. Switches if "IgnoreControl" equals "true".
         /// </summary>
         public bool IsFadable { get; set; }
-
         public bool EnterHold { get; set; }
 
         protected string text = "";
         public abstract string Text { get; set; }
+
+        public float ScrollValue { get; set; }
+        protected Vector2 MappingOffset;
+        protected Rectangle ContentBounds;
 
         public enum Align
         {
@@ -64,11 +100,12 @@ namespace Crux.dControls
 
         public abstract Action UpdateHandler { set; }
         public abstract event Action OnUpdate;
-        public event EventHandler OnMouseEnter; internal bool OMEOccured;
-        public event EventHandler OnMouseLeave; internal bool OMLOccured = true;
+        public event Action<uControl, ControlArgs> OnMouseEnter; internal bool OMEOccured;
+        public event Action<uControl, ControlArgs> OnMouseLeave; internal bool OMLOccured = true;
+        public event Action<uControl, ControlArgs> OnMouseScroll;
 
         internal bool F_Focus;
-        public event EventHandler OnFocus; 
+        public event EventHandler OnFocus;
         public event EventHandler OnLeave;
         public event EventHandler OnFocusChange;
 
@@ -83,8 +120,9 @@ namespace Crux.dControls
         public void AddNewControl(uControl c)
         {
             c.Owner = this;
-            c.Initialize();
+            c.Initialize(); // DBG: control initializer reminder
             Controls.Add(c);
+            CalcContentBounds();
         }
 
         /// <summary>
@@ -107,10 +145,7 @@ namespace Crux.dControls
         {
             foreach (var c in cl)
             {
-                c.Owner = this;
-
-                c.Initialize();
-                Controls.Add(c);
+                AddNewControl(c);
             }
         }
 
@@ -130,11 +165,27 @@ namespace Crux.dControls
         public void UpdateBounds()
         {
             dbg_boundsUpdates++;
-            X = Owner.X + InitialPosition.X;
-            Y = Owner.Y + InitialPosition.Y;
+            X = Owner.X + Owner.MappingOffset.X + InitialPosition.X;
+            Y = Owner.Y + Owner.MappingOffset.Y + InitialPosition.Y;
             Bounds = Rectangle(X, Y, Width, Height);
+            foreach (var n in Controls)
+            {
+                n.UpdateBounds();
+            }
         }
 
+        /// <summary>
+        /// Used to calculate content clipping
+        /// </summary>
+        void CalcContentBounds()
+        {
+            var x = Controls.Min(n => n.Bounds.Location.X);
+            var y = Controls.Min(n => n.Bounds.Location.Y);
+            var w = Controls.Max(n => n.Bounds.Edging().X);
+            var h = Controls.Max(n => n.Bounds.Edging().Y);
+            ContentBounds = new Rectangle(x, y, w, h);
+
+        }
         /// <summary>
         /// Describes update-per-frame logic.
         /// </summary>
@@ -142,7 +193,7 @@ namespace Crux.dControls
 
         public virtual void EventProcessor()
         {
-            
+
             dbg_eventUpdates++;
             if (F_Focus != IsActive)
             {
@@ -155,22 +206,29 @@ namespace Crux.dControls
                     Invalidate();
                     OnLeave?.Invoke(this, EventArgs.Empty);
                 }
-                OnFocusChange?.Invoke(this, EventArgs.Empty);
+                OnFocusChange?.Invoke(this, new ControlArgs { });
             }
 
             if (!IsActive) OMEOccured = false;
             if (IsActive && !OMEOccured)
             {
-                OnMouseEnter?.Invoke(this, EventArgs.Empty);
+                OnMouseEnter?.Invoke(this, ControlArgs.GetState);
                 EnterHold = Control.LeftButtonPressed;
                 OMEOccured = true;
             }
 
+            if (IsActive)
+            {
+                if (Control.WheelVal != 0)
+                {
+                    OnMouseScroll?.Invoke(this, ControlArgs.GetState);
+                }
+            }
 
             if (IsActive) OMLOccured = false;
             if (!IsActive && !OMLOccured)
             {
-                OnMouseLeave?.Invoke(this, EventArgs.Empty);
+                OnMouseLeave?.Invoke(this, ControlArgs.GetState);
                 EnterHold = !(OMLOccured = true);
             }
 
@@ -277,7 +335,7 @@ namespace Crux.dControls
             batch.End();
             updCalled = false;
         }
-        
+
         public static string GetDebugInfo()
         {
             return $"iT: {uControl.dbg_initsTotal} \nbU: {bu} eU: {eu} \nbUT: {uControl.dbg_boundsUpdatesTotal} eUT: {uControl.dbg_eventUpdatesTotal}";
