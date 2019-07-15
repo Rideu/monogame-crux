@@ -55,14 +55,6 @@ namespace Crux.dControls
         {
             ID = Owner.GetControlsCount + 1;
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
-            // Assemble control texture here.
-            Tex = new Texture2D(Batch.GraphicsDevice, (int)Width, (int)Height);
-            var layer1 = new Color[(int)Width * (int)Height];
-            for (int i = 0; i < layer1.Length; i++)
-                if ((i % Width == Width - 1) || (i % Width == 0) || (i > layer1.Length - Width) || (i < Width))
-                    layer1[i] = Color.Black;
-                else layer1[i] = new Color(15, 15, 15, 111);
-            Tex.SetData(layer1);
             OnMouseLeave += delegate { Invalidate(); };
 
             text = new TextBuilder(Font, "[Null text]", new Vector2(X /*+ (padding.X - scroll.Width)*/, Y), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, true/*, this*/);
@@ -131,7 +123,7 @@ namespace Crux.dControls
                         //var v = font.Glyphs[5];
                         //if (font.Glyphs.Any(n => n.ToString()[0] == c))
                         //if (t[caretpos] != ' ' || (t[caretpos + ((t.Length == caretpos) ? -1 : 0)] != ' '))
-                            t = t.Insert(caretpos++, e.Character + "");
+                        t = t.Insert(caretpos++, e.Character + "");
                         //caretpos += caretpos + 1 == t.Length ? 0 : 1;
                     }
                     text.UpdateText(t);
@@ -217,7 +209,8 @@ namespace Crux.dControls
             Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
-                Batch.Draw(Tex, Bounds, InputMode ? Color.White : new Color(255, 255, 255, 200));
+                Batch.DrawFill(Bounds, FormColor);
+                Batch.DrawFill(Bounds.InflateBy(-2), BorderColor * (InputMode ? 0.4f : 1f)); // Primary
             }
             Batch.End();
             //Batch.GraphicsDevice.ScissorRectangle = Batch.GraphicsDevice.ScissorRectangle.InflateBy(-1);
