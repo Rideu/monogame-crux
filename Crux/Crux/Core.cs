@@ -67,7 +67,7 @@ namespace Crux
 
             #region Sample text 
             //Textarea t; 
-            //            f.AddNewControl(t = new Textarea(20, 55, 515, 280));
+            //            f.AddNewControl(t = new Textarea(20, 155, 515, 280));
 
             //            (t as Textarea).Text =
             //@"How to... {#(65,160,216):p}Warp{@p}:
@@ -83,16 +83,27 @@ namespace Crux
             #endregion
 
             Panel p, pp;
-            f.AddNewControl(p = new Panel(20, 50, 200, 100, Palette.DarkenGray));
-            p.AddNewControl(pp = new Panel(10, 10, 180, 80, new Color(40, 40, 40)));
-
-            for (int i = 0; i < 5; i++)
+            f.AddNewControl(p = new Panel(50, 80, 410, 210, Palette.DarkenGray));
+            var w = 100;
+            var h = 200;
+            //p.AddNewControl(new Button(10, 10, w, h, new Color(40, 40, 40)) { Text = "OK" });
+            for (int r = 0; r < (int)p.Height / (h + 0); r++)
             {
-                pp.AddNewControl(b = new Button(10, 10 + 25 * i, 70, 20, new Color(50, 50, 50))
+                //for (int i = 0; i < 2/*(int)p.Width / (w + 20)*/; i++)
+                //{
+                //    p.AddNewControl(pp = new Panel(10 + (w + 10) * i, 10 + 10 * r + r * h, w, h, new Color(80, 80, 80)));
+                //    for (int j = 0; j < 1; j++)
+                //    {
+                //    }
+                //}
+                p.AddNewControl(new Button(10, 10, 70, 320)
                 {
                     Text = "Continue"
                 });
             }
+
+            f.AddNewControl(new Slider(20, 80, 10, 200, Slider.Type.Vertical) { Filler = Slider.FillStyle.Slider });
+            //f.AddNewControl(new Slider(50, 50, 200, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
 
             f.CreateLayout(hud_form_headname,
             hud_form_headseam,
@@ -104,6 +115,10 @@ namespace Crux
             hud_form_bottomright);
 
             f.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 0.9f, ForeColor = new Color(238, 195, 114) });
+            f.OnKeyUp += (s, e) =>
+            {
+                var k = e.KeysHandled;
+            };
 
             FormManager.AddForm("MainForm", f);
             #endregion

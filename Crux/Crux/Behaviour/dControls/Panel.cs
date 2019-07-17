@@ -21,41 +21,56 @@ namespace Crux.dControls
 
         private Align align = Align.None;
         public override Align CurrentAlign { set { align = value; } get => align; }
-
+        
         public override Action UpdateHandler { set { OnUpdate += value; } }
-        public string Alias { get; set; } = "Panel";
+
         //TODO: wrap
         public override string Text { get => text; set { text = value; } }
 
+        Slider ContentSlider;
+
         private Texture2D Tex;
 
-        //public event EventHandler OnLeftClick;
-        //public event EventHandler OnRightClick;
         public override event Action OnUpdate;
         #endregion
 
         public Panel(Vector4 posform, Color color = default(Color))
         {
-            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W; FormColor = color;
+            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
         }
 
         public Panel(Vector2 pos, Vector2 size, Color color = default(Color))
         {
-            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y; FormColor = color;
+            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
         }
 
         public Panel(float x, float y, float width, float height, Color color = default(Color))
         {
-            X = x; Y = y; Width = width; Height = height; FormColor = color;
+            X = x; Y = y; Width = width; Height = height; BackColor = color;
         }
         internal override void Initialize()
         {
+            Alias = "Panel";
             ID = Owner.GetControlsCount + 1;
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
-            BorderColor = FormColor * 1.5f;
+            BorderColor = BackColor * 1.5f;
             OnMouseScroll += (uControl c, ControlArgs e) =>
             {
-                SlideSpeed.Y += Control.WheelVal / 50;
+                ScrollValue = (SlideSpeed.Y += Control.WheelVal / 50) * 0.025f;
+            };
+            ContentSlider = new Slider(Bounds.Width - 10, BorderSize, 8, Bounds.Height - BorderSize - 2, Slider.Type.Vertical)
+            {
+                Owner = this,
+                IsFixed = true,
+                Filler = Slider.FillStyle.Slider
+            };
+            ContentSlider.Initialize();
+            ContentSlider.OnSlide += () =>
+            {
+
+                if (RelContentScale > 1) return;
+                ScrollValue = ContentSlider.Value;
+                MappingOffset.Y = -ContentOverflow * ContentSlider.Value;
             };
             // Assemble form texture here.
             base.Initialize();
@@ -63,11 +78,15 @@ namespace Crux.dControls
 
         public override void Invalidate()
         {
+            IsActive = IsHovering = IsHolding = false;
             foreach (var c in Controls)
             {
                 c.Invalidate();
                 c.Update();
             }
+            if (!ContentSlider.IsVisible) return;
+            ContentSlider.Invalidate();
+            ContentSlider.Update();
         }
 
         public uControl ActiveControl;
@@ -76,11 +95,11 @@ namespace Crux.dControls
         {
             //if (IsVisible)
             {
-                IsActive = IsHovering = !true;
+                IsHovering = !true;
 
                 if (Bounds.Contains(Control.MousePos))
                 {
-                    IsHovering = IsActive = true;
+                    IsHovering = true;
                 }
 
                 if (IsActive)
@@ -100,6 +119,9 @@ namespace Crux.dControls
                         ActiveControl = null;
                     ActiveControl?.Update();
                 }
+
+                if (!ContentSlider.IsVisible) return;
+                ContentSlider.Update();
             }
         }
 
@@ -109,24 +131,41 @@ namespace Crux.dControls
         {
             UpdateBounds();
 
-            if (ContentBounds.Y > Height)
+            if (RelContentScale < 1)
             {
                 if (MappingOffset.Y > 0)
+                {
                     MappingOffset.Y = 0;
 
-                if (MappingOffset.Y + ContentBounds.Y < Height)
-                    MappingOffset.Y = Height - ContentBounds.Y - 2;
+                }
+
+                if (MappingOffset.Y < -ContentOverflow)
+                {
+                    MappingOffset.Y = -ContentOverflow;
+                }
+
+
+                if (ContentSlider.IsVisible)
+                    ContentSlider.Value = MappingOffset.Y / (-ContentOverflow);
 
                 MappingOffset += SlideSpeed;
                 if (SlideSpeed.Length() > .1f)
                     SlideSpeed *= 0.86f;
                 else SlideSpeed *= 0;
             }
+
             foreach (var c in Controls)
             {
                 c.UpdateBounds();
                 c.InnerUpdate();
             }
+
+            if (ContentSlider.IsVisible)
+            {
+                ContentSlider.UpdateBounds();
+                ContentSlider.InnerUpdate();
+            }
+
             OnUpdate?.Invoke();
             base.EventProcessor();
         }
@@ -136,8 +175,8 @@ namespace Crux.dControls
             Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                Batch.DrawFill(Bounds, FormColor);
-                Batch.DrawFill(Bounds.InflateBy(-2), BorderColor); // Primary
+                Batch.DrawFill(Bounds, BorderColor);
+                Batch.DrawFill(Bounds.InflateBy(-2), BackColor);
                 //Batch.DrawString(Game1.font, Text, new Vector2(Owner.X + X, Owner.Y + Y) - Game1.font.MeasureString(Text) / 2 + new Vector2(Width, Height) / 2, Color.White);
             }
             Batch.End();
@@ -157,6 +196,16 @@ namespace Crux.dControls
                 }
             }
 
+            if (ContentSlider.IsVisible)
+                ContentSlider.Draw();
+
+            Batch.Begin(SpriteSortMode.Deferred, null, null, null);
+            {
+                //Batch.DrawFill(OverflowBounds, Color.Red*0.1f);
+                //Batch.DrawFill(Bounds.InflateBy(-2), BackColor);
+                //Batch.DrawString(Game1.font, Text, new Vector2(Owner.X + X, Owner.Y + Y) - Game1.font.MeasureString(Text) / 2 + new Vector2(Width, Height) / 2, Color.White);
+            }
+            Batch.End();
         }
     }
 }

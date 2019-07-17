@@ -30,17 +30,12 @@ namespace Crux.dControls
     /// </summary>
     public class ControlArgs : EventArgs
     {
-        public static ControlArgs GetState => new ControlArgs
-        {
-            LeftClick = Control.LeftClick(),
-            RightClick = Control.RightClick(),
-            WheelValue = Control.WheelVal,
-        };
+        public static ControlArgs GetState => new ControlArgs();
 
-        public bool LeftClick { get; internal set; }
-        public bool RightClick { get; internal set; }
+        public bool LeftClick { get; private set; } = Control.LeftClick();
+        public bool RightClick { get; private set; } = Control.RightClick();
         public List<Keys> KeysHandled { get; } = Control.GetPressedKeys().ToList();
-        public float WheelValue { get; internal set; }
+        public float WheelValue { get; private set; } = Control.WheelVal;
     }
 
     /// <summary>
@@ -58,35 +53,44 @@ namespace Crux.dControls
         public abstract uControl Owner { get; set; }
         protected Form originForm;
         public Form MainForm => originForm;
+        int id;
         /// <summary>
-        /// Returns id which is assigned once attached to the form.
+        /// Returns zero-based id of the control.
         /// </summary>
         public abstract int GetID { get; }
-        public Color FormColor;
-        public Color BorderColor;
-        protected Texture2D Tex;
-        protected Point InitialPosition;
-        public Rectangle Bounds;
-        public virtual Rectangle DrawingBounds => Bounds.Intersect(Owner.DrawingBounds)/*.Intersect(MainForm.FillingArea)*/; // TODO: include border inflation for both owner and mainform
-        public float X, Y, Width, Height;
-        public string Name => GetType().ToString() + " : " + Alias;
+        public Color BackColor { get; set; } = Palette.DarkenGray;
+        public Color BorderColor { get; set; } = Palette.LightenGray;
+        protected Texture2D Tex { get; set; }
+        protected Point InitialPosition { get; set; }
+        public Rectangle Bounds { get; set; }
+        public int BorderSize { get; set; } = 2;
+        public virtual Rectangle DrawingBounds => Bounds.Intersect(Owner.DrawingBounds.InflateBy(-BorderSize))/*.Intersect(MainForm.FillingArea)*/; // TODO: include border inflation for both owner and mainform
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Width { get; set; }
+        public float Height { get; set; }
+        public string Name { get => GetType().ToString() + " : " + Alias; set => Alias = value; }
         internal protected string Alias = "uControl";
         /// <summary>
         /// Returns true if mouse stays inside form's bounds.
         /// </summary>
-        public bool IsActive { get; set; }  // TODO: Setter / (getter to public) to internal
+        public virtual bool IsActive { get; internal set; }
         /// <summary>
         /// Same as "IsActive", but allows ignoring control handling in the game environment. Switches if "IgnoreControl" equals "true".
         /// </summary>
         public bool IsFadable { get; set; }
+        public bool IsVisible { get; set; } = true;
+        public bool IsFixed { get; set; } = false;
         public bool EnterHold { get; set; }
 
         protected string text = "";
         public abstract string Text { get; set; }
 
         public float ScrollValue { get; set; }
-        protected Vector2 MappingOffset;
-        protected Rectangle ContentBounds;
+        internal protected Vector2 MappingOffset;
+        internal protected Rectangle ContentBounds;
+        protected float ContentOverflow;
+        protected float RelContentScale;
 
         public enum Align
         {
@@ -111,7 +115,7 @@ namespace Crux.dControls
 
         #region Controls
 
-        public List<uControl> Controls = new List<uControl>();
+        public List<uControl> Controls { get; set; } = new List<uControl>();
         public int GetControlsCount => Controls.Count;
         /// <summary>
         /// Adds specified Control.
@@ -122,6 +126,7 @@ namespace Crux.dControls
             c.Owner = this;
             c.Initialize(); // DBG: control initializer reminder
             Controls.Add(c);
+            c.id = Controls.IndexOf(c) - 1;
             CalcContentBounds();
         }
 
@@ -165,8 +170,8 @@ namespace Crux.dControls
         public void UpdateBounds()
         {
             dbg_boundsUpdates++;
-            X = Owner.X + Owner.MappingOffset.X + InitialPosition.X;
-            Y = Owner.Y + Owner.MappingOffset.Y + InitialPosition.Y;
+            X = Owner.X + (IsFixed ? 0 : Owner.MappingOffset.X) + InitialPosition.X;
+            Y = Owner.Y + (IsFixed ? 0 : Owner.MappingOffset.Y) + InitialPosition.Y;
             Bounds = Rectangle(X, Y, Width, Height);
             foreach (var n in Controls)
             {
@@ -179,12 +184,20 @@ namespace Crux.dControls
         /// </summary>
         void CalcContentBounds()
         {
-            var x = Controls.Min(n => n.Bounds.Location.X);
-            var y = Controls.Min(n => n.Bounds.Location.Y);
-            var w = Controls.Max(n => n.Bounds.Edging().X);
-            var h = Controls.Max(n => n.Bounds.Edging().Y);
+            var x = Controls.Min(n => n.InitialPosition.X);
+            var y = Controls.Min(n => n.InitialPosition.Y);
+            var w = Controls.Max(n => n.InitialPosition.X + n.Bounds.Width);
+            var h = Controls.Max(n => n.InitialPosition.Y + n.Bounds.Height);
             ContentBounds = new Rectangle(x, y, w, h);
 
+#if DEBUG
+            if (this is Panel)
+            {
+                RelContentScale = Height / ContentBounds.Height;
+                if (RelContentScale < 1)
+                    ContentOverflow = ContentBounds.Height - (int)Height;
+            }
+#endif
         }
         /// <summary>
         /// Describes update-per-frame logic.
@@ -236,11 +249,11 @@ namespace Crux.dControls
         }
         public abstract void InnerUpdate();
 
-        public bool IsHovering;
-        public bool IsHolding;
-        public bool IsClicked;
+        public bool IsHovering { get; set; }
+        public bool IsHolding { get; set; }
+        public bool IsClicked { get; set; }
         /// <summary>
-        /// Describes the sequence of actions once constructor called.
+        /// Describes the sequence of actions once this control has been added onto the form.
         /// </summary>
         internal virtual void Initialize()
         {
@@ -249,9 +262,9 @@ namespace Crux.dControls
             UpdateBounds();
         }
 
-        public static SpriteBatch Batch = Core.spriteBatch;
+        public static SpriteBatch Batch { get; set; } = Core.spriteBatch;
 
-        protected RasterizerState rasterizer = new RasterizerState()
+        protected static readonly RasterizerState rasterizer = new RasterizerState()
         {
             ScissorTestEnable = true,
         };

@@ -148,7 +148,6 @@ namespace Crux.dControls
         }
 
         public override string Text { get => text; set { text = value; } }
-        public bool IsVisible { get; set; } = true;
         public bool IgnoreControl { get; set; } = !true;
         public bool IsUpdatableOnPause;
         /// <summary>
@@ -184,7 +183,7 @@ namespace Crux.dControls
         /// <param name="posform">Specified X, Y, Width and Height of the form contained in one 4-dimensional vector.</param>
         public Form(Vector4 posform, Color col = new Color())
         {
-            FormColor = col;
+            BackColor = col;
             X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W;
             Initialize();
         }
@@ -196,7 +195,7 @@ namespace Crux.dControls
         /// <param name="size">Size of the form.</param>
         public Form(Vector2 pos, Vector2 size, Color col = new Color())
         {
-            FormColor = col;
+            BackColor = col;
             X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y;
             Initialize();
         }
@@ -210,7 +209,7 @@ namespace Crux.dControls
         /// <param name="height">Height of the form.</param>
         public Form(float x, float y, float width, float height, Color col = new Color())
         {
-            FormColor = col;
+            BackColor = col;
             X = x; Y = y; Width = width; Height = height;
             Initialize();
         }
@@ -283,8 +282,8 @@ namespace Crux.dControls
             IsActive = false;
             foreach (var c in Controls)
             {
-                c.Invalidate();
                 c.Update();
+                c.Invalidate();
             }
         }
 
@@ -483,22 +482,24 @@ namespace Crux.dControls
                         {
                             ActiveControl = n;
                             ActiveControl.IsActive = picked = true;
+                            
                         }
                     }
                     if (!picked)
                         ActiveControl = null;
+
                     ActiveControl?.Update();
-                }
 
-                // Events block
-                {
+                    // Events block
+                    {
 
-                    if (ActiveControl == null && IsActive && Control.LeftClick())
-                        OnMouseLeftClicked?.Invoke(this, new ControlArgs());
+                        if (ActiveControl == null && Control.LeftClick())
+                            OnMouseLeftClicked?.Invoke(this, ControlArgs.GetState);
 
 
-                    if (IsActive && Control.AnyKeyPressed())
-                        OnKeyUp?.Invoke(this, new ControlArgs());
+                        if (Control.AnyKeyPressed())
+                            OnKeyUp?.Invoke(this, ControlArgs.GetState);
+                    }
                 }
 
             }
@@ -552,7 +553,7 @@ namespace Crux.dControls
                     if (!hasLayout)
                     {
                         Batch.GraphicsDevice.ScissorRectangle = Bounds;
-                        Batch.DrawFill(Bounds, IsActive ? FormColor : (IsFadable ? new Color(255, 255, 255, 200) : FormColor));
+                        Batch.DrawFill(Bounds, IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
                         if (IsActive && false) // DBG: Debug
                             Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
                     }
@@ -564,7 +565,7 @@ namespace Crux.dControls
                         var bottom = fw - form_lefttop.Width - form_righttop.Width;
                         var fa = FillingArea;
                         Batch.GraphicsDevice.ScissorRectangle = fa;
-                        Batch.DrawFill(fa, FormColor);
+                        Batch.DrawFill(fa, BackColor);
 
                         Batch.Draw(form_lefttop, Bounds.Location.ToVector2(), Color.White);
                         Batch.Draw(form_top, new Rectangle(Bounds.X + form_lefttop.Width, Bounds.Y, fw - form_lefttop.Width - form_righttop.Width, form_top.Height), Color.White);
@@ -607,10 +608,10 @@ namespace Crux.dControls
                     //Batch.DrawFill(Rectangle(X + Width - 18 - 18 - 18 - 6, Y + 4 + 4, 16, 16), new Color(0, 115, 230));
                     if (IsResizable)
                     {
-                        Batch.DrawFill(LeftBorder, (LBL ? new Color(75, 75, 75, 255) : LBH ? new Color(155, 155, 155, 255) : FormColor) * (hasLayout ? 0.3f : 1f));
-                        Batch.DrawFill(TopBorder, (TBL ? new Color(75, 75, 75, 255) : TBH ? new Color(155, 155, 155, 255) : FormColor) * (hasLayout ? 0.3f : 1f));
-                        Batch.DrawFill(RightBorder, (RBL ? new Color(75, 75, 75, 255) : RBH ? new Color(155, 155, 155, 255) : FormColor) * (hasLayout ? 0.3f : 1f));
-                        Batch.DrawFill(BottomBorder, (BBL ? new Color(75, 75, 75, 255) : BBH ? new Color(155, 155, 155, 255) : FormColor) * (hasLayout ? 0.3f : 1f));
+                        Batch.DrawFill(LeftBorder, (LBL ? new Color(75, 75, 75, 255) : LBH ? new Color(155, 155, 155, 255) : BackColor) * (hasLayout ? 0.3f : 1f));
+                        Batch.DrawFill(TopBorder, (TBL ? new Color(75, 75, 75, 255) : TBH ? new Color(155, 155, 155, 255) : BackColor) * (hasLayout ? 0.3f : 1f));
+                        Batch.DrawFill(RightBorder, (RBL ? new Color(75, 75, 75, 255) : RBH ? new Color(155, 155, 155, 255) : BackColor) * (hasLayout ? 0.3f : 1f));
+                        Batch.DrawFill(BottomBorder, (BBL ? new Color(75, 75, 75, 255) : BBH ? new Color(155, 155, 155, 255) : BackColor) * (hasLayout ? 0.3f : 1f));
                     }
                 }
                 Batch.End();

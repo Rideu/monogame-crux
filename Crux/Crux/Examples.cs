@@ -33,9 +33,9 @@ namespace Crux
             colorPicker.AddNewControl(s_val = new Slider(20, 70, 300, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
             colorPicker.AddNewControl(v_val = new Slider(20, 90, 300, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
 
-            h_val.OnSlide += delegate { colorPicker.FormColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
-            s_val.OnSlide += delegate { colorPicker.FormColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
-            v_val.OnSlide += delegate { colorPicker.FormColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
+            h_val.OnSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
+            s_val.OnSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
+            v_val.OnSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
 
             colorPicker.CreateLayout(hud_form_headname, hud_form_headseam, hud_form_headend, hud_form_leftborder, hud_form_rightborder, hud_form_bottomleft, hud_form_bottomseam, hud_form_bottomright);
 

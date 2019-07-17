@@ -82,14 +82,6 @@ namespace Crux.dControls
         {
             ID = Owner.GetControlsCount + 1;
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
-            // Assemble form texture here.
-            Tex = new Texture2D(Batch.GraphicsDevice, (int)Width, (int)Height);
-            var layer1 = new Color[(int)Width * (int)Height];
-            for (int i = 0; i < layer1.Length; i++)
-                if ((i % Width == Width - 1) || (i % Width == 0) || (i > layer1.Length - Width) || (i < Width))
-                    layer1[i] = Color.Black;
-                else layer1[i] = new Color(15, 15, 15, 111);
-            Tex.SetData(layer1);
 
             var scroll = new Rectangle(0, 0, 5, (int)Height);
             // left top right bottom
@@ -180,8 +172,10 @@ namespace Crux.dControls
             Batch.GraphicsDevice.ScissorRectangle = drawb;
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                Batch.Draw(Tex, Bounds, Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
-                Batch.DrawFill(new Rectangle((int)(X + Width - 5), (int)(Y + 1), 4, (int)Height - 2), new Color(55, 55, 55, 255));
+                Batch.DrawFill(Bounds, BorderColor);
+                Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor);
+                // Slider background
+                Batch.DrawFill(new Rectangle((int)(X + Width - 5 - BorderSize), (int)(Y + BorderSize), 5, (int)Height - 2 - BorderSize), new Color(55, 55, 55, 255));
             }
             Batch.End();
 
@@ -193,11 +187,12 @@ namespace Crux.dControls
             }
             Batch.End();
 
-            Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-1, -1);
+            Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-1);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
+                // TODO: replace with normal Slider control 
                 var h = (int)(Height * (float.IsInfinity(Height / ContentBounds.Y) ? 1 : Height / ContentBounds.Y));
-                var scrollpos = new Point((int)(X + Width - 4), (int)(Y + 1 - textpos.Y * (float.IsInfinity(Height / ContentBounds.Y) ? 1 : Height / ContentBounds.Y)));
+                var scrollpos = new Point((int)(X + Width - 4 - BorderSize), (int)(Y + 1 - textpos.Y * (float.IsInfinity(Height / ContentBounds.Y) ? 1 : Height / ContentBounds.Y)));
                 var scrollsize = new Point(3, h > Height ? (int)Height - 2 : h);
                 Batch.DrawFill(new Rectangle(scrollpos, scrollsize), new Color(155, 155, 155, 255));
             }

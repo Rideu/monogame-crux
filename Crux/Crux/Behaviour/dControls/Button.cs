@@ -57,7 +57,7 @@ namespace Crux.dControls
         Color cl;
         internal override void Initialize()
         {
-            cl = cl == default(Color) ? Owner.FormColor : cl;
+            cl = cl == default(Color) ? Owner.BackColor : cl;
             ID = Owner.GetControlsCount + 1;
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
             BorderColor = cl * 1.5f;
@@ -120,7 +120,7 @@ namespace Crux.dControls
                 Batch.DrawFill(Bounds, BorderColor); // Primary
                 Batch.DrawFill(Bounds.InflateBy(-2), new Color(cl * f, 1f)); // Primary
                 if (Tex != null)
-                    Batch.Draw(Tex, Bounds, FormColor);
+                    Batch.Draw(Tex, Bounds, BackColor);
             }
             Batch.End();
 

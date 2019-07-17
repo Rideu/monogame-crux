@@ -26,11 +26,21 @@ namespace Crux.dControls
         public override string Text { get => text; set { text = value; } }
 
         public Color SliderColor { get; set; } = Palette.LightenGray;
-        public Color BackColor { get; set; } = Palette.DarkenGray;
-
+        float slscale;
+        /// <summary>
+        /// Get or set slider scale in float range of 0 to 1
+        /// </summary>
+        public float SliderScale { get => slscale; set { slscale = value.Clamp(0, 1); ChangeType(dtype); } }
 
         float val;
-        public float Value { get { return val; } set { val = value.Clamp(0, 1); Invalidate(); } }
+        public float Value
+        {
+            get { return val; }
+            set
+            {
+                val = value.Clamp(0, 1); Invalidate();
+            }
+        }
 
         public enum Type { Vertical, Horizontal }
         Type dtype;
@@ -75,19 +85,19 @@ namespace Crux.dControls
             }
             else
             {
-                h = (int)(Height * .02f) == 0 ? (int)(Height * .02f) + 1 : (int)(Height * .02f) + 2;
+                h = (int)(Height * .2f) == 0 ? (int)(Height * .2f) + 1 : (int)(Height * .2f) + 2;
                 w = (int)Width;
             }
             if (fstyle == FillStyle.Slider)
-                slider = new Rectangle(Bounds.Location.X + (int)(Width * val - slider.Width * (val - 0.5f) - slider.Width / 2), Bounds.Location.Y - 1, w, h);
+                slider = Rectangle(Bounds.Location.X + (Width * val - slider.Width * (val - 0.5f) - slider.Width / 2), Bounds.Location.Y - 1, w, h);
             else
-                slider = new Rectangle(Bounds.Location.X, Bounds.Location.Y, (int)(Width * val), h);
+                slider = Rectangle(Bounds.Location.X, Bounds.Location.Y, (Width * val), h);
         }
 
         internal override void Initialize()
         {
             ID = Owner.GetControlsCount + 1;
-            Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
+            Bounds = Rectangle((Owner.X + X), (Owner.Y + Y), Width, Height);
             BorderColor = BackColor * 1.5f;
             ChangeType(dtype);
 
@@ -97,10 +107,9 @@ namespace Crux.dControls
         public override void Invalidate()
         {
             IsActive = IsHovering = IsHolding = false;
-            if (fstyle == FillStyle.Slider)
-                slider = new Rectangle(Bounds.Location.X + (int)(Width * val - slider.Width * (val - 0.5f) - slider.Width / 2), Bounds.Location.Y - 1, slider.Width, slider.Height);
-            else
-                slider = new Rectangle(Bounds.Location.X, Bounds.Location.Y, (int)(Width * val), slider.Height);
+
+            slider = fstyle == FillStyle.Slider ? GetSlider() : Rectangle(Bounds.Location.X, Bounds.Location.Y, (Width * val), slider.Height);
+
             foreach (var c in Controls)
             {
                 c.Update();
@@ -126,16 +135,25 @@ namespace Crux.dControls
                     }
                     else
                     {
-                        val = ((Core.MS.Position.ToVector2().Y - (Bounds.Y) - h / 2) / Height).Clamp(0, 1);
+                        val = ((Core.MS.Position.ToVector2().Y - h / 2 - (Bounds.Y)) / (Height - h)).Clamp(0, 1);
                     }
                     OnSlide?.Invoke();
                 }
             }
 
             if (fstyle == FillStyle.Slider)
-                slider = new Rectangle(Bounds.Location.X + (int)(Width * val - slider.Width * (val - 0.5f) - slider.Width / 2), Bounds.Location.Y - 1, slider.Width, slider.Height);
+                slider = GetSlider();
             else
-                slider = new Rectangle(Bounds.Location.X, Bounds.Location.Y, (int)(Width * val), slider.Height);
+                slider = Rectangle(Bounds.Location.X, Bounds.Location.Y, (Width * val), slider.Height);
+        }
+
+        Rectangle GetSlider()
+        {
+
+            return dtype == Type.Horizontal ?
+            Rectangle(Bounds.Location.X + (Width * val - slider.Width * (val - 0.5f) - slider.Width / 2), Bounds.Location.Y - 1, slider.Width, slider.Height)
+            :
+            Rectangle(Bounds.Location.X - 1, Bounds.Location.Y + (Height * val - slider.Height * (val - 0.5f) - slider.Height / 2), slider.Width, slider.Height);
         }
 
         public override void InnerUpdate()
@@ -153,15 +171,15 @@ namespace Crux.dControls
             {
                 Batch.DrawFill(Bounds, BorderColor);
                 Batch.DrawFill(Bounds.InflateBy(-1, -1), IsHovering ? BackColor * 0.9f : BackColor);
-                if (DispType == Type.Horizontal)
+                //if (DispType == Type.Horizontal)
                 {
                     Batch.DrawFill(slider, IsHovering ? SliderColor : SliderColor * 0.8f);
                 }
-                else
-                {
-                    Batch.DrawFill(new Rectangle(Bounds.Location.X - 1, Bounds.Location.Y + (int)(Height * val), slider.Width, slider.Height),
-                        IsHovering ? SliderColor : SliderColor * 0.8f);
-                }
+                //else
+                //{
+                //    Batch.DrawFill(new Rectangle(Bounds.Location.X - 1, Bounds.Location.Y + (int)(Height * val), slider.Width, slider.Height),
+                //        IsHovering ? SliderColor : SliderColor * 0.8f);
+                //}
                 //Batch.DrawFill(Bounds, Color.AliceBlue);
             }
             Batch.End();

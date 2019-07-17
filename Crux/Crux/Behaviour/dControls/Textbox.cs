@@ -209,7 +209,7 @@ namespace Crux.dControls
             Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
-                Batch.DrawFill(Bounds, FormColor);
+                Batch.DrawFill(Bounds, BackColor);
                 Batch.DrawFill(Bounds.InflateBy(-2), BorderColor * (InputMode ? 0.4f : 1f)); // Primary
             }
             Batch.End();
