@@ -52,9 +52,7 @@ namespace Crux.dControls
 
         //Texture2D Tex;
         Rectangle slider;
-
-        public override Action UpdateHandler { set { OnUpdate = value; } }
-        public override event Action OnUpdate;
+        
         public event Action OnSlide;
         #endregion
 
@@ -108,19 +106,19 @@ namespace Crux.dControls
         {
             IsActive = IsHovering = IsHolding = false;
 
-            slider = fstyle == FillStyle.Slider ? GetSlider() : Rectangle(Bounds.Location.X, Bounds.Location.Y, (Width * val), slider.Height);
+            //slider = fstyle == FillStyle.Slider ? GetSlider() : Rectangle(Bounds.Location.X, Bounds.Location.Y, (Width * val), slider.Height);
 
-            foreach (var c in Controls)
-            {
-                c.Update();
-            }
+            //foreach (var c in Controls)
+            //{
+            //    c.Update();
+            //}
         }
 
 
         public override void Update()
         {
-            UpdateBounds();
 
+            UpdateBounds();
             IsHovering = !true;
             if (Bounds.Contains(Core.MS.Position.ToVector2()))
                 IsHovering = true;
@@ -158,8 +156,9 @@ namespace Crux.dControls
 
         public override void InnerUpdate()
         {
+            slider = GetSlider();
             base.EventProcessor();
-            OnUpdate?.Invoke();
+            base.Update();
         }
 
         public override void Draw()

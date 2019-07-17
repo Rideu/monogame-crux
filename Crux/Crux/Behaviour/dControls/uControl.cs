@@ -102,11 +102,12 @@ namespace Crux.dControls
         }
         public abstract Align CurrentAlign { set; get; }
 
-        public abstract Action UpdateHandler { set; }
-        public abstract event Action OnUpdate;
+        public virtual Action OnControlUpdate { set => OnUpdate += value; }
+        public event Action OnUpdate;
         public event Action<uControl, ControlArgs> OnMouseEnter; internal bool OMEOccured;
         public event Action<uControl, ControlArgs> OnMouseLeave; internal bool OMLOccured = true;
         public event Action<uControl, ControlArgs> OnMouseScroll;
+
 
         internal bool F_Focus;
         public event EventHandler OnFocus;
@@ -202,7 +203,10 @@ namespace Crux.dControls
         /// <summary>
         /// Describes update-per-frame logic.
         /// </summary>
-        public abstract void Update();
+        public virtual void Update()
+        {
+            OnUpdate?.Invoke();
+        }
 
         public virtual void EventProcessor()
         {
@@ -247,7 +251,11 @@ namespace Crux.dControls
 
             F_Focus = IsActive;
         }
-        public abstract void InnerUpdate();
+        public virtual void InnerUpdate()
+        {
+            OnUpdate?.Invoke();
+            EventProcessor();
+        }
 
         public bool IsHovering { get; set; }
         public bool IsHolding { get; set; }

@@ -170,9 +170,7 @@ namespace Crux.dControls
 
         public event ControlEventHandler OnMouseLeftClicked;
         public event ControlEventHandler OnKeyUp;
-
-        public override Action UpdateHandler { set { OnUpdate = value; } }
-        public override event Action OnUpdate;
+        
 
         #region Constructors
 
@@ -533,7 +531,7 @@ namespace Crux.dControls
             {
                 c.InnerUpdate();
             }
-            OnUpdate?.Invoke();
+            base.Update();
         }
 
         public event Action OnDraw;

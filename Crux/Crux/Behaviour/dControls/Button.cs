@@ -21,9 +21,7 @@ namespace Crux.dControls
 
         private Align align = Align.None;
         public override Align CurrentAlign { set => align = value; get => align; }
-
-        public override Action UpdateHandler { set { OnUpdate = value; } }
-        public override event Action OnUpdate;
+        
 
         //PERF: wrap; precalculate text position in getter, then alter it's drawing code
         public override string Text { get => text; set { text = value; } }
@@ -75,7 +73,6 @@ namespace Crux.dControls
 
         public override void Update()
         {
-            UpdateBounds();
 
             IsClicked = !true;
             IsHovering = Bounds.Contains(Core.MS.Position.ToVector2());
@@ -103,8 +100,9 @@ namespace Crux.dControls
 
         public override void InnerUpdate()
         {
+            UpdateBounds();
             base.EventProcessor();
-            OnUpdate?.Invoke();
+            base.Update();
         }
 
         public override void Draw()

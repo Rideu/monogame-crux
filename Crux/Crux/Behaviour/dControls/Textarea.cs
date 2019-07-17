@@ -57,9 +57,7 @@ namespace Crux.dControls
 
 
         private Texture2D Tex;
-
-        public override Action UpdateHandler { set { OnUpdate = value; } }
-        public override event Action OnUpdate;
+    
         #endregion
 
         public Textarea(Vector4 posform)
@@ -142,7 +140,7 @@ namespace Crux.dControls
                 else textposspeed *= 0;
             }
             base.EventProcessor();
-            OnUpdate?.Invoke();
+            base.Update();
         }
 
         Vector2 ContentBounds;

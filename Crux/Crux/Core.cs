@@ -89,20 +89,19 @@ namespace Crux
             //p.AddNewControl(new Button(10, 10, w, h, new Color(40, 40, 40)) { Text = "OK" });
             for (int r = 0; r < (int)p.Height / (h + 0); r++)
             {
-                //for (int i = 0; i < 2/*(int)p.Width / (w + 20)*/; i++)
-                //{
-                //    p.AddNewControl(pp = new Panel(10 + (w + 10) * i, 10 + 10 * r + r * h, w, h, new Color(80, 80, 80)));
-                //    for (int j = 0; j < 1; j++)
-                //    {
-                //    }
-                //}
-                p.AddNewControl(new Button(10, 10, 70, 320)
+                for (int i = 0; i < 2/*(int)p.Width / (w + 20)*/; i++)
                 {
-                    Text = "Continue"
-                });
+                    p.AddNewControl(pp = new Panel(10 + (w + 10) * i, 10 + 10 * r + r * h, w, h, new Color(80, 80, 80)));
+
+                }
             }
 
-            f.AddNewControl(new Slider(20, 80, 10, 200, Slider.Type.Vertical) { Filler = Slider.FillStyle.Slider });
+            p.AddNewControl(new Button(10, 10, 70, 320)
+            {
+                Text = "Continue"
+            });
+
+            //f.AddNewControl(new Slider(20, 80, 10, 200, Slider.Type.Vertical) { Filler = Slider.FillStyle.Slider });
             //f.AddNewControl(new Slider(50, 50, 200, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
 
             f.CreateLayout(hud_form_headname,

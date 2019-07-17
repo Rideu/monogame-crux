@@ -22,16 +22,13 @@ namespace Crux.dControls
         private Align align = Align.None;
         public override Align CurrentAlign { set { align = value; } get => align; }
         
-        public override Action UpdateHandler { set { OnUpdate += value; } }
-
         //TODO: wrap
         public override string Text { get => text; set { text = value; } }
 
         Slider ContentSlider;
 
         private Texture2D Tex;
-
-        public override event Action OnUpdate;
+        
         #endregion
 
         public Panel(Vector4 posform, Color color = default(Color))
@@ -85,8 +82,8 @@ namespace Crux.dControls
                 c.Update();
             }
             if (!ContentSlider.IsVisible) return;
-            ContentSlider.Invalidate();
-            ContentSlider.Update();
+            //ContentSlider.Invalidate();
+            //ContentSlider.Update();
         }
 
         public uControl ActiveControl;
@@ -120,7 +117,7 @@ namespace Crux.dControls
                     ActiveControl?.Update();
                 }
 
-                if (!ContentSlider.IsVisible) return;
+                //if (!ContentSlider.IsVisible) return;
                 ContentSlider.Update();
             }
         }
@@ -131,7 +128,7 @@ namespace Crux.dControls
         {
             UpdateBounds();
 
-            if (RelContentScale < 1)
+            if (RelContentScale < 1 && Controls.Count > 0)
             {
                 if (MappingOffset.Y > 0)
                 {
@@ -145,8 +142,7 @@ namespace Crux.dControls
                 }
 
 
-                if (ContentSlider.IsVisible)
-                    ContentSlider.Value = MappingOffset.Y / (-ContentOverflow);
+                ContentSlider.Value = MappingOffset.Y / (-ContentOverflow);
 
                 MappingOffset += SlideSpeed;
                 if (SlideSpeed.Length() > .1f)
@@ -160,14 +156,14 @@ namespace Crux.dControls
                 c.InnerUpdate();
             }
 
-            if (ContentSlider.IsVisible)
+            //if (ContentSlider.IsVisible)
             {
                 ContentSlider.UpdateBounds();
                 ContentSlider.InnerUpdate();
             }
 
-            OnUpdate?.Invoke();
             base.EventProcessor();
+            base.Update();
         }
 
         public override void Draw()
@@ -196,8 +192,8 @@ namespace Crux.dControls
                 }
             }
 
-            if (ContentSlider.IsVisible)
-                ContentSlider.Draw();
+            //if (ContentSlider.IsVisible)
+            ContentSlider.Draw();
 
             Batch.Begin(SpriteSortMode.Deferred, null, null, null);
             {
