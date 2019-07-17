@@ -21,19 +21,13 @@ namespace Crux.dControls
 
         private int ID;
         public override int GetID { get { return ID; } }
-
-        private Align align = Align.None;
-        public override Align CurrentAlign { set { align = value; Translate(); } get => align; }
-
+        
         public override string Text { get { return text.Text; } set { text.UpdateText(value); } }
         SpriteFont font = Core.font;
         public SpriteFont Font { get => font; set => font = value; }
         new TextBuilder text;
         bool InputMode;
-
-        public override Action UpdateHandler { set { OnUpdate = value; } }
-        public override event Action OnUpdate;
-
+        
         #endregion
 
         public Textbox(Vector4 posform)
@@ -182,13 +176,13 @@ namespace Crux.dControls
                 rlt.Update((float)gt.ElapsedGameTime.TotalMilliseconds);
                 delay.Update((float)gt.ElapsedGameTime.TotalMilliseconds);
             }
+            base.Update();
         }
 
         public override void InnerUpdate()
         {
             InputMode = true; // InputMode && Control.MouseHoverOverG(Bounds);
             base.EventProcessor();
-            OnUpdate?.Invoke();
         }
 
         private void Translate()

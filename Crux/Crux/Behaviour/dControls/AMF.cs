@@ -162,10 +162,7 @@ namespace Crux.dControls
         public override int GetID { get { return id; } }
 
         public override Rectangle DrawingBounds => Bounds;
-
-        private Align align;
-        public override Align CurrentAlign { set { align = value; } get => align; } // !Unused
-
+        
         public delegate void ControlEventHandler(object sender, ControlArgs e);
 
         public event ControlEventHandler OnMouseLeftClicked;

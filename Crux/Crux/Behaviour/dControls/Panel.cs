@@ -19,8 +19,6 @@ namespace Crux.dControls
         private int ID;
         public override int GetID { get { return ID; } }
 
-        private Align align = Align.None;
-        public override Align CurrentAlign { set { align = value; } get => align; }
         
         //TODO: wrap
         public override string Text { get => text; set { text = value; } }
@@ -120,6 +118,7 @@ namespace Crux.dControls
                 //if (!ContentSlider.IsVisible) return;
                 ContentSlider.Update();
             }
+            base.Update();
         }
 
         Vector2 SlideSpeed;
@@ -163,7 +162,6 @@ namespace Crux.dControls
             }
 
             base.EventProcessor();
-            base.Update();
         }
 
         public override void Draw()

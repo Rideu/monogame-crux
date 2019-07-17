@@ -18,9 +18,6 @@ namespace Crux.dControls
 
         private int ID;
         public override int GetID { get { return ID; } }
-
-        private Align align = Align.None;
-        public override Align CurrentAlign { set => align = value; get => align; }
         
 
         //PERF: wrap; precalculate text position in getter, then alter it's drawing code
@@ -95,14 +92,13 @@ namespace Crux.dControls
             {
                 EnterHold = false;
             }
-
+            base.Update();
         }
 
         public override void InnerUpdate()
         {
             UpdateBounds();
             base.EventProcessor();
-            base.Update();
         }
 
         public override void Draw()

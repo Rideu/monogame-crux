@@ -19,10 +19,7 @@ namespace Crux.dControls
 
         int ID;
         public override int GetID { get { return ID; } }
-
-        Align align = Align.None;
-        public override Align CurrentAlign { set { align = value; } get => align; }
-
+        
         public override string Text { get => text; set { text = value; } }
 
         public Color SliderColor { get; set; } = Palette.LightenGray;
@@ -143,6 +140,7 @@ namespace Crux.dControls
                 slider = GetSlider();
             else
                 slider = Rectangle(Bounds.Location.X, Bounds.Location.Y, (Width * val), slider.Height);
+            base.Update();
         }
 
         Rectangle GetSlider()
@@ -158,7 +156,6 @@ namespace Crux.dControls
         {
             slider = GetSlider();
             base.EventProcessor();
-            base.Update();
         }
 
         public override void Draw()

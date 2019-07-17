@@ -19,17 +19,13 @@ namespace Crux.dControls
 
         private int ID;
         public override int GetID { get { return ID; } }
-
-        private Align align = Align.None;
-        public override Align CurrentAlign { set { align = value; } get => align; }
+        
 
         public bool IsChecked;
 
         //TODO: wrap
         public override string Text { get => text; set { text = value; } }
-
-        public override Action UpdateHandler { set { OnUpdate = value; } }
-        public override event Action OnUpdate;
+        
 
         private Texture2D Tex;
         #endregion
@@ -85,12 +81,12 @@ namespace Crux.dControls
             {
                 IsChecked = !IsChecked;
             }
-
+            base.Update();
         }
 
         public override void InnerUpdate()
         {
-            OnUpdate?.Invoke();
+            base.EventProcessor();
         }
 
         public override void Draw()

@@ -18,10 +18,7 @@ namespace Crux.dControls
 
         private int ID;
         public override int GetID { get { return ID; } }
-
-        private Align align = Align.None;
-        public override Align CurrentAlign { set { align = value; } get => align; }
-
+        
         SpriteFont font = Core.font;
         public SpriteFont Font
         {
@@ -121,6 +118,7 @@ namespace Crux.dControls
                     }
                 }
             }
+            base.Update();
         }
 
         public override void InnerUpdate()
@@ -140,7 +138,6 @@ namespace Crux.dControls
                 else textposspeed *= 0;
             }
             base.EventProcessor();
-            base.Update();
         }
 
         Vector2 ContentBounds;

@@ -15,9 +15,6 @@ namespace Crux.dControls
         public override string Text { get => tc; set { tc = value; Width = font.MeasureString(tc).X; } } // TODO: 
         public float TextSize { get; set; } = 1f;
         
-        public override Align CurrentAlign { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public override Action UpdateHandler { set => throw new NotImplementedException(); }
-        public override event Action OnUpdate;
         #endregion
 
         public Label(Vector4 posform)
@@ -43,7 +40,8 @@ namespace Crux.dControls
 
         public override void Update()
         {
-            OnUpdate?.Invoke();
+
+            base.Update();
         }
 
         public override void InnerUpdate()

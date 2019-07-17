@@ -14,11 +14,7 @@ namespace Crux.dControls
         string tc;
         public override string Text { get => tc; set { tc = value; Width = font.MeasureString(tc).X; } }
         public float TextSize { get; set; } = 1f;
-
-        public override Align CurrentAlign { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public override Action UpdateHandler { set => throw new NotImplementedException(); }
-        public override event Action OnUpdate;
-
+        
         public event EventHandler OnLeftClick;
         public event EventHandler OnRightClick;
         #endregion
@@ -69,12 +65,12 @@ namespace Crux.dControls
             {
                 EnterHold = false;
             }
+            base.Update();
         }
 
         public override void InnerUpdate()
         {
             base.EventProcessor();
-            OnUpdate?.Invoke();
         }
 
         public override void Draw()

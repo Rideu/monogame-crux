@@ -100,7 +100,8 @@ namespace Crux.dControls
             Bottom,
             None
         }
-        public abstract Align CurrentAlign { set; get; }
+        private Align align = Align.None;
+        public virtual Align CurrentAlign { set { align = value; } get => align; }
 
         public virtual Action OnControlUpdate { set => OnUpdate += value; }
         public event Action OnUpdate;
