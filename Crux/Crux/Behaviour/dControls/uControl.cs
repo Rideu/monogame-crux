@@ -278,12 +278,6 @@ namespace Crux.dControls
             ScissorTestEnable = true,
         };
 
-        // TODO: deprecated
-        public Rectangle GetRelativeBounds() => Rectangle((X + Owner.X + (Owner.Owner == null ? 0 : Owner.Owner.X)), (Y + Owner.Y + (Owner.Owner == null ? 0 : Owner.Owner.Y)), Width, Height);
-
-        // TODO: deprecated
-        public Point GetOwnerClipping() => new Point((int)Width + (int)(Owner.Width - Width - X), (int)Height + (int)(Owner.Height - Height - Y));
-
         /// <summary>
         /// Describes draw-per-frame logic.
         /// </summary>
@@ -347,12 +341,13 @@ namespace Crux.dControls
             updCalled = true;
         }
 
-        public static void Draw(SpriteBatch batch)
+        public static void Draw(SpriteBatch batch, GameTime gt)
         {
             batch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, null);
             if (updCalled)
             {
-                batch.DrawString(dbgFont, GetDebugInfo(), new Vector2(10), Color.White);
+                batch.DrawString(dbgFont, GetDebugInfo(), new Vector2(10, 30), Color.White);
+                batch.DrawString(dbgFont, $"{(float)gt.ElapsedGameTime.TotalMilliseconds:0.000}", new Vector2(10), Color.White);
             }
             batch.End();
             updCalled = false;

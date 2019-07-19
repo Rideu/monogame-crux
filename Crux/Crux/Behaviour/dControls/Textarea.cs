@@ -81,7 +81,7 @@ namespace Crux.dControls
             var scroll = new Rectangle(0, 0, 5, (int)Height);
             // left top right bottom
             var padding = new Rectangle(/*left*/2 + scroll.Width,/*top*/2,/*right*/3,/*bottom*/0);
-            text = new TextBuilder(Font, "{NULL TEXT}", new Vector2(X + (padding.X - scroll.Width), Y), new Vector2(Width - scroll.Width - padding.Width, Height), Color.White, true, this);
+            text = new TextBuilder(Font, "", new Vector2((padding.X - scroll.Width), 0), new Vector2(Width - scroll.Width - padding.Width, Height), Color.White, true, this);
 
             OnMouseLeave += delegate
             {
@@ -177,7 +177,7 @@ namespace Crux.dControls
 
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                text.Render(Batch, new Vector2(Owner.X, Owner.Y + 1) + textpos);
+                text.Render(Batch, new Vector2(X + 1, Y + 1) + textpos);
                 //Batch.DrawString(font, Text, (new Vector2(Owner.X + X, Owner.Y + Y) + new Vector2(4, 2) + textpos)/*.ToPoint().ToVector2()*/, Color.White, 0f, new Vector2(), 1f, SpriteEffects.None, 1f);
             }
             Batch.End();

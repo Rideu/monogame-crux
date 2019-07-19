@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -11,6 +12,7 @@ using System.Text.RegularExpressions;
 using static System.Text.RegularExpressions.Regex;
 using static System.Math;
 using static Crux.Core;
+using static Crux.Simplex;
 
 using Crux.dControls;
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
@@ -56,7 +58,7 @@ namespace Crux
             p = pos;
             s = size;
             col = color;
-            owner = label;
+            //owner = label;
             UpdateText(text);
         }
 
@@ -70,9 +72,9 @@ namespace Crux
             var l = 0;
             var c = Matches(t, @"[^\s]+|( +)");
             ct = Replace(t = (text/*, @" +", " "*/), "{.+?}", "");
-            w.Clear();
+            wordslist.Clear();
 
-            sub sb = null;
+            word sb = null;
             foreach (Match m in c)
             {
                 var n = m.Value;
@@ -80,7 +82,7 @@ namespace Crux
                 len += n.Length;
                 var rt = n;
                 var tsl = ws.X;// PERF: avoid FindAll with nulling tsl on new line and ++ it on each n iteration
-                w.FindAll(u => u.l == l).ForEach(u => { tsl += (int)u.b.Width; });
+                wordslist.FindAll(u => u.line == l).ForEach(u => { tsl += (int)u.bounds.Width; });
                 if ((s.X > 0 ? (rt.Contains("^n") || tsl > s.X) : false) && !string.IsNullOrWhiteSpace(n))
                 {
                     rt = n.Replace("^n", "");
@@ -91,40 +93,40 @@ namespace Crux
                     l += 1;
                     // }
                 }
-                sb = new sub(p + cp, f, rt, col, ws.X, ws.Y, l, fontscale);
+                sb = new word(p + cp, f, rt, col, ws.X, ws.Y, l, fontscale);
                 if (af)
                     F_C_APPLY(sb);
                 ws = f.MeasureString(sb) * fontscale;
-                sb.nw[0] = w.Count > 1 ? w[w.Count - 1] : null;
-                if (w.Count > 1)
-                    w[w.Count - 1].nw[1] = sb;
+                sb.prevnext[0] = wordslist.Count > 1 ? wordslist[wordslist.Count - 1] : null;
+                if (wordslist.Count > 1)
+                    wordslist[wordslist.Count - 1].prevnext[1] = sb;
                 cp += new Vector2(ws.X/* + sp.X*/, 0);
-                w.Add(new sub((p + cp) - new Vector2(spc.X, 0), f, " ", col, spc.X, sp.Y, l, fontscale));
-                w.Add(sb);
+                wordslist.Add(new word((p + cp) - new Vector2(spc.X, 0), f, " ", col, spc.X, sp.Y, l, fontscale));
+                wordslist.Add(sb);
             }
             if (sb != null) // TODO: clutch
-                ts = new Vector2(s.X, sb.b.Y);
+                ts = new Vector2(s.X, sb.bounds.Y);
         }
 
         public void Update()
         {
-            foreach (var s in w) //TODO: w update
+            foreach (var s in wordslist) //TODO: w update
             {
-                s.fc = owner != null ? owner.IsActive : true;
+                //s.fc = owner != null ? owner.IsActive : true;
                 s.upd(sp);
             }
         }
 
-        void F_C_APPLY(sub s)
+        void F_C_APPLY(word s)
         {
-            while (IsMatch(s.t, "{.+?}")) // Keep processing commands until they gone...
+            while (IsMatch(s.text, "{.+?}")) // Keep processing commands until they gone...
             {
-                var pc = rule.al(s.t); // Parse command
+                var pc = rule.al(s.text); // Parse command
                 if (pc.ct != null)
                 {
-                    s.t = Replace(s.t, ".+?}+", "");
+                    s.text = Replace(s.text, ".+?}+", "");
                     // Set word's bounds width. Example: ":h" directive won't work properly if mouse hovers over this word
-                    s.b.Width = (int)(f.MeasureString(s.t).X * fontscale);
+                    s.bounds.Width = (int)(f.MeasureString(s.text).X * fontscale);
                     if (pc.ish)
                     {
                         s.hov = pc;
@@ -145,61 +147,66 @@ namespace Crux
 
         #region sub desc
 
-        List<sub> w = new List<sub>();
+        List<word> wordslist = new List<word>();
 
-        internal class sub  // A dedicated word pointer
+        internal class word  // A dedicated word pointer
         {
-            public SpriteFont f; // Word's spritefont
-            public Rectangle b; // Word's bounds
-            public string t; // Text
+            public SpriteFont font; // Word's spritefont
+            public Rectangle bounds; // Word's bounds
+            public string text; // Text
             public bool fc; // Formatting condition
-            public Color c;
-            public Color dc; // Default color. Required for :h directive
-            public object[] nw; // Reference-list for previous and next words
-            public float ww; // Word width
-            public float wh; // Word height
-            public int l; // Word's line index
-            public float sc; // Word scale
-            public sub(Vector2 p, SpriteFont f, string t, Color c, float ww, float wh, int l, float sc)
+            public Color color;
+            public Color defaultcol; // Default color. Required for :h directive
+            public object[] prevnext; // Reference-list for previous and next words
+            public float width; // Word width
+            public float height; // Word height
+            public int line; // Word's line index
+            public float scale; // Word scale
+            public word(Vector2 p, SpriteFont f, string t, Color c, float ww, float wh, int l, float sc)
             {
-                this.t = t; this.f = f; dc = this.c = c; this.ww = ww; this.wh = wh; this.l = l; nw = new object[] { null, null }; this.sc = sc;
-                b = new Rectangle(p.ToPoint(), (f.MeasureString(t) * sc).ToPoint());
+                text = t; font = f; defaultcol = color = c; width = ww; height = wh; line = l; prevnext = new object[] { null, null }; scale = sc;
+                bounds = Rectangle(p.X, p.Y, ww, wh);
                 fc = true;
-                chs = new List<string>(t.Split(new string[] { "" }, StringSplitOptions.RemoveEmptyEntries)).ConvertAll(n => new ch() { chr = n.ToCharArray()[0], c = c });
+                Parallel.ForEach(t, n => chs.Add(new w_char(n, c)));;
                 hov = def = new rule()
                 {
-                    aplog = delegate (sub s, string v) { s.c = c; s.f = f; return s; },
+                    aplog = delegate (word s, string v) { s.color = c; s.font = f; return s; },
                 };
             }
 
             internal rule def, cur, hov;
             public void upd(Vector2 sp)
             {
-                var bd = new Rectangle(b.Location + sp.ToPoint(), b.Size);
+                var bd = new Rectangle(bounds.Location + sp.ToPoint(), bounds.Size);
                 //if (Control.MouseHoverOverG(bd))
                 {
                     cur = Control.MouseHoverOverG(bd) && fc ? hov : def;
                     cur.aplog(this, cur.val);
                 }
             }
-            public List<ch> chs;
+            public List<w_char> chs = new List<w_char>();
             public Action ond = null; // Action applied when word is drawn.
-            //public void atc(Action a) => onh.Add(a); // Attach new action
-            public static implicit operator string(sub t) { return t.t; }
-            public static implicit operator Vector2(sub t) { return t.b.Location.ToVector2(); }
-            public static implicit operator Color(sub t) { return t.c; }
-            public static implicit operator Rectangle(sub t) { return t.b; }
-            public static implicit operator SpriteFont(sub t) { return t.f; }
+            public static implicit operator string(word t) { return t.text; }
+            public static implicit operator Vector2(word t) { return t.bounds.Location.ToVector2(); }
+            public static implicit operator Color(word t) { return t.color; }
+            public static implicit operator Rectangle(word t) { return t.bounds; }
+            public static implicit operator SpriteFont(word t) { return t.font; }
         }
 
         //List<subgroup> subs = new List<subgroup>();
 
         //internal class subgroup : List<sub> { } // Proto
 
-        internal struct ch // !Unused
+        internal struct w_char // !Unused
         {
             public char chr;
-            public Color c;
+            public Color col;
+
+            public w_char(char ch, Color col)
+            {
+                chr = ch;
+                this.col = col;
+            }
         }
         #endregion
 
@@ -208,7 +215,7 @@ namespace Crux
             public string ct; // std marking: {.ct}
             internal bool ish;
             internal string val;
-            public Func<sub, string, sub> aplog; // Delegate that applies command's logic.
+            public Func<word, string, word> aplog; // Delegate that applies command's logic.
             //public sub p(sub s, string v = "") => logic.Invoke(s, v); // "v" is addition parameters for commands. Unused currently.
             //public bool pr; // Propagator flag that allows apply specified formatting for next words until new command defined.
             public static rule al(string c) // Command analyser. Selects proper command, applies directive for it if there is.
@@ -237,28 +244,28 @@ namespace Crux
         static bool pb;
         static rule pr; // A primary command that applies formatting.
 
-        static List<sub> tg = new List<sub>();
+        static List<word> tg = new List<word>();
 
         static List<rule> rules = new List<rule>() // A predefined list of commands
         {
             new rule() // Sample. A command that makes words blue.
             {
                 ct = "{blue}", // Define command text
-                aplog = delegate(sub s, string v) // Define an action that will be applied for specified word 
+                aplog = delegate(word s, string v) // Define an action that will be applied for specified word 
                 {
                     //if(v)
-                    s.c = new Color(0,0,255);
+                    s.color = new Color(0,0,255);
                     return s;
                 }
             },
             new rule()
             {
                 ct = "{#}",
-                aplog = delegate(sub s, string v)
+                aplog = delegate(word s, string v)
                 {
                     var m = Matches(v, "\\d+");
 
-                    s.c = new Color(int.Parse(m[0].Value), int.Parse(m[1].Value), int.Parse(m[2].Value));
+                    s.color = new Color(int.Parse(m[0].Value), int.Parse(m[1].Value), int.Parse(m[2].Value));
                     return s;
                 }
             },
@@ -290,7 +297,7 @@ namespace Crux
             new rule()
             {
                 ct = "{exec}",
-                aplog = delegate(sub s, string v)
+                aplog = delegate(word s, string v)
                 {
 
                     return s;
@@ -299,7 +306,7 @@ namespace Crux
             new rule()
             {
                 ct = "{@p}", // A null-command that prevents continued propagation
-                aplog = delegate(sub s, string v)
+                aplog = delegate(word s, string v)
                 {
                     pb = false;
                     return s;
@@ -322,8 +329,9 @@ namespace Crux
 
         public void Render(SpriteBatch batch)
         {
+            throw new Exception("Call Render(SpriteBatch, Vector2) instead");
             var pos = owner != null ? owner.Bounds.Location.ToVector2() : default;
-            w.ForEach(n =>
+            wordslist.ForEach(n =>
             {
                 n.ond?.Invoke();
                 batch.DrawWord(n, pos);
@@ -332,11 +340,19 @@ namespace Crux
 
         public void Render(SpriteBatch batch, Vector2 pos)
         {
-            w.ForEach(n =>
+            Parallel.ForEach(wordslist, n =>
             {
-                n.ond?.Invoke();
-                batch.DrawWord(n, pos);
+                lock (batch)
+                {
+                    n.ond?.Invoke();
+                    batch.DrawWord(n, pos);
+                }
             });
+            //w.ForEach(n =>
+            //{
+            //    n.ond?.Invoke();
+            //    batch.DrawWord(n, pos);
+            //});
         }
 
         public static implicit operator string(TextBuilder tb)
@@ -353,17 +369,17 @@ namespace Crux
 
     public static class Complex
     {
-        internal static void DrawWord(this SpriteBatch b, TextBuilder.sub w)
+        internal static void DrawWord(this SpriteBatch b, TextBuilder.word w)
         {
-            b.DrawString(w, w, w, w, 0f, Vector2.Zero, w.sc, SpriteEffects.None, 1f);
+            b.DrawString(w, w, w, w, 0f, Vector2.Zero, w.scale, SpriteEffects.None, 1f);
         }
 
-        internal static void DrawWord(this SpriteBatch b, TextBuilder.sub w, Vector2 pos)
+        internal static void DrawWord(this SpriteBatch b, TextBuilder.word w, Vector2 pos)
         {
             //var wb = w.b;
             //wb.Location += pos.ToPoint(); debug
             //b.DrawFill(wb, new Color(52, 115, 52, 40));
-            b.DrawString(w, w, w + pos, w, 0f, Vector2.Zero, w.sc, SpriteEffects.None, 1f);
+            b.DrawString(w, w, w + pos, w, 0f, Vector2.Zero, w.scale, SpriteEffects.None, 1f);
         }
     }
 }

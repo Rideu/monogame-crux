@@ -437,10 +437,12 @@ namespace Crux
 
         public static Rectangle Rectangle(float x, float y, float w, float h) => new Rectangle((int)x, (int)y, (int)w, (int)h);
 
+        public static Rectangle Rectangle(Vector2 l, Vector2 s) => new Rectangle((int)l.X, (int)l.Y, (int)s.X, (int)s.Y);
+
         public static Rectangle OffsetBy(this Rectangle src, Point offset) { src.Location += offset; return src; }
 
         public static Rectangle OffsetBy(this Rectangle src, float x, float y) { src.Location += new Point((int)x, (int)y); return src; }
-        
+
         public static Rectangle Intersect(this Rectangle r1, Rectangle r2) => sRectangle.Intersect(r1, r2);
 
         public static Rectangle InflateBy(this Rectangle r1, float v, float h) { r1.Inflate(v, h); return r1; }
@@ -688,5 +690,5 @@ namespace Crux
         }
 
     }
-    
+
 }

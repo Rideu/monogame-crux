@@ -70,14 +70,14 @@ namespace Crux
             });
 
             #region Sample text
-            if(false)
+            if (true)
             {
                 Textarea t;
                 Slider s;
                 f.AddNewControl(s = new Slider(20, 60, 415, 10, Slider.Type.Horizontal));
                 f.AddNewControl(t = new Textarea(20, 80, 415, 280));
 
-                s.OnSlide += delegate { t.FontSize = 0.8f + (int)(s.Value * 10) * 0.1f; };
+                s.OnSlide += delegate { t.FontSize = 0.2f + (int)(s.Value * 10) * 0.1f; };
 
                 (t as Textarea).Text =
                 @"How to... {#(65,160,216):p}Warp{@p}:
@@ -93,29 +93,34 @@ namespace Crux
             }
             #endregion
 
-            Panel p, pp;
-            f.AddNewControl(p = new Panel(50, 80, 410, 210, Palette.DarkenGray));
-            var w = 100;
-            var h = 200;
-            //p.AddNewControl(new Button(10, 10, w, h, new Color(40, 40, 40)) { Text = "OK" });
-            for (int r = 0; r < (int)p.Height / (h + 0); r++)
+            #region Panels
+            if (false)
             {
-                //for (int i = 0; i < 2/*(int)p.Width / (w + 20)*/; i++)
-                //{
-                //    p.AddNewControl(pp = new Panel(10 + (w + 10) * i, 10 + 10 * r + r * h, w, h, new Color(80, 80, 80))
-                //    {
-                //        IsFixed = true,
-                //    });
+                Panel p, pp;
+                f.AddNewControl(p = new Panel(110, 80, 410, 210, Palette.DarkenGray));
+                var w = 100;
+                var h = 200;
+                //p.AddNewControl(new Button(10, 10, w, h, new Color(40, 40, 40)) { Text = "OK" });
+                for (int r = 0; r < (int)p.Height / (h + 0); r++)
+                {
+                    //for (int i = 0; i < 2/*(int)p.Width / (w + 20)*/; i++)
+                    //{
+                    //    p.AddNewControl(pp = new Panel(10 + (w + 10) * i, 10 + 10 * r + r * h, w, h, new Color(80, 80, 80))
+                    //    {
+                    //        IsFixed = true,
+                    //    });
 
-                //}
+                    //}
+                }
+
+                p.AddNewControl(new Textbox(120, 10, 120, 50) { KeyPressedSound = keyPress });
+                p.AddNewControl(new Button(10, 10, 70, 320)
+                {
+                    Text = "Continue"
+                });
             }
+            #endregion
 
-            p.AddNewControl(new Textbox(80, 10, 80, 20) { KeyPressedSound = keyPress });
-
-            p.AddNewControl(new Button(10, 10, 70, 320)
-            {
-                Text = "Continue"
-            });
 
             f.AddNewControl(new Slider(20, 80, 10, 200, Slider.Type.Vertical) { Filler = Slider.FillStyle.Slider });
             f.AddNewControl(new Slider(50, 50, 200, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
@@ -246,7 +251,7 @@ namespace Crux
 
             FormManager.Draw();
 
-            DebugDevice.Draw(spriteBatch);
+            DebugDevice.Draw(spriteBatch, gameTime);
             base.Draw(gameTime);
         }
     }

@@ -55,7 +55,7 @@ namespace Crux.dControls
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
             OnMouseLeave += delegate { Invalidate(); };
 
-            text = new TextBuilder(Font, "[Null text]", new Vector2(X /*+ (padding.X - scroll.Width)*/, Y), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, true/*, this*/);
+            text = new TextBuilder(Font, "[Null text]", new Vector2(0 /*+ (padding.X - scroll.Width)*/, 0), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, true/*, this*/);
 
             t = new Timer(1000);
             t.OnFinish += delegate { t.Reset(false); t.Start(); };
@@ -218,7 +218,7 @@ namespace Crux.dControls
             Batch.End();
             //Batch.GraphicsDevice.ScissorRectangle = Batch.GraphicsDevice.ScissorRectangle.InflateBy(-1);
             Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-BorderSize);
-            Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
+            Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState: rasterizer*/);
             {
                 Vector2 cs = new Vector2();
                 Vector2 tsc = new Vector2();
@@ -227,21 +227,16 @@ namespace Crux.dControls
                 {
                     var sub = text.Text.Substring(0, caretpos);
                     tsc = font.MeasureString(sub);
-                    //var sp = text.Space;
-                    //var cc = sub.Count(n => n == ' ');
-                    //var rep = sub.Replace(" ", " ");
-                    //var mea = font.MeasureString(rep);
-                    //cs = /*mea + */new Vector2((sp.X) /*+ font.Spacing * sub.Length*/, 0);
                     cs = tsc;
                     var b = caretpos == text.Text.Length;
                 }
 
                 var offset = (cs.X > Width / 2 ? Width / 2 - cs.X /*+ (ts.X - cs.X < Width / 2? ts.X - cs.X : 0)*/ /*(caretpos == text.Text.Length ? Width / 2  : 0)*/ : 0);
-
+                Batch.DrawFill(Bounds, Color.Red * 0.5f);
                 Line cline = new Line(
-                    (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, 0 + Bounds.Y)).ToPoint().ToVector2(),
-                    (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, -0 + Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
-                text.Render(new Vector2(Owner.X + BorderSize + offset, 2 + Owner.Y));
+                    (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, BorderSize + Bounds.Y)).ToPoint().ToVector2(),
+                    (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, -BorderSize + Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
+                text.Render(new Vector2(X + BorderSize + offset, 2 + Y));
 
 
                 //text.Render(Batch, new Vector2(Owner.X, Owner.Y + 1)/* + textpos*/);
@@ -256,7 +251,7 @@ namespace Crux.dControls
 
                 //Batch.Begin(SpriteSortMode.Deferred);
                 if (InputMode)
-                    Batch.DrawFill(Rectangle(cline.Start.X, cline.Start.Y, 1, Bounds.Height), new Color(255, 255, 255, 255) * ease(t));
+                    Batch.DrawFill(Rectangle(new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, BorderSize + Bounds.Y), new Vector2(1, Bounds.Height)), new Color(255, 255, 255, 255) * ease(t));
 
                 //Batch.End();
                 //if (InputMode)
