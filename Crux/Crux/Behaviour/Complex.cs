@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -30,21 +31,23 @@ namespace Crux
     {
         SpriteFont f; public SpriteFont Font { set => f = value; get => f; }
 
-        string t; public string Text { get => t; set /*enwrite*/ => t = value; }
+        string t; public string Text { get => t; set => t = value; }
+
         string ct; public string CleanText { get => ct; }
+
         int len; public int Length => len;
 
-        Vector2 sp; public Vector2 ScrollPosition { get => sp; set /*enwrite*/ => sp = value; }
+        Vector2 sp; public Vector2 ScrollPosition { get => sp; set => sp = value; }
 
-        Vector2 p; public Vector2 Position { get => p; set /*enwrite*/ => p = value; }
+        Vector2 p; public Vector2 Position { get => p; set => p = value; }
 
         Vector2 spc; public Vector2 Space => spc;
 
         Color col; public Color Color => col;
 
         Vector2 s; public Vector2 GetInitialSize => s;
-        Vector2 ts;
-        public Vector2 GetTotalSize => ts;
+
+        Vector2 textscale; public Vector2 GetTotalSize => textscale;
         Textarea owner; // TODO: to uControl
         bool af;
         float fontscale = 1f; public float FontSize { get => fontscale; set { fontscale = value; UpdateText(Text); } }
@@ -58,7 +61,7 @@ namespace Crux
             p = pos;
             s = size;
             col = color;
-            //owner = label;
+            owner = label;
             UpdateText(text);
         }
 
@@ -93,7 +96,7 @@ namespace Crux
                     l += 1;
                     // }
                 }
-                sb = new word(p + cp, f, rt, col, ws.X, ws.Y, l, fontscale);
+                sb = new word(p + cp, f, rt, col, ws.X, ws.Y, l, fontscale, this);
                 if (af)
                     F_C_APPLY(sb);
                 ws = f.MeasureString(sb) * fontscale;
@@ -101,18 +104,18 @@ namespace Crux
                 if (wordslist.Count > 1)
                     wordslist[wordslist.Count - 1].prevnext[1] = sb;
                 cp += new Vector2(ws.X/* + sp.X*/, 0);
-                wordslist.Add(new word((p + cp) - new Vector2(spc.X, 0), f, " ", col, spc.X, sp.Y, l, fontscale));
+                wordslist.Add(new word((p + cp) - new Vector2(spc.X, 0), f, " ", col, spc.X, sp.Y, l, fontscale, this));
                 wordslist.Add(sb);
             }
             if (sb != null) // TODO: clutch
-                ts = new Vector2(s.X, sb.bounds.Y);
+                textscale = new Vector2(s.X, sb.bounds.Y);
         }
 
         public void Update()
         {
             foreach (var s in wordslist) //TODO: w update
             {
-                //s.fc = owner != null ? owner.IsActive : true;
+                s.fc = owner != null ? owner.IsActive : true;
                 s.upd(sp);
             }
         }
@@ -145,10 +148,11 @@ namespace Crux
             }
         }
 
-        #region sub desc
+        #region word desc
 
         List<word> wordslist = new List<word>();
 
+        [DebuggerDisplay("Text: {text}")]
         internal class word  // A dedicated word pointer
         {
             public SpriteFont font; // Word's spritefont
@@ -162,12 +166,15 @@ namespace Crux
             public float height; // Word height
             public int line; // Word's line index
             public float scale; // Word scale
-            public word(Vector2 p, SpriteFont f, string t, Color c, float ww, float wh, int l, float sc)
+            public TextBuilder container;
+            public word(Vector2 p, SpriteFont f, string t, Color c, float ww, float wh, int l, float sc, TextBuilder builder)
             {
                 text = t; font = f; defaultcol = color = c; width = ww; height = wh; line = l; prevnext = new object[] { null, null }; scale = sc;
+                container = builder;
                 bounds = Rectangle(p.X, p.Y, ww, wh);
                 fc = true;
-                Parallel.ForEach(t, n => chs.Add(new w_char(n, c)));;
+                foreach (var n in t)
+                    chs.Add(new w_char(n, c));
                 hov = def = new rule()
                 {
                     aplog = delegate (word s, string v) { s.color = c; s.font = f; return s; },
@@ -178,7 +185,7 @@ namespace Crux
             public void upd(Vector2 sp)
             {
                 var bd = new Rectangle(bounds.Location + sp.ToPoint(), bounds.Size);
-                //if (Control.MouseHoverOverG(bd))
+                if (Control.MouseHoverOverG(bd))
                 {
                     cur = Control.MouseHoverOverG(bd) && fc ? hov : def;
                     cur.aplog(this, cur.val);
@@ -348,7 +355,7 @@ namespace Crux
                     batch.DrawWord(n, pos);
                 }
             });
-            //w.ForEach(n =>
+            //wordslist.ForEach(n =>
             //{
             //    n.ond?.Invoke();
             //    batch.DrawWord(n, pos);
@@ -376,9 +383,6 @@ namespace Crux
 
         internal static void DrawWord(this SpriteBatch b, TextBuilder.word w, Vector2 pos)
         {
-            //var wb = w.b;
-            //wb.Location += pos.ToPoint(); debug
-            //b.DrawFill(wb, new Color(52, 115, 52, 40));
             b.DrawString(w, w, w + pos, w, 0f, Vector2.Zero, w.scale, SpriteEffects.None, 1f);
         }
     }

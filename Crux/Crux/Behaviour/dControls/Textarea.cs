@@ -92,7 +92,7 @@ namespace Crux.dControls
 
         public override void Invalidate()
         {
-            text.ScrollPosition = new Vector2(Owner.X, Owner.Y + 1) + textpos;
+            text.ScrollPosition = new Vector2(X, Y + 1) + textpos;
             text.Update();
             foreach (var c in Controls)
             {
@@ -108,7 +108,7 @@ namespace Crux.dControls
             if ((Bounds.Contains(Core.MS.Position.ToVector2())))
             {
                 IsHovering = true;
-                text.ScrollPosition = new Vector2(Owner.X, Owner.Y + 1) + textpos;
+                text.ScrollPosition = new Vector2(X, Y + 1) + textpos;
                 text.Update();
                 if (Control.WheelVal != 0 && text.GetTotalSize.Y > Height)
                 {
