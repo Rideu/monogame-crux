@@ -44,7 +44,7 @@ namespace Crux
         Vector2 ts;
         public Vector2 GetTotalSize => ts;
         Textarea owner; // TODO: to uControl
-        bool af; 
+        bool af;
         float fontscale = 1f; public float FontSize { get => fontscale; set { fontscale = value; UpdateText(Text); } }
         bool multiline = true; public bool Multiline { get => multiline; set { multiline = value; UpdateText(Text); } }
 
@@ -67,7 +67,6 @@ namespace Crux
             //t = Replace(t, @"\s+ (?!\n)", " ").Trim(' '); // Filter input to necessary view so commands can recgonize it properly
             Vector2 cp = new Vector2();
             //f.Spacing = .65f;
-            var sp = spc = f.MeasureString(" ") * fontscale + new Vector2(2, 0);
             var l = 0;
             var c = Matches(t, @"[^\s]+|( +)");
             ct = Replace(t = (text/*, @" +", " "*/), "{.+?}", "");
@@ -77,13 +76,12 @@ namespace Crux
             foreach (Match m in c)
             {
                 var n = m.Value;
-                var sa = Match(n, " ").Captures.Count;
-                var ws = f.MeasureString(Replace(n, ".+?}+", "")) * fontscale + new Vector2(2 * sa, 0);
+                var ws = f.MeasureString(Replace(n, ".+?}+", "")) * fontscale /*+ new Vector2(2 * sa, 0)*/;
                 len += n.Length;
                 var rt = n;
                 var tsl = ws.X;// PERF: avoid FindAll with nulling tsl on new line and ++ it on each n iteration
                 w.FindAll(u => u.l == l).ForEach(u => { tsl += (int)u.b.Width; });
-                if ((s.X > 0 ? (rt.Contains("^n") || tsl + 12 > s.X) : false) && !string.IsNullOrWhiteSpace(n))
+                if ((s.X > 0 ? (rt.Contains("^n") || tsl > s.X) : false) && !string.IsNullOrWhiteSpace(n))
                 {
                     rt = n.Replace("^n", "");
                     // Move words that are newly filtered to left and one line lower
@@ -96,7 +94,7 @@ namespace Crux
                 sb = new sub(p + cp, f, rt, col, ws.X, ws.Y, l, fontscale);
                 if (af)
                     F_C_APPLY(sb);
-                ws = f.MeasureString(sb) * fontscale + new Vector2(2 * sa, 0);
+                ws = f.MeasureString(sb) * fontscale;
                 sb.nw[0] = w.Count > 1 ? w[w.Count - 1] : null;
                 if (w.Count > 1)
                     w[w.Count - 1].nw[1] = sb;
@@ -309,13 +307,26 @@ namespace Crux
             },
         };
 
+        public static SpriteBatch Batch { get; set; }
+
+        public void Render()
+        {
+
+            Render(Batch != null ? Batch : throw new Exception("TextBuilder.Render() failed. Batch was null"));
+        }
+
+        public void Render(Vector2 pos)
+        {
+            Render(Batch != null ? Batch : throw new Exception("TextBuilder.Render() failed. Batch was null"), pos);
+        }
 
         public void Render(SpriteBatch batch)
         {
+            var pos = owner != null ? owner.Bounds.Location.ToVector2() : default;
             w.ForEach(n =>
             {
                 n.ond?.Invoke();
-                batch.DrawWord(n);
+                batch.DrawWord(n, pos);
             });
         }
 
@@ -324,7 +335,7 @@ namespace Crux
             w.ForEach(n =>
             {
                 n.ond?.Invoke();
-                batch.DrawWord(pos, n);
+                batch.DrawWord(n, pos);
             });
         }
 
@@ -347,7 +358,7 @@ namespace Crux
             b.DrawString(w, w, w, w, 0f, Vector2.Zero, w.sc, SpriteEffects.None, 1f);
         }
 
-        internal static void DrawWord(this SpriteBatch b, Vector2 pos, TextBuilder.sub w)
+        internal static void DrawWord(this SpriteBatch b, TextBuilder.sub w, Vector2 pos)
         {
             //var wb = w.b;
             //wb.Location += pos.ToPoint(); debug

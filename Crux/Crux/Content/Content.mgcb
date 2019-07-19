@@ -53,3 +53,9 @@
 /processorParam:TextureFormat=Color
 /build:images/form_layout.png
 
+#begin sounds/key.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:sounds/key.wav
+

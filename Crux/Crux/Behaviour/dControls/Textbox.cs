@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Audio;
 using static Crux.Simplex;
 using static Crux.Core;
 
@@ -21,13 +22,16 @@ namespace Crux.dControls
 
         private int ID;
         public override int GetID { get { return ID; } }
-        
+
         public override string Text { get { return text.Text; } set { text.UpdateText(value); } }
-        SpriteFont font = Core.font;
+        SpriteFont font = Core.font1;
         public SpriteFont Font { get => font; set => font = value; }
         new TextBuilder text;
         bool InputMode;
-        
+
+        public SoundEffect KeyPressedSound { get => keypressSound; set => keypressSound = value; }
+        SoundEffect keypressSound;
+
         #endregion
 
         public Textbox(Vector4 posform)
@@ -92,7 +96,7 @@ namespace Crux.dControls
 
             PrimaryWindow.TextInput += delegate (object sender, TextInputEventArgs e) // PERF: move to static constructor and apply input only for active control
             {
-                //if (this.InputMode)
+                if (this.InputMode)
                 {
                     var t = text.Text;
                     if (e.Character == 8) // Backspace
@@ -100,7 +104,11 @@ namespace Crux.dControls
                         if (t.Length > 0)
                         {
                             if (caretpos > 0)
+                            {
                                 t = t.Remove(caretpos - 1, 1);
+
+                                keypressSound?.Play();
+                            }
                             caretpos -= caretpos > 0 ? 1 : 0;
                         }
                     }
@@ -118,6 +126,7 @@ namespace Crux.dControls
                         //if (font.Glyphs.Any(n => n.ToString()[0] == c))
                         //if (t[caretpos] != ' ' || (t[caretpos + ((t.Length == caretpos) ? -1 : 0)] != ' '))
                         t = t.Insert(caretpos++, e.Character + "");
+                        keypressSound?.Play();
                         //caretpos += caretpos + 1 == t.Length ? 0 : 1;
                     }
                     text.UpdateText(t);
@@ -142,10 +151,10 @@ namespace Crux.dControls
         {
             UpdateBounds();
 
-            IsHovering = !true;
-            if (Bounds.Contains(Core.MS.Position.ToVector2()))
-                IsHovering = true;
-            if (IsHovering && Control.LeftClick())
+            //IsHovering = !true;
+            //if (Bounds.Contains(Core.MS.Position.ToVector2()))
+            //    IsHovering = true;
+            if (IsActive && Control.LeftClick())
             {
                 InputMode = true;
                 t.Reset(false);
@@ -181,7 +190,7 @@ namespace Crux.dControls
 
         public override void InnerUpdate()
         {
-            InputMode = true; // InputMode && Control.MouseHoverOverG(Bounds);
+            //InputMode = true; // InputMode && Control.MouseHoverOverG(Bounds);
             base.EventProcessor();
         }
 
@@ -200,39 +209,39 @@ namespace Crux.dControls
         }
         public override void Draw()
         {
-            Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
+            var drawb = Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
-                Batch.DrawFill(Bounds, BackColor);
-                Batch.DrawFill(Bounds.InflateBy(-2), BorderColor * (InputMode ? 0.4f : 1f)); // Primary
+                Batch.DrawFill(Bounds, BorderColor);
+                Batch.DrawFill(Bounds.InflateBy(-2), BackColor * (InputMode ? 0.4f : 1f)); // Primary
             }
             Batch.End();
             //Batch.GraphicsDevice.ScissorRectangle = Batch.GraphicsDevice.ScissorRectangle.InflateBy(-1);
+            Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-BorderSize);
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
                 Vector2 cs = new Vector2();
                 Vector2 tsc = new Vector2();
-                Vector2 ts = font.MeasureString(text.Text);
+                //Vector2 ts = font.MeasureString(text.Text);
                 //if (InputMode)
                 {
                     var sub = text.Text.Substring(0, caretpos);
                     tsc = font.MeasureString(sub);
-                    var sp = text.Space;
-                    var cc = sub.Count(n => n == ' ');
-                    var rep = sub.Replace(" ", "");
-                    var mea = font.MeasureString(sub);
-                    cs = mea + new Vector2(cc * (sp.X) /*+ font.Spacing * sub.Length*/, 0);
+                    //var sp = text.Space;
+                    //var cc = sub.Count(n => n == ' ');
+                    //var rep = sub.Replace(" ", " ");
+                    //var mea = font.MeasureString(rep);
+                    //cs = /*mea + */new Vector2((sp.X) /*+ font.Spacing * sub.Length*/, 0);
+                    cs = tsc;
                     var b = caretpos == text.Text.Length;
                 }
-
-                Vector2 AbsolutePosition = new Vector2(Owner.X + X, Owner.Y + Y);
 
                 var offset = (cs.X > Width / 2 ? Width / 2 - cs.X /*+ (ts.X - cs.X < Width / 2? ts.X - cs.X : 0)*/ /*(caretpos == text.Text.Length ? Width / 2  : 0)*/ : 0);
 
                 Line cline = new Line(
-                    (new Vector2(Bounds.X + 1 + cs.X + offset, 2 + Bounds.Y)).ToPoint().ToVector2(),
-                    (new Vector2(Bounds.X + 1 + cs.X + offset, -2 + Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
-                text.Render(Batch, new Vector2(Owner.X + offset, Owner.Y + 1)/* + textpos*/);
+                    (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, 0 + Bounds.Y)).ToPoint().ToVector2(),
+                    (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, -0 + Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
+                text.Render(new Vector2(Owner.X + BorderSize + offset, 2 + Owner.Y));
 
 
                 //text.Render(Batch, new Vector2(Owner.X, Owner.Y + 1)/* + textpos*/);
@@ -247,7 +256,7 @@ namespace Crux.dControls
 
                 //Batch.Begin(SpriteSortMode.Deferred);
                 if (InputMode)
-                    Batch.DrawLine(cline, new Color(255, 255, 255, 255) * ease(t));
+                    Batch.DrawFill(Rectangle(cline.Start.X, cline.Start.Y, 1, Bounds.Height), new Color(255, 255, 255, 255) * ease(t));
 
                 //Batch.End();
                 //if (InputMode)

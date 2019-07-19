@@ -103,7 +103,7 @@ namespace Crux.dControls
         private Align align = Align.None;
         public virtual Align CurrentAlign { set { align = value; } get => align; }
 
-        public virtual Action OnControlUpdate { set => OnUpdate += value; }
+        public event Action OnControlUpdate { add => OnUpdate += value; remove => OnUpdate -= value; }
         public event Action OnUpdate;
         public event Action<uControl, ControlArgs> OnMouseEnter; internal bool OMEOccured;
         public event Action<uControl, ControlArgs> OnMouseLeave; internal bool OMLOccured = true;
