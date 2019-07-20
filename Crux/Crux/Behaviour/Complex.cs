@@ -41,7 +41,7 @@ namespace Crux
 
         Vector2 p; public Vector2 Position { get => p; set => p = value; }
 
-        Vector2 spc; public Vector2 Space => spc;
+        Vector2 spc;
 
         Color col; public Color Color => col;
 
@@ -64,24 +64,24 @@ namespace Crux
             owner = label;
             UpdateText(text);
         }
-
+        Stopwatch mea = new Stopwatch();
         public void UpdateText(string text)
         {
-            t = Replace(text, @"[}]\s", "}");
-            t = Replace(t, @"[{]", " {");
-            //t = Replace(t, @"\s+ (?!\n)", " ").Trim(' '); // Filter input to necessary view so commands can recgonize it properly
+            mea.Restart();
+            //t = Replace(text, @"[}]\s", "}");
+            //t = Replace(t, @"[{]", "{");
+            t = Replace(t = text, "\\r\\n", " ^n");
             Vector2 cp = new Vector2();
-            //f.Spacing = .65f;
             var l = 0;
-            var c = Matches(t, @"[^\s]+|( +)");
-            ct = Replace(t = (text/*, @" +", " "*/), "{.+?}", "");
+            var c = Matches(t, @" +|(.+?)(?=({| ))");
+            ct = Replace(t = text, "{.+?}", "");
             wordslist.Clear();
 
             word sb = null;
             foreach (Match m in c)
             {
                 var n = m.Value;
-                var ws = f.MeasureString(Replace(n, ".+?}+", "")) * fontscale /*+ new Vector2(2 * sa, 0)*/;
+                var ws = f.MeasureString(Replace(n, ".+?}+", "")) * fontscale;
                 len += n.Length;
                 var rt = n;
                 var tsl = ws.X;// PERF: avoid FindAll with nulling tsl on new line and ++ it on each n iteration
@@ -103,12 +103,14 @@ namespace Crux
                 sb.prevnext[0] = wordslist.Count > 1 ? wordslist[wordslist.Count - 1] : null;
                 if (wordslist.Count > 1)
                     wordslist[wordslist.Count - 1].prevnext[1] = sb;
-                cp += new Vector2(ws.X/* + sp.X*/, 0);
-                wordslist.Add(new word((p + cp) - new Vector2(spc.X, 0), f, " ", col, spc.X, sp.Y, l, fontscale, this));
+                cp += new Vector2(ws.X, 0);
+                //wordslist.Add(new word((p + cp), f, " ", col, font.Glyphs[0].Width, sp.Y, l, fontscale, this));
                 wordslist.Add(sb);
             }
             if (sb != null) // TODO: clutch
                 textscale = new Vector2(s.X, sb.bounds.Y);
+            mea.Stop();
+            Console.WriteLine(mea.ElapsedTicks);
         }
 
         public void Update()
@@ -120,14 +122,15 @@ namespace Crux
             }
         }
 
-        void F_C_APPLY(word s)
+        bool F_C_APPLY(word s)
         {
+            var cancelate = false;
             while (IsMatch(s.text, "{.+?}")) // Keep processing commands until they gone...
             {
                 var pc = rule.al(s.text); // Parse command
                 if (pc.ct != null)
                 {
-                    s.text = Replace(s.text, ".+?}+", "");
+                    s.text = Replace(s.text, "^.+?}+", "");
                     // Set word's bounds width. Example: ":h" directive won't work properly if mouse hovers over this word
                     s.bounds.Width = (int)(f.MeasureString(s.text).X * fontscale);
                     if (pc.ish)
@@ -138,6 +141,7 @@ namespace Crux
                     {
                         s.hov = s.def = pc; s = pc.aplog(s, pc.val);
                     };
+                    cancelate = pc.ct == "{@p}";
                 }
                 //if (IsMatch(s.t, "{.+?}"))
                 //s.t = Replace(s.t, "{.+?}", "");
@@ -145,6 +149,38 @@ namespace Crux
             if (pb)
             {
                 s.hov = s.def = pr; s = pr.aplog(s, pr.val);
+            }
+            return cancelate;
+        }
+
+        internal struct rule // A command
+        {
+            public string ct; // std marking: {.ct}
+            internal bool ish;
+            internal string val;
+            public Func<word, string, word> aplog; // Delegate that applies command's logic.
+            //public sub p(sub s, string v = "") => logic.Invoke(s, v); // "v" is addition parameters for commands. Unused currently.
+            //public bool pr; // Propagator flag that allows apply specified formatting for next words until new command defined.
+            public static rule al(string c) // Command analyser. Selects proper command, applies directive for it if there is.
+            {
+                //var cma = Matches(c, "{.+?}");
+                var rep = Replace(c, "((?<=}).+)", "");
+                var iv = Match(rep, @"\(.+(?:\))").Value; // Parse params of the command needed for further usage.
+                var re = Replace(c, @"\(.+(?:\))|((?<=}).+)", ""); // Select very first command inside string.
+                var dir = Matches(re, @"((?<=:|,)\w+)"); // Defines, whether there is any directive. Keeps the directive, if so.
+                var cc = Replace(Replace(re, @":(\w+|,)+", ""), ":", "");
+                var cm = rules.Find(n => n.ct == cc); // Selects a command from the list, in advance cleaning it up of directives.
+                cm.val = iv;
+                if (dir.Count > 0)
+                {
+                    foreach (Match d in dir)
+                        switch (d.Value)
+                        {
+                            case "h": cm.ish = true; break;
+                            case "p": pb = true; pr = cm; break;
+                        }
+                }
+                return cm;
             }
         }
 
@@ -172,7 +208,6 @@ namespace Crux
                 text = t; font = f; defaultcol = color = c; width = ww; height = wh; line = l; prevnext = new object[] { null, null }; scale = sc;
                 container = builder;
                 bounds = Rectangle(p.X, p.Y, ww, wh);
-                fc = true;
                 foreach (var n in t)
                     chs.Add(new w_char(n, c));
                 hov = def = new rule()
@@ -185,7 +220,6 @@ namespace Crux
             public void upd(Vector2 sp)
             {
                 var bd = new Rectangle(bounds.Location + sp.ToPoint(), bounds.Size);
-                if (Control.MouseHoverOverG(bd))
                 {
                     cur = Control.MouseHoverOverG(bd) && fc ? hov : def;
                     cur.aplog(this, cur.val);
@@ -217,43 +251,12 @@ namespace Crux
         }
         #endregion
 
-        internal struct rule // A command
-        {
-            public string ct; // std marking: {.ct}
-            internal bool ish;
-            internal string val;
-            public Func<word, string, word> aplog; // Delegate that applies command's logic.
-            //public sub p(sub s, string v = "") => logic.Invoke(s, v); // "v" is addition parameters for commands. Unused currently.
-            //public bool pr; // Propagator flag that allows apply specified formatting for next words until new command defined.
-            public static rule al(string c) // Command analyser. Selects proper command, applies directive for it if there is.
-            {
-                //if (pb)
-                //    return pr;
-                var iv = Match(Replace(c, "((?<=}).+)", ""), @"\(.+(?:\))").Value; // Parse params of the command needed for further usage.
-                var re = Replace(c, @"\(.+(?:\))|((?<=}).+)", ""); // Select very first command inside string.
-                var dir = Matches(re, @"((?<=:|,)\w+)"); // Defines, whether there is any directive. Keeps the directive, if so.
-                var cc = Replace(Replace(re, @":(\w+|,)+", ""), ":", "");
-                var cm = rules.Find(n => n.ct == cc); // Selects a command from the list, in advance cleaning it up of directives.
-                cm.val = iv;
-                if (dir.Count > 0)
-                {
-                    foreach (Match d in dir)
-                        switch (d.Value)
-                        {
-                            case "h": cm.ish = true; break;
-                            case "p": pb = true; pr = cm; break;
-                        }
-                }
-                return cm;
-            }
-        }
-
         static bool pb;
         static rule pr; // A primary command that applies formatting.
 
         static List<word> tg = new List<word>();
 
-        static List<rule> rules = new List<rule>() // A predefined list of commands
+        readonly static List<rule> rules = new List<rule>() // A predefined list of commands
         {
             new rule() // Sample. A command that makes words blue.
             {
@@ -276,31 +279,6 @@ namespace Crux
                     return s;
                 }
             },
-            //new rule()
-            //{
-            //    ct = "{$=>}",
-            //    onf = delegate(sub s, string v)
-            //    {
-            //        if(gc.Length == 0) gc = v;
-            //        tg.Add(s);
-            //        return s;
-            //    }
-            //},
-            //new cmd()
-            //{
-            //    ct = "{=>$}",
-            //    onf = delegate(sub s, string v)
-            //    {
-            //        pc.pr = false;
-            //        var f = "{"+gc.Substring(1,gc.Length-2)+"}"; // Extract the parameter
-            //        var c = cmd.al(f); // Define the command
-            //        if(tg.Exists(n => n.b.Contains(GlobalMousePos)))
-            //        foreach(var n in tg)
-            //            c.p(n); // Apply this command for each word
-            //        tg.Clear();
-            //        return s;
-            //    }
-            //},
             new rule()
             {
                 ct = "{exec}",
