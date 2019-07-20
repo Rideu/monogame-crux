@@ -89,12 +89,9 @@ namespace Crux
                 if ((s.X > 0 ? (rt.Contains("^n") || tsl > s.X) : false) && !string.IsNullOrWhiteSpace(n))
                 {
                     rt = n.Replace("^n", "");
-                    // Move words that are newly filtered to left and one line lower
-                    // {
                     cp.X = 0;
-                    cp.Y += ws.Y; //
+                    cp.Y += ws.Y;
                     l += 1;
-                    // }
                 }
                 sb = new word(p + cp, f, rt, col, ws.X, ws.Y, l, fontscale, this);
                 if (af)
@@ -127,21 +124,25 @@ namespace Crux
             var cancelate = false;
             while (IsMatch(s.text, "{.+?}")) // Keep processing commands until they gone...
             {
-                var pc = rule.al(s.text); // Parse command
-                if (pc.ct != null)
+                var pc = rule.analyse(s.text); // Parse command
+                if (pc.Length > 0)
                 {
                     s.text = Replace(s.text, "^.+?}+", "");
-                    // Set word's bounds width. Example: ":h" directive won't work properly if mouse hovers over this word
+                    // Reset word's bounds width.
                     s.bounds.Width = (int)(f.MeasureString(s.text).X * fontscale);
-                    if (pc.ish)
+                    for (int i = 0; i < pc.Length; i++)
                     {
-                        s.hov = pc;
+                        var cmd = pc[i];
+                        if (cmd.ish)
+                        {
+                            s.hov = cmd;
+                        }
+                        else
+                        {
+                            s.hov = s.def = cmd; s = cmd.aplog(s, cmd.val);
+                        };
+                        cancelate = cmd.ct == "{@p}";
                     }
-                    else
-                    {
-                        s.hov = s.def = pc; s = pc.aplog(s, pc.val);
-                    };
-                    cancelate = pc.ct == "{@p}";
                 }
                 //if (IsMatch(s.t, "{.+?}"))
                 //s.t = Replace(s.t, "{.+?}", "");
@@ -161,26 +162,42 @@ namespace Crux
             public Func<word, string, word> aplog; // Delegate that applies command's logic.
             //public sub p(sub s, string v = "") => logic.Invoke(s, v); // "v" is addition parameters for commands. Unused currently.
             //public bool pr; // Propagator flag that allows apply specified formatting for next words until new command defined.
-            public static rule al(string c) // Command analyser. Selects proper command, applies directive for it if there is.
+            public static rule[] analyse(string c) // Command analyser. Selects proper command, applies directive for it if there is.
             {
-                //var cma = Matches(c, "{.+?}");
-                var rep = Replace(c, "((?<=}).+)", "");
-                var iv = Match(rep, @"\(.+(?:\))").Value; // Parse params of the command needed for further usage.
-                var re = Replace(c, @"\(.+(?:\))|((?<=}).+)", ""); // Select very first command inside string.
-                var dir = Matches(re, @"((?<=:|,)\w+)"); // Defines, whether there is any directive. Keeps the directive, if so.
-                var cc = Replace(Replace(re, @":(\w+|,)+", ""), ":", "");
-                var cm = rules.Find(n => n.ct == cc); // Selects a command from the list, in advance cleaning it up of directives.
-                cm.val = iv;
-                if (dir.Count > 0)
+                var clean = Match(c, "(?!{).+(?=})").Value;
+                var getrules = Matches(clean, "(?!;)(.+?)((?=(;))|:+(?=;))");
+                if (getrules.Count == 0)
+                    throw new Exception("Bad syntax or missing semicolon");
+                var rulestack = new rule[getrules.Count];
+                for (int i = 0; i < getrules.Count; i++)
                 {
-                    foreach (Match d in dir)
-                        switch (d.Value)
-                        {
-                            case "h": cm.ish = true; break;
-                            case "p": pb = true; pr = cm; break;
-                        }
+                    var cmd = getrules[i].Value;
+                    var header = "{" + Match(cmd, @".+(?=\()|^.+$").Value + "}";
+                    var val = Match(cmd, @"(?=\().+(?>\))").Value;
+                    var cm = rules.Find(n => n.ct == header);
+                    var dir = Matches(Match(cmd, "(?=:).+").Value, @"((?<=:|,)\w+)"); // Defines, whether there is any directive. Keeps the directive, if so.
+                    if (dir.Count > 0)
+                    {
+                        foreach (Match d in dir)
+                            switch (d.Value)
+                            {
+                                case "h": cm.ish = true; break;
+                                case "p": pb = true; pr = cm; break;
+                            }
+                    }
+                    cm.val = val;
+                    cm.ct = header;
+                    rulestack[i] = cm;
                 }
-                return cm;
+                //var rep = Replace(c, "((?<=}).+)", "");
+                //var iv = Match(rep, @"\(.+(?:\))").Value; // Parse params of the command needed for further usage.
+                //var re = Replace(c, @"\(.+(?:\))|((?<=}).+)", ""); // Select very first command inside string.
+                //var dir = Matches(re, @"((?<=:|,)\w+)"); // Defines, whether there is any directive. Keeps the directive, if so.
+                //var cc = Replace(Replace(re, @":(\w+|,)+", ""), ":", "");
+
+                //var cm = rules.Find(n => n.ct == cc); // Selects a command from the list, in advance cleaning it up of directives.
+                //cm.val = iv;
+                return rulestack;
             }
         }
 
