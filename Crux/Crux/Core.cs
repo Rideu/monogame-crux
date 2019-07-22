@@ -55,6 +55,7 @@ namespace Crux
 
             uControl.SetDefaultFont = font1;
             TextBuilder.Batch = spriteBatch;
+            //TextBuilder.EnableDebug = true;
 
 
             #region Test
@@ -77,16 +78,19 @@ namespace Crux
                 f.AddNewControl(s = new Slider(20, 60, 415, 10, Slider.Type.Horizontal));
                 f.AddNewControl(t = new Textarea(20, 80, 415, 280));
 
-                s.OnSlide += delegate { t.FontSize = 0.2f + (int)(s.Value * 10) * 0.1f; };
+                s.OnSlide += delegate { t.FontSize = (0.2f + (int)(s.Value * 10) * 0.1f); };
 
-                (t as Textarea).Text =
-                @"How to... {#(125,160,255);#(65,160,216):h;}Warp{@p;}:
-1. Warp {#(65,160,216):h;}tech is commonly used to travel between star systems, but for certain amount of energy or specific fuel to feed your warp core. Press Galaxy Map button (M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
-2. You also can initiate a wave overlap with the ship that has slower warp core, allowing you to stick with other ships during the travel. When this is possible, an notice appears, which displays current distance to the ship and possibility to do this maneuver: it uses significant amount of energy depending on initial warp jump point. 
+                t.Text =
+@"How to... Warp:
+
+        1. Warp tech is commonly used to travel between star systems, but for certain amount of energy or specific fuel to feed your warp core. Press Gal{#(85,185,255):p;#(25,125,255):h,p;}axy Map but{@p;}ton (M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
+        2. You also can initiate a wave overlap with the ship that has slower warp core, allowing you to stick with other ships during the travel. When this is possible, an notice appears, which displays current distance to the ship and possibility to do this maneuver: it uses significant amount of energy depending on initial warp jump point. 
+
 How to... Build:
-1. Buildings are primary things that makes the world live, cycle and expand. They are subdivided by their functionality: common factories, research laboratories and energy stations. All of them are consuming various resources, depending on how it is organized and supplied. To manage its work in more simple manner, node mechanic is used. Each node requires specific amount of workers and energy to function. There are three types of nodes in the game: source, processing and storage. Source nodes are consuming local resources depending on its type (mining or farming). Processing nodes are used to process incoming resources and provide the result to the next ones. Storage nodes sends all the incoming resources to the planetary storage to be distributed among other factories or for local sales or intake resources for continued processing. If there is a lack of workers or energy, the production will be limited or, in worst case, disabled, so dependency compliance and optimization are very important. If node's inner storage is overfilled, it can cause blocking state - incoming connections are filling up, keep consuming energy and spending working time, calling continued blocking chain, so the losses are increasing.
+
+        1. Buildings are primary things that makes the world live, cycle and expand. They are subdivided by their functionality: common factories, research laboratories and energy stations. All of them are consuming various resources, depending on how it is organized and supplied. To manage its work in more simple manner, node mechanic is used. Each node requires specific amount of workers and energy to function. There are three types of nodes in the game: source, processing and storage. Source nodes are consuming local resources depending on its type (mining or farming). Processing nodes are used to process incoming resources and provide the result to the next ones. Storage nodes sends all the incoming resources to the planetary storage to be distributed among other factories or for local sales or intake resources for continued processing. If there is a lack of workers or energy, the production will be limited or, in worst case, disabled, so dependency compliance and optimization are very important. If node's inner storage is overfilled, it can cause blocking state - incoming connections are filling up, keep consuming energy and spending working time, calling continued blocking chain, so the losses are increasing.
 Building sizes can be four types: small, large, complex or arcological. Small ones can contain up to 5 nodes plus one for storage, large can contain up to 20, complex up to 70 and arcological up to 160 nodes.
-2. The common factories can be built on wide range of surfaces, even on non-atmosphere planets or asteroids. The size is varied by small (up to 6 processing nodes). They need abundant amount of workers and energy.
+        2. The common factories can be built on wide range of surfaces, even on non-atmosphere planets or asteroids. The size is varied by small (up to 6 processing nodes). They need abundant amount of workers and energy.
 ";
 
                 (t as Textarea).Font = font1;
@@ -184,8 +188,8 @@ Building sizes can be four types: small, large, complex or arcological. Small on
             font = Content.Load<SpriteFont>("fonts\\arial");
             font1 = Content.Load<SpriteFont>("fonts\\Xolonium");
             font1.Glyphs[0].Width = 3; // Alters space size
-            font.Spacing = 1;
-
+            font1.LineSpacing = 5;
+            
             #endregion
 
             #region Sounds

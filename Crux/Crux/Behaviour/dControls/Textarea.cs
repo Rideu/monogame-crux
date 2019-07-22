@@ -34,6 +34,7 @@ namespace Crux.dControls
         }
         public float FontSize { set => text.FontSize = value; get => text.FontSize; }
         public bool Multiline { set => text.Multiline = value; get => text.Multiline; }
+        public Vector2 TextOrigin { set => text.TextOrigin = value; get => text.TextOrigin; }
 
         //TODO: wrap
         new TextBuilder text;

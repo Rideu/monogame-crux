@@ -41,6 +41,8 @@ namespace Crux
 
         Vector2 p; public Vector2 Position { get => p; set => p = value; }
 
+        Vector2 origin; public Vector2 TextOrigin { get => origin; set => UpdateOrigin(origin = value); }
+
         Vector2 spc;
 
         Color col; public Color Color => col;
@@ -52,6 +54,7 @@ namespace Crux
         bool af;
         float fontscale = 1f; public float FontSize { get => fontscale; set { fontscale = value; UpdateText(Text); } }
         bool multiline = true; public bool Multiline { get => multiline; set { multiline = value; UpdateText(Text); } }
+        public static bool EnableDebug { get; set; }
 
         public TextBuilder(SpriteFont font, string text, Vector2 pos, Vector2 size, Color color = default, bool applyformat = true, Textarea label = null)
         {
@@ -62,11 +65,22 @@ namespace Crux
             s = size;
             col = color;
             owner = label;
-            UpdateText(text);
+            //UpdateText(text);
         }
+
+        void UpdateOrigin(Vector2 origin)
+        {
+            foreach (var w in wordslist)
+            {
+                w.origin = origin;
+            }
+        }
+
         Stopwatch mea = new Stopwatch();
+
         public void UpdateText(string text)
         {
+            Console.Write(text);
             mea.Restart();
             //t = Replace(text, @"[}]\s", "}");
             //t = Replace(t, @"[{]", "{");
@@ -76,7 +90,7 @@ namespace Crux
             var c = Matches(t, @" +|(.+?)(?=({| ))");
             ct = Replace(t = text, "{.+?}", "");
             wordslist.Clear();
-
+            // TODO: string seeker, which is searching for specified strings inside the text and does an action specified by specified rule
             word sb = null;
             foreach (Match m in c)
             {
@@ -90,7 +104,7 @@ namespace Crux
                 {
                     rt = n.Replace("^n", "");
                     cp.X = 0;
-                    cp.Y += ws.Y;
+                    cp.Y += ws.Y + f.LineSpacing;
                     l += 1;
                 }
                 sb = new word(p + cp, f, rt, col, ws.X, ws.Y, l, fontscale, this);
@@ -105,7 +119,7 @@ namespace Crux
                 wordslist.Add(sb);
             }
             if (sb != null) // TODO: clutch
-                textscale = new Vector2(s.X, sb.bounds.Y);
+                textscale = new Vector2(s.X, sb.bounds.Y + sb.bounds.Height);
             mea.Stop();
             Console.WriteLine(mea.ElapsedTicks);
         }
@@ -119,9 +133,9 @@ namespace Crux
             }
         }
 
-        bool F_C_APPLY(word s)
+        void F_C_APPLY(word s)
         {
-            var cancelate = false;
+            if (string.IsNullOrWhiteSpace(s.text)) return;
             while (IsMatch(s.text, "{.+?}")) // Keep processing commands until they gone...
             {
                 var pc = rule.analyse(s.text); // Parse command
@@ -139,19 +153,26 @@ namespace Crux
                         }
                         else
                         {
-                            s.hov = s.def = cmd; s = cmd.aplog(s, cmd.val);
+                            s.def = cmd;
+                            s = cmd.aplog(s, cmd.val);
                         };
-                        cancelate = cmd.ct == "{@p}";
+                        //cancelate = cmd.ct == "{@p}";
                     }
                 }
-                //if (IsMatch(s.t, "{.+?}"))
-                //s.t = Replace(s.t, "{.+?}", "");
             }
-            if (pb)
+
+
+            if (is_prop_hov)
             {
-                s.hov = s.def = pr; s = pr.aplog(s, pr.val);
+                s.hov = prop_hov;
             }
-            return cancelate;
+            if (is_prop_def)
+            {
+                s.def = prop_def;
+                s = prop_def.aplog(s, prop_def.val);
+            };
+
+            //return cancelate;
         }
 
         internal struct rule // A command
@@ -174,29 +195,32 @@ namespace Crux
                     var cmd = getrules[i].Value;
                     var header = "{" + Match(cmd, @".+(?=\()|^.+$").Value + "}";
                     var val = Match(cmd, @"(?=\().+(?>\))").Value;
-                    var cm = rules.Find(n => n.ct == header);
+                    var fetch = rules.Find(n => n.ct == header);
                     var dir = Matches(Match(cmd, "(?=:).+").Value, @"((?<=:|,)\w+)"); // Defines, whether there is any directive. Keeps the directive, if so.
+                    fetch.val = val;
+                    fetch.ct = header;
                     if (dir.Count > 0)
                     {
+                        var hovdef = false;
                         foreach (Match d in dir)
                             switch (d.Value)
                             {
-                                case "h": cm.ish = true; break;
-                                case "p": pb = true; pr = cm; break;
+                                case "h":
+                                    hovdef = fetch.ish = true;
+                                    break;
+                                case "p":
+                                    if (is_prop_hov = hovdef)
+                                        prop_hov = fetch;
+                                    else
+                                    {
+                                        is_prop_def = true;
+                                        prop_def = fetch;
+                                    }
+                                    break;
                             }
                     }
-                    cm.val = val;
-                    cm.ct = header;
-                    rulestack[i] = cm;
+                    rulestack[i] = fetch;
                 }
-                //var rep = Replace(c, "((?<=}).+)", "");
-                //var iv = Match(rep, @"\(.+(?:\))").Value; // Parse params of the command needed for further usage.
-                //var re = Replace(c, @"\(.+(?:\))|((?<=}).+)", ""); // Select very first command inside string.
-                //var dir = Matches(re, @"((?<=:|,)\w+)"); // Defines, whether there is any directive. Keeps the directive, if so.
-                //var cc = Replace(Replace(re, @":(\w+|,)+", ""), ":", "");
-
-                //var cm = rules.Find(n => n.ct == cc); // Selects a command from the list, in advance cleaning it up of directives.
-                //cm.val = iv;
                 return rulestack;
             }
         }
@@ -210,6 +234,7 @@ namespace Crux
         {
             public SpriteFont font; // Word's spritefont
             public Rectangle bounds; // Word's bounds
+            public Vector2 origin;
             public string text; // Text
             public bool fc; // Formatting condition
             public Color color;
@@ -222,12 +247,12 @@ namespace Crux
             public TextBuilder container;
             public word(Vector2 p, SpriteFont f, string t, Color c, float ww, float wh, int l, float sc, TextBuilder builder)
             {
-                text = t; font = f; defaultcol = color = c; width = ww; height = wh; line = l; prevnext = new object[] { null, null }; scale = sc;
+                text = t; font = f; defaultcol = color = c; width = ww; height = wh; line = l; prevnext = new object[] { null, null }; scale = sc; origin = Vector2.Zero;
                 container = builder;
                 bounds = Rectangle(p.X, p.Y, ww, wh);
                 foreach (var n in t)
                     chs.Add(new w_char(n, c));
-                hov = def = new rule()
+                hov = def = new rule() // Set default rules
                 {
                     aplog = delegate (word s, string v) { s.color = c; s.font = f; return s; },
                 };
@@ -236,19 +261,21 @@ namespace Crux
             internal rule def, cur, hov;
             public void upd(Vector2 sp)
             {
-                var bd = new Rectangle(bounds.Location + sp.ToPoint(), bounds.Size);
                 {
-                    cur = Control.MouseHoverOverG(bd) && fc ? hov : def;
+                    cur = Control.MouseHoverOverG(new Rectangle(bounds.Location + sp.ToPoint(), bounds.Size)) && fc && !sne(hov.ct) ? hov : def;
                     cur.aplog(this, cur.val);
                 }
             }
             public List<w_char> chs = new List<w_char>();
+            public Action exec = null;
             public Action ond = null; // Action applied when word is drawn.
             public static implicit operator string(word t) { return t.text; }
             public static implicit operator Vector2(word t) { return t.bounds.Location.ToVector2(); }
             public static implicit operator Color(word t) { return t.color; }
             public static implicit operator Rectangle(word t) { return t.bounds; }
             public static implicit operator SpriteFont(word t) { return t.font; }
+
+            public static bool sne(string s) => string.IsNullOrEmpty(s);
         }
 
         //List<subgroup> subs = new List<subgroup>();
@@ -268,8 +295,8 @@ namespace Crux
         }
         #endregion
 
-        static bool pb;
-        static rule pr; // A primary command that applies formatting.
+        static bool is_prop_hov, is_prop_def;
+        static rule prop_hov, prop_def;
 
         static List<word> tg = new List<word>();
 
@@ -280,7 +307,6 @@ namespace Crux
                 ct = "{blue}", // Define command text
                 aplog = delegate(word s, string v) // Define an action that will be applied for specified word 
                 {
-                    //if(v)
                     s.color = new Color(0,0,255);
                     return s;
                 }
@@ -301,7 +327,17 @@ namespace Crux
                 ct = "{exec}",
                 aplog = delegate(word s, string v)
                 {
-
+                    s.exec?.Invoke();
+                    return s;
+                }
+            },
+            new rule()
+            {
+                ct = "{click}",
+                aplog = delegate(word s, string v)
+                {
+                    if(Control.LeftClick())
+                    s.exec?.Invoke();
                     return s;
                 }
             },
@@ -310,7 +346,7 @@ namespace Crux
                 ct = "{@p}", // A null-command that prevents continued propagation
                 aplog = delegate(word s, string v)
                 {
-                    pb = false;
+                    is_prop_def = is_prop_hov = false;
                     return s;
                 }
             },
@@ -348,6 +384,8 @@ namespace Crux
                 {
                     n.ond?.Invoke();
                     batch.DrawWord(n, pos);
+                    if (EnableDebug)
+                        batch.DrawFill(n.bounds.OffsetBy(pos.X, pos.Y), Color.Red * .5f);
                 }
             });
             //wordslist.ForEach(n =>
@@ -378,7 +416,7 @@ namespace Crux
 
         internal static void DrawWord(this SpriteBatch b, TextBuilder.word w, Vector2 pos)
         {
-            b.DrawString(w, w, w + pos, w, 0f, Vector2.Zero, w.scale, SpriteEffects.None, 1f);
+            b.DrawString(w, w, w + pos, w, 0f, w.origin, new Vector2(w.scale), SpriteEffects.None, 1f);
         }
     }
 }
