@@ -47,7 +47,7 @@ namespace Crux
 
         Color col; public Color Color => col;
 
-        Vector2 s; public Vector2 GetInitialSize => s;
+        Vector2 areasize; public Vector2 GetInitialSize => areasize;
 
         Vector2 textscale; public Vector2 GetTotalSize => textscale;
         Textarea owner; // TODO: to uControl
@@ -62,7 +62,7 @@ namespace Crux
             af = applyformat;
             f = font;
             p = pos;
-            s = size;
+            areasize = size;
             col = color;
             owner = label;
             //UpdateText(text);
@@ -91,37 +91,39 @@ namespace Crux
             ct = Replace(t = text, "{.+?}", "");
             wordslist.Clear();
             // TODO: string seeker, which is searching for specified strings inside the text and does an action specified by specified rule
-            word sb = null;
-            foreach (Match m in c)
+            word _wordbuffer = null;
+            float lineoverflow = 0;
+            for (int i = 0; i < c.Count; i++)
             {
-                var n = m.Value;
-                var ws = f.MeasureString(Replace(n, ".+?}+", "")) * fontscale;
-                len += n.Length;
-                var rt = n;
-                var tsl = ws.X;// PERF: avoid FindAll with nulling tsl on new line and ++ it on each n iteration
-                wordslist.FindAll(u => u.line == l).ForEach(u => { tsl += (int)u.bounds.Width; });
-                if ((s.X > 0 ? (rt.Contains("^n") || tsl > s.X) : false) && !string.IsNullOrWhiteSpace(n))
+                var wordstring = c[i].Value;
+                var wordscale = f.MeasureString(Replace(wordstring, ".+?}+", "")) * fontscale;
+                len += wordstring.Length;
+                var root = wordstring;
+                lineoverflow += wordscale.X;
+                if ((areasize.X > 0 ? (root.Contains("^n") || lineoverflow > areasize.X - 5) : false) && !string.IsNullOrWhiteSpace(wordstring))
                 {
-                    rt = n.Replace("^n", "");
+                    root = wordstring.Replace("^n", "");
                     cp.X = 0;
-                    cp.Y += ws.Y + f.LineSpacing;
+                    cp.Y += wordscale.Y + f.LineSpacing;
                     l += 1;
+                    lineoverflow = wordscale.X;
                 }
-                sb = new word(p + cp, f, rt, col, ws.X, ws.Y, l, fontscale, this);
+                _wordbuffer = new word(p + cp, f, root, col, wordscale.X, wordscale.Y, l, fontscale, this);
+                //lineoverflow += wordscale.X;
                 if (af)
-                    F_C_APPLY(sb);
-                ws = f.MeasureString(sb) * fontscale;
-                sb.prevnext[0] = wordslist.Count > 1 ? wordslist[wordslist.Count - 1] : null;
+                    F_C_APPLY(_wordbuffer);
+                wordscale = f.MeasureString(_wordbuffer) * fontscale;
+                _wordbuffer.prevnext[0] = wordslist.Count > 1 ? wordslist[wordslist.Count - 1] : null;
                 if (wordslist.Count > 1)
-                    wordslist[wordslist.Count - 1].prevnext[1] = sb;
-                cp += new Vector2(ws.X, 0);
+                    wordslist[wordslist.Count - 1].prevnext[1] = _wordbuffer;
+                cp += new Vector2(wordscale.X, 0);
                 //wordslist.Add(new word((p + cp), f, " ", col, font.Glyphs[0].Width, sp.Y, l, fontscale, this));
-                wordslist.Add(sb);
+                wordslist.Add(_wordbuffer);
             }
-            if (sb != null) // TODO: clutch
-                textscale = new Vector2(s.X, sb.bounds.Y + sb.bounds.Height);
+            if (_wordbuffer != null) // TODO: clutch
+                textscale = new Vector2(areasize.X, _wordbuffer.bounds.Y + _wordbuffer.bounds.Height + 2); // TODO: add owner's pads, margs later
             mea.Stop();
-            Console.WriteLine(mea.ElapsedTicks);
+            Console.WriteLine(mea.ElapsedMilliseconds);
         }
 
         public void Update()
@@ -245,16 +247,16 @@ namespace Crux
             public int line; // Word's line index
             public float scale; // Word scale
             public TextBuilder container;
-            public word(Vector2 p, SpriteFont f, string t, Color c, float ww, float wh, int l, float sc, TextBuilder builder)
+            public word(Vector2 pos, SpriteFont font, string wordstring, Color wordcolor, float wordwidth, float wordheight, int wordline, float wordscale, TextBuilder builder)
             {
-                text = t; font = f; defaultcol = color = c; width = ww; height = wh; line = l; prevnext = new object[] { null, null }; scale = sc; origin = Vector2.Zero;
+                text = wordstring; this.font = font; defaultcol = color = wordcolor; width = wordwidth; height = wordheight; line = wordline; prevnext = new object[] { null, null }; scale = wordscale; origin = Vector2.Zero;
                 container = builder;
-                bounds = Rectangle(p.X, p.Y, ww, wh);
-                foreach (var n in t)
-                    chs.Add(new w_char(n, c));
+                bounds = Rectangle(pos.X, pos.Y, wordwidth, wordheight);
+                foreach (var n in wordstring)
+                    chs.Add(new w_char(n, wordcolor));
                 hov = def = new rule() // Set default rules
                 {
-                    aplog = delegate (word s, string v) { s.color = c; s.font = f; return s; },
+                    aplog = delegate (word s, string v) { s.color = wordcolor; s.font = font; return s; },
                 };
             }
 
