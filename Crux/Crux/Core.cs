@@ -88,11 +88,19 @@ namespace Crux
 
                 s.OnSlide += delegate { t.FontSize = (0.2f + (int)(s.Value * 10) * 0.1f); };
 
-                t.Text =
+                TextSeeker ts = new TextSeeker();
+
+                ts.AddSeeker("star", "{#(255,0,255);}");
+                ts.AddSeeker("node", "{#(85,185,255);#(25,125,255):h;}");
+                ts.AddSeeker("f", "{censore();norm():h;}");
+
+                t.GetTextBuilder.AttachSeeker(ts);
+                
+                    t.Text =
 @"How to... {#(85,185,255):p;#(25,125,255):h,p;}Warp{@p;}:
 
-        1. Warp tech is commonly used to travel between star systems, but for certain amount of energy or specific fuel to feed your warp core. Press Gal{#(85,185,255):p;#(25,125,255):h,p;}axy Map but{@p;}ton (M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
-        2. You also can initiate a wave overlap with the ship that has slower warp core, allowing you to stick with other ships during the travel. When this is possible, an notice appears, which displays current distance to the ship and possibility to do this maneuver: it uses significant amount of energy depending on initial warp jump point. 
+        1. Warp tech is commonly used to travel between star systems, but for certain amount of energy or specific fuel to feed your warp core. Press Gal{#(85,185,255):p;#(25,125,255):h,p;}axy Map but{@p;}ton ({#(255,255,102);}M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
+        2. You also can initiate a wave overlap with the ship that has slower warp core, allowing you to stick with other ships during the travel. When this is possible, a notice appears, which displays current distance to the ship and possibility to do this maneuver: it uses significant amount of energy depending on initial warp jump point. 
 
 How to... Build:
 

@@ -36,8 +36,9 @@ namespace Crux.dControls
         public bool Multiline { set => text.Multiline = value; get => text.Multiline; }
         public Vector2 TextOrigin { set => text.TextOrigin = value; get => text.TextOrigin; }
 
-        //TODO: wrap
         new TextBuilder text;
+        public TextBuilder GetTextBuilder => text;
+
         string tc;
         public override string Text
         {
@@ -175,7 +176,7 @@ namespace Crux.dControls
             }
             Batch.End();
 
-
+            Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-BorderSize);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 text.Render(Batch, new Vector2(X + 1, Y + 1) + textpos);
@@ -183,7 +184,6 @@ namespace Crux.dControls
             }
             Batch.End();
 
-            Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-1);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 // TODO: replace with normal Slider control 

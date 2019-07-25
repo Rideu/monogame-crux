@@ -29,32 +29,44 @@ namespace Crux
     /// </summary>
     public class TextBuilder
     {
-        SpriteFont f; public SpriteFont Font { set => f = value; get => f; }
+        SpriteFont f;
+        public SpriteFont Font { set => f = value; get => f; }
 
-        string t; public string Text { get => t; set => t = value; }
+        string t;
+        public string Text { get => t; set => t = value; }
 
-        string ct; public string CleanText { get => ct; }
+        string ct;
+        public string CleanText { get => ct; }
 
-        int len; public int Length => len;
+        int len;
+        public int Length => len;
 
-        Vector2 sp; public Vector2 ScrollPosition { get => sp; set => sp = value; }
+        Vector2 sp;
+        public Vector2 ScrollPosition { get => sp; set => sp = value; }
 
-        Vector2 p; public Vector2 Position { get => p; set => p = value; }
+        Vector2 p;
+        public Vector2 Position { get => p; set => p = value; }
 
-        Vector2 origin; public Vector2 TextOrigin { get => origin; set => UpdateOrigin(origin = value); }
+        Vector2 origin;
+        public Vector2 TextOrigin { get => origin; set => UpdateOrigin(origin = value); }
 
-        Vector2 spc;
+        Color col;
+        public Color Color => col;
 
-        Color col; public Color Color => col;
+        Vector2 areasize;
+        public Vector2 GetInitialSize => areasize;
 
-        Vector2 areasize; public Vector2 GetInitialSize => areasize;
-
-        Vector2 textscale; public Vector2 GetTotalSize => textscale;
+        Vector2 textscale;
+        public Vector2 GetTotalSize => textscale;
         Textarea owner; // TODO: to uControl
         bool af;
         float fontscale = 1f; public float FontSize { get => fontscale; set { fontscale = value; UpdateText(Text); } }
         bool multiline = true; public bool Multiline { get => multiline; set { multiline = value; UpdateText(Text); } }
+
+
+
         public static bool EnableDebug { get; set; }
+
 
         public TextBuilder(SpriteFont font, string text, Vector2 pos, Vector2 size, Color color = default, bool applyformat = true, Textarea label = null)
         {
@@ -75,6 +87,10 @@ namespace Crux
                 w.origin = origin;
             }
         }
+
+        TextSeeker mainseeker;
+
+        public void AttachSeeker(TextSeeker ts) => mainseeker = ts;
 
         Stopwatch mea = new Stopwatch();
 
@@ -138,6 +154,7 @@ namespace Crux
         void F_C_APPLY(word s)
         {
             if (string.IsNullOrWhiteSpace(s.text)) return;
+            if (mainseeker != null && mainseeker.bypass(s)) return;
             while (IsMatch(s.text, "{.+?}")) // Keep processing commands until they gone...
             {
                 var pc = rule.analyse(s.text); // Parse command
@@ -176,6 +193,8 @@ namespace Crux
 
             //return cancelate;
         }
+
+
 
         internal struct rule // A command
         {
@@ -237,6 +256,7 @@ namespace Crux
             public SpriteFont font; // Word's spritefont
             public Rectangle bounds; // Word's bounds
             public Vector2 origin;
+            public string originaltext; // Text
             public string text; // Text
             public bool fc; // Formatting condition
             public Color color;
@@ -249,7 +269,7 @@ namespace Crux
             public TextBuilder container;
             public word(Vector2 pos, SpriteFont font, string wordstring, Color wordcolor, float wordwidth, float wordheight, int wordline, float wordscale, TextBuilder builder)
             {
-                text = wordstring; this.font = font; defaultcol = color = wordcolor; width = wordwidth; height = wordheight; line = wordline; prevnext = new object[] { null, null }; scale = wordscale; origin = Vector2.Zero;
+                originaltext = text = wordstring; this.font = font; defaultcol = color = wordcolor; width = wordwidth; height = wordheight; line = wordline; prevnext = new object[] { null, null }; scale = wordscale; origin = Vector2.Zero;
                 container = builder;
                 bounds = Rectangle(pos.X, pos.Y, wordwidth, wordheight);
                 foreach (var n in wordstring)
@@ -321,6 +341,24 @@ namespace Crux
                     var m = Matches(v, "\\d+");
 
                     s.color = new Color(int.Parse(m[0].Value), int.Parse(m[1].Value), int.Parse(m[2].Value));
+                    return s;
+                }
+            },
+            new rule()
+            {
+                ct = "{norm}",
+                aplog = delegate(word s, string v)
+                {
+                    s.text = s.originaltext;
+                    return s;
+                }
+            },
+            new rule()
+            {
+                ct = "{censore}",
+                aplog = delegate(word s, string v)
+                {
+                    s.text = Replace(s.originaltext, ".", "*");
                     return s;
                 }
             },

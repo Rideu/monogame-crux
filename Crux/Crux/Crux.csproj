@@ -84,6 +84,7 @@
     <Compile Include="Behaviour\DebugDevice.cs" />
     <Compile Include="Behaviour\IUnify.cs" />
     <Compile Include="Behaviour\Simplex.cs" />
+    <Compile Include="Behaviour\TextSeeker.cs" />
     <Compile Include="Behaviour\Timing.cs" />
     <Compile Include="Behaviour\ToolSet.cs">
       <SubType>Form</SubType>
