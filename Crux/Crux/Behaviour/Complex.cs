@@ -98,15 +98,13 @@ namespace Crux
         {
             Console.Write(text);
             mea.Restart();
-            //t = Replace(text, @"[}]\s", "}");
-            //t = Replace(t, @"[{]", "{");
             t = Replace(t = text, "\\r\\n", " ^n");
             Vector2 cp = new Vector2();
             var l = 0;
             var c = Matches(t, @" +|(.+?)(?=({| ))");
             ct = Replace(t = text, "{.+?}", "");
             wordslist.Clear();
-            // TODO: string seeker, which is searching for specified strings inside the text and does an action specified by specified rule
+
             word _wordbuffer = null;
             float lineoverflow = 0;
             for (int i = 0; i < c.Count; i++)
@@ -418,21 +416,21 @@ namespace Crux
 
         public void Render(SpriteBatch batch, Vector2 pos)
         {
-            Parallel.ForEach(wordslist, n =>
-            {
-                lock (batch)
-                {
-                    n.ond?.Invoke();
-                    batch.DrawWord(n, pos);
-                    if (EnableDebug)
-                        batch.DrawFill(n.bounds.OffsetBy(pos.X, pos.Y), Color.Red * .5f);
-                }
-            });
-            //wordslist.ForEach(n =>
+            //Parallel.ForEach(wordslist, n =>
             //{
-            //    n.ond?.Invoke();
-            //    batch.DrawWord(n, pos);
+            //    lock (batch)
+            //    {
+            //        n.ond?.Invoke();
+            //        batch.DrawWord(n, pos);
+            //        if (EnableDebug)
+            //            batch.DrawFill(n.bounds.OffsetBy(pos.X, pos.Y), Color.Red * .5f);
+            //    }
             //});
+            wordslist.ForEach(n =>
+            {
+                n.ond?.Invoke();
+                batch.DrawWord(n, pos);
+            });
         }
 
         public static implicit operator string(TextBuilder tb)

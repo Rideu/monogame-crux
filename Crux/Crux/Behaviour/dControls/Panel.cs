@@ -16,30 +16,28 @@ namespace Crux.dControls
         public override uControl Owner { get { return OwnerField; } set { OwnerField = value; } }
         private uControl OwnerField;
 
-        private int ID;
-        public override int GetID { get { return ID; } }
 
-        
+
         //TODO: wrap
         public override string Text { get => text; set { text = value; } }
 
         Slider ContentSlider;
 
         private Texture2D Tex;
-        
+
         #endregion
 
-        public Panel(Vector4 posform, Color color = default(Color))
+        public Panel(Vector4 posform, Color color = default)
         {
             X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
         }
 
-        public Panel(Vector2 pos, Vector2 size, Color color = default(Color))
+        public Panel(Vector2 pos, Vector2 size, Color color = default)
         {
             X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
         }
 
-        public Panel(float x, float y, float width, float height, Color color = default(Color))
+        public Panel(float x, float y, float width, float height, Color color = default)
         {
             X = x; Y = y; Width = width; Height = height; BackColor = color;
         }
@@ -48,7 +46,7 @@ namespace Crux.dControls
             Alias = "Panel";
             ID = Owner.GetControlsCount + 1;
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
-            BorderColor = BackColor * 1.5f;
+            BorderColor = (BackColor = BackColor == default ? Palette.DarkenGray : BackColor) * 1.5f;
             OnMouseScroll += (uControl c, ControlArgs e) =>
             {
                 ScrollValue = (SlideSpeed.Y += Control.WheelVal / 50) * 0.025f;
@@ -167,7 +165,7 @@ namespace Crux.dControls
         public override void Draw()
         {
             Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
-            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+            Batch.Begin(SpriteSortMode.Deferred, rasterizerState: originForm.SideControl == this ? null: rasterizer);
             {
                 Batch.DrawFill(Bounds, BorderColor);
                 Batch.DrawFill(Bounds.InflateBy(-2), BackColor);
@@ -193,13 +191,12 @@ namespace Crux.dControls
             //if (ContentSlider.IsVisible)
             ContentSlider.Draw();
 
-            Batch.Begin(SpriteSortMode.Deferred, null, null, null);
-            {
-                //Batch.DrawFill(OverflowBounds, Color.Red*0.1f);
-                //Batch.DrawFill(Bounds.InflateBy(-2), BackColor);
-                //Batch.DrawString(Game1.font, Text, new Vector2(Owner.X + X, Owner.Y + Y) - Game1.font.MeasureString(Text) / 2 + new Vector2(Width, Height) / 2, Color.White);
-            }
-            Batch.End();
+            //Batch.Begin(SpriteSortMode.Deferred);
+            //{
+            //    var u = DrawingBounds;
+            //    Batch.DrawFill(u, Color.Red * .5f);
+            //}
+            //Batch.End();
         }
     }
 }

@@ -51,20 +51,21 @@ namespace Crux.dControls
         /// Returns the owner of this element.
         /// </summary>
         public abstract uControl Owner { get; set; }
-        protected Form originForm;
+        protected internal Form originForm;
         public Form MainForm => originForm;
-        int id;
         /// <summary>
         /// Returns zero-based id of the control.
         /// </summary>
-        public abstract int GetID { get; }
+        protected int ID;
+        public virtual int GetID { get { return ID; } }
         public Color BackColor { get; set; } = Palette.DarkenGray;
         public Color BorderColor { get; set; } = Palette.LightenGray;
         protected Texture2D Tex { get; set; }
         protected Point InitialPosition { get; set; }
         public Rectangle Bounds { get; set; }
         public int BorderSize { get; set; } = 2;
-        public virtual Rectangle DrawingBounds => Bounds.Intersect(Owner.DrawingBounds.InflateBy(-BorderSize))/*.Intersect(MainForm.FillingArea)*/; // TODO: include border inflation for both owner and mainform
+        public virtual Rectangle DrawingBounds => Bounds.Intersect(Owner.DrawingBounds.InflateBy(-BorderSize));
+        protected Rectangle singleHop => Bounds.Intersect(Owner.Bounds.InflateBy(-BorderSize));
         public float X { get; set; }
         public float Y { get; set; }
         public float Width { get; set; }
@@ -128,7 +129,7 @@ namespace Crux.dControls
             c.Owner = this;
             c.Initialize(); // DBG: control initializer reminder
             Controls.Add(c);
-            c.id = Controls.IndexOf(c) - 1;
+            c.ID = Controls.IndexOf(c) - 1;
             CalcContentBounds();
         }
 

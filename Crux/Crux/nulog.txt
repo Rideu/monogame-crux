@@ -1,0 +1,5 @@
+Попытка выполнить сборку пакета из "MgCrux.csproj".
+MSBuild auto-detection: using msbuild version '16.1.76.45076' from 'C:\Develop\Visual Studio 2019\MSBuild\Current\bin'.
+Упаковка файлов из C:\Users\Rideu\Documents\Visual Studio 2017\Projects\CruxRepo\Crux\Crux\bin\Windows\x86\Debug.
+Использование "MgCrux.nuspec" для метаданных.
+Successfully created package 'C:\Users\Rideu\Documents\Visual Studio 2017\Projects\CruxRepo\Crux\Crux\Monogame-Crux.0.1.5.2.nupkg'.

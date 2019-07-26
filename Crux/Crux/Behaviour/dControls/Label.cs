@@ -14,7 +14,7 @@ namespace Crux.dControls
         string tc;
         public override string Text { get => tc; set { tc = value; Width = font.MeasureString(tc).X; } } // TODO: 
         public float TextSize { get; set; } = 1f;
-        
+
         #endregion
 
         public Label(Vector4 posform)
@@ -32,6 +32,11 @@ namespace Crux.dControls
             X = x; Y = y; Width = width; Height = height;
         }
 
+        internal override void Initialize()
+        {
+            BorderSize = 0;
+            base.Initialize();
+        }
         public Color ForeColor = Color.White;
 
         public override void Invalidate()
@@ -40,24 +45,31 @@ namespace Crux.dControls
 
         public override void Update()
         {
-
             base.Update();
         }
 
         public override void InnerUpdate()
         {
+            Bounds = Rectangle(X, Y, Width, Height);
         }
 
         public override void Draw()
         {
-            var drawb = DrawingBounds;
+            var drawb = singleHop;
             Batch.GraphicsDevice.ScissorRectangle = drawb;
-
-            Batch.Begin(SpriteSortMode.Deferred, rasterizerState:rasterizer);
+            var ff = font.MeasureString(tc).X;
+            Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
-                Batch.DrawString(font, tc, Bounds.Location.ToVector2(), ForeColor, 0, TextSize);
+                Batch.DrawString(font, tc, new Vector2(X, Y), ForeColor, 0, TextSize);
             }
             Batch.End();
+
+            //Batch.Begin(SpriteSortMode.Deferred);
+            //{
+            //    var u = Bounds;
+            //    Batch.DrawFill(u, Color.Red * .5f);
+            //}
+            //Batch.End();
         }
     }
 }

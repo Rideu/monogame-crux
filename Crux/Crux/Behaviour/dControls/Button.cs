@@ -16,10 +16,6 @@ namespace Crux.dControls
         public override uControl Owner { get { return OwnerField; } set { OwnerField = value; } }
         private uControl OwnerField;
 
-        private int ID;
-        public override int GetID { get { return ID; } }
-        
-
         //PERF: wrap; precalculate text position in getter, then alter it's drawing code
         public override string Text { get => text; set { text = value; } }
         

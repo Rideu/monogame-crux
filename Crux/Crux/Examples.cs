@@ -17,6 +17,16 @@ using static Crux.Simplex;
 
 namespace Crux
 {
+    public class TestObject
+    {
+        public TestObject(string t) => Text = t;
+
+        public string Text { get; set; } = "";
+        public override string ToString()
+        {
+            return Text;
+        }
+    }
     partial class Core
     {
         void Examples()

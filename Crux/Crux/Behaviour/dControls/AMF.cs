@@ -164,12 +164,12 @@ namespace Crux.dControls
         public override int GetID { get { return id; } }
 
         public override Rectangle DrawingBounds => Bounds;
-        
+
         public delegate void ControlEventHandler(object sender, ControlArgs e);
 
         public event ControlEventHandler OnMouseLeftClicked;
         public event ControlEventHandler OnKeyUp;
-        
+
 
         #region Constructors
 
@@ -272,7 +272,7 @@ namespace Crux.dControls
         /// <param name="id"></param>
         public void DeleteControl(int id) => Controls.RemoveAt(id - 1);
 
-        public uControl ActiveControl;
+        public uControl ActiveControl, SideControl;
 
         public override void Invalidate()
         {
@@ -479,7 +479,7 @@ namespace Crux.dControls
                         {
                             ActiveControl = n;
                             ActiveControl.IsActive = picked = true;
-                            
+
                         }
                     }
                     if (!picked)
@@ -506,6 +506,13 @@ namespace Crux.dControls
         public override void InnerUpdate()
         {
             base.EventProcessor();
+            if (SideControl != null)
+            {
+                if (!(Control.MouseHoverOverG(SideControl.Bounds.Union(SideControl.Owner.Bounds))) && Control.LeftClick())
+                {
+                    SideControl = null;
+                }
+            }
             if (!Control.LeftButtonPressed)
             {
                 EnterHold = false;
@@ -587,14 +594,16 @@ namespace Crux.dControls
 
                     if (false) // DBG: Drawing bounds debug
                     {
-                        //Batch.Begin(SpriteSortMode.Deferred, null, null, null);
-                        //{
-                        //    Batch.DrawFill(Controls[i].DrawingBounds, new Color(73, 123, 63, 50));
-                        //}
-                        //Batch.End();
+                        Batch.Begin(SpriteSortMode.Deferred, null, null, null);
+                        {
+                            Batch.DrawFill(Controls[i].DrawingBounds, Color.Red*0.5f);
+                        }
+                        Batch.End();
                     }
                 }
 
+
+                SideControl?.Draw();
 
                 Batch.Begin(SpriteSortMode.Deferred, null, null, null);
                 {

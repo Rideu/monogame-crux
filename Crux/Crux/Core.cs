@@ -54,13 +54,13 @@ namespace Crux
             IsMouseVisible = true;
 
             uControl.SetDefaultFont = font1;
-            var nsf = new SpriteFont(font1.Texture, 
-                font1.Glyphs.Select(n => n.BoundsInTexture).ToList(), 
-                font1.Glyphs.Select(n=>n.Cropping).ToList(), 
-                font1.Characters.ToList(), 
-                font1.LineSpacing, 
+            var nsf = new SpriteFont(font1.Texture,
+                font1.Glyphs.Select(n => n.BoundsInTexture).ToList(),
+                font1.Glyphs.Select(n => n.Cropping).ToList(),
+                font1.Characters.ToList(),
+                font1.LineSpacing,
                 font1.Spacing,
-                font1.Glyphs.Select(n => new Vector3(n.LeftSideBearing, n.Width, n.RightSideBearing)).ToList(), 
+                font1.Glyphs.Select(n => new Vector3(n.LeftSideBearing, n.Width, n.RightSideBearing)).ToList(),
                 '?');
             TextBuilder.Batch = spriteBatch;
             //TextBuilder.EnableDebug = true;
@@ -79,7 +79,7 @@ namespace Crux
             });
 
             #region Sample text
-            if (true)
+            if (false)
             {
                 Textarea t;
                 Slider s;
@@ -95,8 +95,8 @@ namespace Crux
                 ts.AddSeeker("f", "{censore();norm():h;}");
 
                 t.GetTextBuilder.AttachSeeker(ts);
-                
-                    t.Text =
+
+                t.Text =
 @"How to... {#(85,185,255):p;#(25,125,255):h,p;}Warp{@p;}:
 
         1. Warp tech is commonly used to travel between star systems, but for certain amount of energy or specific fuel to feed your warp core. Press Gal{#(85,185,255):p;#(25,125,255):h,p;}axy Map but{@p;}ton ({#(255,255,102);}M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
@@ -141,9 +141,15 @@ Building sizes can be four types: small, large, complex or arcological. Small on
             }
             #endregion
 
+            var cb = new Combobox(50, 50, 120, 20);
+            f.AddNewControl(cb);
+            for (int i = 0; i < 5; i++)
+            {
+                cb.AddItem(new TestObject($"Item{i}"));
+            }
 
-            f.AddNewControl(new Slider(20, 80, 10, 200, Slider.Type.Vertical) { Filler = Slider.FillStyle.Slider });
-            f.AddNewControl(new Slider(50, 50, 200, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
+            //f.AddNewControl(new Slider(20, 80, 10, 200, Slider.Type.Vertical) { Filler = Slider.FillStyle.Slider });
+            //f.AddNewControl(new Slider(50, 50, 200, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
 
             f.CreateLayout(hud_form_headname,
             hud_form_headseam,
@@ -154,7 +160,7 @@ Building sizes can be four types: small, large, complex or arcological. Small on
             hud_form_bottomseam,
             hud_form_bottomright);
 
-            f.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 0.9f, ForeColor = new Color(238, 195, 114) });
+            //f.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 0.9f, ForeColor = new Color(238, 195, 114) });
             f.OnKeyUp += (s, e) =>
             {
                 var k = e.KeysHandled;
@@ -205,7 +211,7 @@ Building sizes can be four types: small, large, complex or arcological. Small on
             font1 = Content.Load<SpriteFont>("fonts\\Xolonium");
             font1.Glyphs[0].Width = 3; // Alters space size
             font1.LineSpacing = 5;
-            
+
             #endregion
 
             #region Sounds

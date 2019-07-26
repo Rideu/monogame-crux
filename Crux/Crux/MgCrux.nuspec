@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <projectUrl>https://github.com/Rideu/monogame-crux</projectUrl>
+	<iconUrl>https://i.imgur.com/c2EP4I8.png</iconUrl>
+    <releaseNotes>
++ Combobox preview (just a template)
++ Panel is now scrollable
++ Slider fixes
++ Recursive DrawingBounds casting
++ Main controls are now drawn directly via rectangle filling method instead of texture assembling
++ Slight code cleanup
++ HEX-color picker example added
+</releaseNotes>
+    <copyright>Copyright 2019</copyright>
+    <tags>monogame userinterface ui gamedev tools windows</tags>
+  </metadata>
+</package>

@@ -445,54 +445,22 @@ namespace Crux
 
         public static Rectangle Intersect(this Rectangle r1, Rectangle r2) => sRectangle.Intersect(r1, r2);
 
+        public static Rectangle InflateBy(this Rectangle r1, float left, float right, float up, float down)
+        {
+            r1.Location = new Point(r1.X - (int)(left), r1.Y - (int)(up));
+            r1.Size = new Point(r1.Width + (int)(left + right), r1.Height + (int)(up + down));
+            return r1;
+        }
+
         public static Rectangle InflateBy(this Rectangle r1, float v, float h) { r1.Inflate(v, h); return r1; }
 
         public static Rectangle InflateBy(this Rectangle r1, float vh) { r1.Inflate(vh, vh); return r1; }
 
-        public static Rectangle Union(this Rectangle r1, Rectangle r2) => sRectangle.Intersect(r1, r2);
+        public static Rectangle Union(this Rectangle r1, Rectangle r2) => sRectangle.Union(r1, r2);
 
         public static Point Edging(this Rectangle src) => src.Location + src.Size;
 
         #endregion
-
-        public static class Palette
-        {
-            static float nhsv(float n, float h, float s, float v)
-            {
-                var k = (n + h / 60) % 6;
-                return v - v * s * Max(Min(Min(k, 4 - k), 1), 0);
-            }
-
-            /// <summary>
-            /// Converts hue-saturation-value-color to RGB.
-            /// </summary>
-            /// <param name="h">Hue value (in range of 0-360)</param>
-            /// <param name="s">Saturation value (0-1)</param>
-            /// <param name="v">Value (0-1)</param>
-            /// <returns>RGB color</returns>
-            public static Color HSV2RGB(float h, float s, float v)
-            {
-                return new Color(nhsv(5, h, s, v), nhsv(3, h, s, v), nhsv(1, h, s, v));
-            }
-
-            public static Color ToColor(string hex)
-            {
-                return new Color(
-                    int.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.AllowHexSpecifier),
-                    int.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.AllowHexSpecifier),
-                    int.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.AllowHexSpecifier),
-                    int.Parse(hex.Substring(6, 2), System.Globalization.NumberStyles.AllowHexSpecifier));
-            }
-
-            public static Color ToColor(uint val)
-            {
-                return new Color(val);
-            }
-
-            public static Color LightenGray => new Color(125, 125, 125, 255);
-
-            public static Color DarkenGray => new Color(65, 65, 65, 255);
-        }
 
         public static Vector2 Trunc(this Vector2 v, float val)
         {
@@ -504,7 +472,7 @@ namespace Crux
 
         public static Vector2 GetVector2(this Vector3 v) => new Vector2(v.X, v.Y);
 
-        //public static Vector2 ToPoint(this (int, int) t) => new Vector2(t.Item1, t.Item2);
+        public static Vector2 ToPoint(this (int, int) t) => new Vector2(t.Item1, t.Item2);
 
         public static Vector2 Normal(this Vector2 v)
         {
@@ -667,28 +635,48 @@ namespace Crux
 
     }
 
-    public static class Calc
+    public static class Palette
     {
-        public static float AngleTo(Vector2 point0, Vector2 point1)
+        static float nhsv(float n, float h, float s, float v)
         {
-            return -(float)(Atan2(point1.X - point0.X, point1.Y - point0.Y));
+            var k = (n + h / 60) % 6;
+            return v - v * s * Max(Min(Min(k, 4 - k), 1), 0);
         }
 
-        public static float AngleTo(Line line)
+        /// <summary>
+        /// Converts hue-saturation-value-color to RGB.
+        /// </summary>
+        /// <param name="h">Hue value (in range of 0-360)</param>
+        /// <param name="s">Saturation value (0-1)</param>
+        /// <param name="v">Value (0-1)</param>
+        /// <returns>RGB color</returns>
+        public static Color HSV2RGB(float h, float s, float v)
         {
-            return AngleTo(line.Start, line.End);
+            return new Color(nhsv(5, h, s, v), nhsv(3, h, s, v), nhsv(1, h, s, v));
         }
 
-        public static float AngleBetween(Vector2 start1, Vector2 end1, Vector2 start2, Vector2 end2)
+        public static Color ToColor(string hex)
         {
-            return Abs(Abs(Simplex.GetAngle(end1, start1) - Abs(Simplex.GetAngle(end2, start2))));
+            return new Color(
+                int.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.AllowHexSpecifier),
+                int.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.AllowHexSpecifier),
+                int.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.AllowHexSpecifier),
+                int.Parse(hex.Substring(6, 2), System.Globalization.NumberStyles.AllowHexSpecifier));
         }
 
-        public static float AngleBetween(Line l1, Line l2)
+        public static Color ToColor(uint val)
         {
-            return AngleBetween(l1.Start, l1.End, l2.Start, l2.End);
+            return new Color(val);
         }
 
+        public static Color LightenGray => new Color(125, 125, 125, 255);
+
+        public static Color DarkenGray => new Color(65, 65, 65, 255);
     }
 
+    public static class RegexLib
+    {
+        public static string MatchIfContains => "(?<={).??([()]).*?(?=})";
+
+    }
 }

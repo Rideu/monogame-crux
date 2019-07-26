@@ -18,7 +18,7 @@ namespace Crux.dControls
 
         private int ID;
         public override int GetID { get { return ID; } }
-        
+
         SpriteFont font = Core.font;
         public SpriteFont Font
         {
@@ -56,7 +56,7 @@ namespace Crux.dControls
 
 
         private Texture2D Tex;
-    
+
         #endregion
 
         public Textarea(Vector4 posform)
@@ -171,8 +171,6 @@ namespace Crux.dControls
             {
                 Batch.DrawFill(Bounds, BorderColor);
                 Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor);
-                // Slider background
-                Batch.DrawFill(new Rectangle((int)(X + Width - 5 - BorderSize), (int)(Y + BorderSize), 5, (int)Height - 2 - BorderSize), new Color(55, 55, 55, 255));
             }
             Batch.End();
 
@@ -180,13 +178,14 @@ namespace Crux.dControls
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 text.Render(Batch, new Vector2(X + 1, Y + 1) + textpos);
-                //Batch.DrawString(font, Text, (new Vector2(Owner.X + X, Owner.Y + Y) + new Vector2(4, 2) + textpos)/*.ToPoint().ToVector2()*/, Color.White, 0f, new Vector2(), 1f, SpriteEffects.None, 1f);
             }
             Batch.End();
 
+            //Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-BorderSize, -BorderSize - 5, -BorderSize, -BorderSize);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 // TODO: replace with normal Slider control 
+                Batch.DrawFill(new Rectangle((int)(X + Width - 5 - BorderSize), (int)(Y + BorderSize), 5, (int)Height - 2 - BorderSize), new Color(55, 55, 55, 255));
                 var h = (int)(Height * (float.IsInfinity(Height / ContentBounds.Y) ? 1 : Height / ContentBounds.Y));
                 var scrollpos = new Point((int)(X + Width - 4 - BorderSize), (int)(Y + 1 - textpos.Y * (float.IsInfinity(Height / ContentBounds.Y) ? 1 : Height / ContentBounds.Y)));
                 var scrollsize = new Point(3, h > Height ? (int)Height - 2 : h);
