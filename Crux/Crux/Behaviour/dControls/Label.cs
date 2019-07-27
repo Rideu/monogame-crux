@@ -57,7 +57,6 @@ namespace Crux.dControls
         {
             var drawb = singleHop;
             Batch.GraphicsDevice.ScissorRectangle = drawb;
-            var ff = font.MeasureString(tc).X;
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
                 Batch.DrawString(font, tc, new Vector2(X, Y), ForeColor, 0, TextSize);

@@ -79,7 +79,7 @@ namespace Crux
             });
 
             #region Sample text
-            if (false)
+            if (true)
             {
                 Textarea t;
                 Slider s;
@@ -92,22 +92,12 @@ namespace Crux
 
                 ts.AddSeeker("star", "{#(255,0,255);}");
                 ts.AddSeeker("node", "{#(85,185,255);#(25,125,255):h;}");
-                ts.AddSeeker("f", "{censore();norm():h;}");
+                //ts.AddSeeker("f", "{censore();norm():h;}");
 
                 t.GetTextBuilder.AttachSeeker(ts);
 
                 t.Text =
-@"How to... {#(85,185,255):p;#(25,125,255):h,p;}Warp{@p;}:
-
-        1. Warp tech is commonly used to travel between star systems, but for certain amount of energy or specific fuel to feed your warp core. Press Gal{#(85,185,255):p;#(25,125,255):h,p;}axy Map but{@p;}ton ({#(255,255,102);}M by default) to view available stars to travel to. The sphere around your current star system shows the bounds within which you can warp.  Now click on any star. The number below star name shows, how much fuel is required to warp to this system. It's labeled as green if you have enough amount of energy and red otherwise. Now choose a reachable star to travel to and press Travel button. The Oscillation window opens. To increase travel stability and speed, you need to alter nodes of the oscillation graph according to the warp noise map: the more accuracy, the more effectivity. Since nodes values are initially precalculated, they also can be left as is, so the travel will take its usual time. Now press Apply button to launch the warp core and travel to the chosen system. Warp can take some time, depending on distance to target star and warp core properties.
-        2. You also can initiate a wave overlap with the ship that has slower warp core, allowing you to stick with other ships during the travel. When this is possible, a notice appears, which displays current distance to the ship and possibility to do this maneuver: it uses significant amount of energy depending on initial warp jump point. 
-
-How to... Build:
-
-        1. Buildings are primary things that makes the world live, cycle and expand. They are subdivided by their functionality: common factories, research laboratories and energy stations. All of them are consuming various resources, depending on how it is organized and supplied. To manage its work in more simple manner, node mechanic is used. Each node requires specific amount of workers and energy to function. There are three types of nodes in the game: source, processing and storage. Source nodes are consuming local resources depending on its type (mining or farming). Processing nodes are used to process incoming resources and provide the result to the next ones. Storage nodes sends all the incoming resources to the planetary storage to be distributed among other factories or for local sales or intake resources for continued processing. If there is a lack of workers or energy, the production will be limited or, in worst case, disabled, so dependency compliance and optimization are very important. If node's inner storage is overfilled, it can cause blocking state - incoming connections are filling up, keep consuming energy and spending working time, calling continued blocking chain, so the losses are increasing.
-Building sizes can be four types: small, large, complex or arcological. Small ones can contain up to 5 nodes plus one for storage, large can contain up to 20, complex up to 70 and arcological up to 160 nodes.
-        2. The common factories can be built on wide range of surfaces, even on non-atmosphere planets or asteroids. The size is varied by small (up to 6 processing nodes). They need abundant amount of workers and energy.
-";
+@"{blue();}MonoGame is free {#(25,25,25);}software used by game {#(244,170,0):p;} developers to make {@p;} their {blue():h;}Windows and Windows Phone games run on other systems. ";
 
                 (t as Textarea).Font = font1;
             }
@@ -160,7 +150,7 @@ Building sizes can be four types: small, large, complex or arcological. Small on
             hud_form_bottomseam,
             hud_form_bottomright);
 
-            //f.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 0.9f, ForeColor = new Color(238, 195, 114) });
+            f.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 0.9f, ForeColor = new Color(238, 195, 114) });
             f.OnKeyUp += (s, e) =>
             {
                 var k = e.KeysHandled;

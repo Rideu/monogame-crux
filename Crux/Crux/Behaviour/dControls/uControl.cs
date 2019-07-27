@@ -326,7 +326,7 @@ namespace Crux.dControls
 
     }
 
-    partial class DebugDevice
+    public static partial class DebugDevice
     {
         static bool updCalled;
         static int bu, eu;
@@ -356,7 +356,7 @@ namespace Crux.dControls
 
         public static string GetDebugInfo()
         {
-            return $"iT: {uControl.dbg_initsTotal} \nbU: {bu} eU: {eu} \nbUT: {uControl.dbg_boundsUpdatesTotal} eUT: {uControl.dbg_eventUpdatesTotal}";
+            return $"iT: {uControl.dbg_initsTotal} \nbU: {bu} eU: {eu} \nbUT: {uControl.dbg_boundsUpdatesTotal} eUT: {uControl.dbg_eventUpdatesTotal} \nfums: {fums} fdms: {fdms}";
         }
     }
 }

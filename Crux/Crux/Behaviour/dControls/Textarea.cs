@@ -82,8 +82,8 @@ namespace Crux.dControls
 
             var scroll = new Rectangle(0, 0, 5, (int)Height);
             // left top right bottom
-            var padding = new Rectangle(/*left*/2 + scroll.Width,/*top*/2,/*right*/3,/*bottom*/0);
-            text = new TextBuilder(Font, "", new Vector2((padding.X - scroll.Width), 0), new Vector2(Width - scroll.Width - padding.Width, Height), Color.White, true, this);
+            var padding = new Rectangle(/*left*/10 + scroll.Width,/*top*/10,/*right*/3,/*bottom*/0);
+            text = new TextBuilder(Font, "", new Vector2((padding.X - scroll.Width), padding.Y), new Vector2(Width - scroll.Width - padding.Width, Height), Color.White, true, this);
 
             OnMouseLeave += delegate
             {

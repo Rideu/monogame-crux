@@ -43,12 +43,14 @@ namespace Crux.dControls
             Container.Initialize();
         }
 
+        float forecl_mult = 1f;
         public Color ForeColor = Color.White;
 
         public override void Invalidate()
         {
         }
 
+        public object SelectedItem;
         internal List<object> Items;
         internal Panel Container;
 
@@ -56,6 +58,14 @@ namespace Crux.dControls
         {
             var i = new Label(BorderSize, BorderSize + Container.Controls.Count * 20, Container.Width, 20) { Text = item.ToString() };
             Container.AddNewControl(i);
+            i.OnMouseEnter += delegate
+            {
+                forecl_mult = 0.5f;
+            };
+            i.OnMouseLeave += delegate
+            {
+                forecl_mult = 1f;
+            };
             Container.Height += 20;
             Container.UpdateBounds();
         }
@@ -105,7 +115,7 @@ namespace Crux.dControls
             {
                 Batch.DrawFill(Bounds, BorderColor);
                 Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor);
-                Batch.DrawString(font, tc, new Vector2(X + BorderSize, Y + BorderSize), ForeColor, 0, TextSize);
+                Batch.DrawString(font, tc, new Vector2(X + BorderSize, Y + BorderSize), ForeColor * forecl_mult, 0, TextSize);
             }
             Batch.End();
 

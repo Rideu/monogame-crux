@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
@@ -94,6 +95,8 @@ namespace Crux.dControls
             f.Alias = name;
         }
 
+        internal static Stopwatch fusw = new Stopwatch();
+
         public static Form ActiveForm, PrevForm = null;
         public static void Update()
         {
@@ -105,6 +108,7 @@ namespace Crux.dControls
             ActiveForm = null;
 
             // TODO: holding control
+            fusw.Restart();
 
             foreach (var f in GlobalForms.Values)
             {
@@ -117,23 +121,31 @@ namespace Crux.dControls
                 }
                 f.Update();
             }
+            fusw.Stop();
+            DebugDevice.fums = fusw.ElapsedTicks;
         }
+
+        internal static Stopwatch fdsw = new Stopwatch();
 
         public static void Draw()
         {
+            fdsw.Restart();
             for (int i = GlobalForms.Count - 1; i >= 0; i--)
             {
                 GlobalForms.ElementAt(i).Value.Draw();
             }
+            fdsw.Stop();
+            DebugDevice.fdms = fdsw.ElapsedTicks;
+
         }
 
         static public bool AnyResizing()
-        {
+        { // PERF: AMF IEnum 
             return GlobalForms.Any(n => n.Value.AnyResizing);
         }
 
         static public bool AnyHovering()
-        {
+        { // PERF: AMF IEnum 
             return GlobalForms.Any(n => n.Value.IsHovering);
         }
     }
@@ -469,7 +481,6 @@ namespace Crux.dControls
                 if ((IsActive/* && !MessageBox.IsOpened*/) || IsIndepend)
                 {
 
-
                     var picked = false;
                     foreach (uControl n in Controls)
                     {
@@ -485,7 +496,8 @@ namespace Crux.dControls
                     if (!picked)
                         ActiveControl = null;
 
-                    ActiveControl?.Update();
+                    if (SideControl == null)
+                        ActiveControl?.Update();
 
                     // Events block
                     {
@@ -596,7 +608,7 @@ namespace Crux.dControls
                     {
                         Batch.Begin(SpriteSortMode.Deferred, null, null, null);
                         {
-                            Batch.DrawFill(Controls[i].DrawingBounds, Color.Red*0.5f);
+                            Batch.DrawFill(Controls[i].DrawingBounds, Color.Red * 0.5f);
                         }
                         Batch.End();
                     }
@@ -635,6 +647,13 @@ namespace Crux.dControls
             }
         }
 
+
+    }
+
+    public static partial class DebugDevice
+    {
+        internal static float fums;
+        internal static float fdms;
 
     }
 }

@@ -1,0 +1,64 @@
+This wiki explains how to use the addon in probably the best way possible to get maximum of it's usage.
+==Textbuilder==
+The primary tool of this addon is Textbuilder class, which allows us to build formatted text in specified bounds, font, scale, color and so on.
+===Constructor===
+'''TextBuilder'''(SpriteFont '''font''', string '''text''', Vector2 '''pos''', Vector2 '''size''', Color '''color''' = default, bool '''applyformat''' = true, Textarea '''label''' = null)
+:'''font''' —  set textbuilder's font
+:'''text''' —  text to display
+:'''pos''' —  initial position of the text
+:'''size''' —  bounds to contain the text inside (basically used to newline)
+:'''color''' —  default text color
+:'''applyformat''' —  whether or not to ignore text formatting rules (command definitions will be left as is)
+:'''label''' —  attach a textarea to this textbuilder
+===TextBuilder's primaries===
+<table>
+<tr><td>SpriteFont '''Font'''</td><td>Set this Textbuilder's font</td></tr>
+<tr><td>string '''Text'''</td><td>Set this Textbuilder's text</td></tr>
+<tr><td>Vector2 '''ScrollPosition'''</td><td>Get/set scrolling position of the Textbuilder</td></tr>
+<tr><td>Vector2 '''Position'''</td><td>Get/set total offset of the Textbuilder</td></tr>
+<tr><td>float '''FontSize'''</td><td>Get/set text scale of the Textbuilder's text</td></tr>
+</table>
+----
+===Basics===
+Text formatter uses following styling syntax:
+<pre>
+{%command1%(%c1params%):%c1_directives%;%command2%(%c2params%):%c2_directives%; . . .;%commandN%(%cNparams%):%cN_directives%;}
+</pre>
+So the command definition should not: contain any spaces inside.
+
+And the command definition should: contain parentheses "()" (except for propstopper) after command's name (even if it doesn't have any parameters on input) and semicolon at the end.
+
+Example command:
+<pre>{normal();}mytext</pre>
+
+There are several predefined style rules to use for text formatting:
+{| class="wikitable"
+!Name
+!Description
+!Params
+!Example
+|-
+|'''{blue}'''
+|Set blue color of the text (sample rule)
+|()
+|"{blue();}bluetext"
+|-
+|'''{#}'''
+|Set RGB values of the text color 
+|(red,green,blue)
+|{#(0,255,255);}cyantext
+|-
+|'''{@p}'''
+|Stops rule propagation
+|(red,green,blue)
+|{#(0,255,255);}cyantext
+|}
+----
+===Continued formatting===
+
+----
+===Text hover===
+
+----
+==Extensibility==
+(Under construction)

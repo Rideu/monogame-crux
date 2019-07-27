@@ -327,7 +327,7 @@ namespace Crux
                 ct = "{blue}", // Define command text
                 aplog = delegate(word s, string v) // Define an action that will be applied for specified word 
                 {
-                    s.color = new Color(0,0,255);
+                    s.color = new Color(25,125,255);
                     return s;
                 }
             },
@@ -416,21 +416,22 @@ namespace Crux
 
         public void Render(SpriteBatch batch, Vector2 pos)
         {
-            //Parallel.ForEach(wordslist, n =>
-            //{
-            //    lock (batch)
-            //    {
-            //        n.ond?.Invoke();
-            //        batch.DrawWord(n, pos);
-            //        if (EnableDebug)
-            //            batch.DrawFill(n.bounds.OffsetBy(pos.X, pos.Y), Color.Red * .5f);
-            //    }
-            //});
-            wordslist.ForEach(n =>
+            // PERF: Async warn
+            Parallel.ForEach(wordslist, n =>
             {
-                n.ond?.Invoke();
-                batch.DrawWord(n, pos);
+                lock (batch)
+                {
+                    n.ond?.Invoke();
+                    batch.DrawWord(n, pos);
+                    if (EnableDebug)
+                        batch.DrawFill(n.bounds.OffsetBy(pos.X, pos.Y), Color.Red * .5f);
+                }
             });
+            //wordslist.ForEach(n =>
+            //{
+            //    n.ond?.Invoke();
+            //    batch.DrawWord(n, pos);
+            //});
         }
 
         public static implicit operator string(TextBuilder tb)
