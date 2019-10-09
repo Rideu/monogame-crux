@@ -56,7 +56,9 @@ namespace Crux.dControls
 
         public void AddItem(object item)
         {
-            var i = new Label(BorderSize, BorderSize + Container.Controls.Count * 20, Container.Width, 20) { Text = item.ToString() };
+            var i = new Label(BorderSize, BorderSize + Container.Controls.Count * 17, Container.Width, 20) { BackColor = Palette.NanoBlue * 0.2f, isFixedWidth = true,  };
+            i.Text = item.ToString();
+            i.BorderSize = 2;
             Container.AddNewControl(i);
             i.OnMouseEnter += delegate
             {
@@ -66,7 +68,7 @@ namespace Crux.dControls
             {
                 forecl_mult = 1f;
             };
-            Container.Height += 20;
+            Container.Height = Container.Controls.Count * 18 - 2;
             Container.UpdateBounds();
         }
 
@@ -102,7 +104,6 @@ namespace Crux.dControls
         public override void InnerUpdate()
         {
             base.EventProcessor();
-
             Container.InnerUpdate();
         }
 

@@ -96,7 +96,7 @@ namespace Crux
 
         public void UpdateText(string text)
         {
-            Console.Write(text);
+            //Console.Write(text);
             mea.Restart();
             t = Replace(t = text, "\\r\\n", " ^n");
             Vector2 cp = new Vector2();
@@ -107,37 +107,41 @@ namespace Crux
 
             word _wordbuffer = null;
             float lineoverflow = 0;
-            for (int i = 0; i < c.Count; i++)
+            try
             {
-                var wordstring = c[i].Value;
-                var wordscale = f.MeasureString(Replace(wordstring, ".+?}+", "")) * fontscale;
-                len += wordstring.Length;
-                var root = wordstring;
-                lineoverflow += wordscale.X;
-                if ((areasize.X > 0 ? (root.Contains("^n") || lineoverflow > areasize.X - 5) : false) && !string.IsNullOrWhiteSpace(wordstring))
+                for (int i = 0; i < c.Count; i++)
                 {
-                    root = wordstring.Replace("^n", "");
-                    cp.X = 0;
-                    cp.Y += wordscale.Y + f.LineSpacing;
-                    l += 1;
-                    lineoverflow = wordscale.X;
+                    var wordstring = c[i].Value;
+                    var wordscale = f.MeasureString(Replace(wordstring, ".+?}+", "")) * fontscale;
+                    len += wordstring.Length;
+                    var root = wordstring;
+                    lineoverflow += wordscale.X;
+                    if ((areasize.X > 0 ? (root.Contains("^n") || lineoverflow > areasize.X - 5) : false) && !string.IsNullOrWhiteSpace(wordstring))
+                    {
+                        root = wordstring.Replace("^n", "");
+                        cp.X = 0;
+                        cp.Y += wordscale.Y + f.LineSpacing;
+                        l += 1;
+                        lineoverflow = wordscale.X;
+                    }
+                    _wordbuffer = new word(p + cp, f, root, col, wordscale.X, wordscale.Y, l, fontscale, this);
+                    //lineoverflow += wordscale.X;
+                    if (af)
+                        F_C_APPLY(_wordbuffer);
+                    wordscale = f.MeasureString(_wordbuffer) * fontscale;
+                    _wordbuffer.prevnext[0] = wordslist.Count > 1 ? wordslist[wordslist.Count - 1] : null;
+                    if (wordslist.Count > 1)
+                        wordslist[wordslist.Count - 1].prevnext[1] = _wordbuffer;
+                    cp += new Vector2(wordscale.X, 0);
+                    //wordslist.Add(new word((p + cp), f, " ", col, font.Glyphs[0].Width, sp.Y, l, fontscale, this));
+                    wordslist.Add(_wordbuffer);
                 }
-                _wordbuffer = new word(p + cp, f, root, col, wordscale.X, wordscale.Y, l, fontscale, this);
-                //lineoverflow += wordscale.X;
-                if (af)
-                    F_C_APPLY(_wordbuffer);
-                wordscale = f.MeasureString(_wordbuffer) * fontscale;
-                _wordbuffer.prevnext[0] = wordslist.Count > 1 ? wordslist[wordslist.Count - 1] : null;
-                if (wordslist.Count > 1)
-                    wordslist[wordslist.Count - 1].prevnext[1] = _wordbuffer;
-                cp += new Vector2(wordscale.X, 0);
-                //wordslist.Add(new word((p + cp), f, " ", col, font.Glyphs[0].Width, sp.Y, l, fontscale, this));
-                wordslist.Add(_wordbuffer);
             }
+            catch { }
             if (_wordbuffer != null) // TODO: clutch
                 textscale = new Vector2(areasize.X, _wordbuffer.bounds.Y + _wordbuffer.bounds.Height + 2); // TODO: add owner's pads, margs later
             mea.Stop();
-            Console.WriteLine(mea.ElapsedMilliseconds);
+            Console.WriteLine(mea.ElapsedTicks);
         }
 
         public void Update()
@@ -414,24 +418,29 @@ namespace Crux
             });
         }
 
+        static Stopwatch rsw = new Stopwatch();
+
         public void Render(SpriteBatch batch, Vector2 pos)
         {
+            rsw.Restart();
             // PERF: Async warn
-            Parallel.ForEach(wordslist, n =>
-            {
-                lock (batch)
-                {
-                    n.ond?.Invoke();
-                    batch.DrawWord(n, pos);
-                    if (EnableDebug)
-                        batch.DrawFill(n.bounds.OffsetBy(pos.X, pos.Y), Color.Red * .5f);
-                }
-            });
-            //wordslist.ForEach(n =>
+            //Parallel.ForEach(wordslist, n =>
             //{
-            //    n.ond?.Invoke();
-            //    batch.DrawWord(n, pos);
+            //    lock (batch)
+            //    {
+            //        n.ond?.Invoke();
+            //        batch.DrawWord(n, pos);
+            //        if (EnableDebug)
+            //            batch.DrawFill(n.bounds.OffsetBy(pos.X, pos.Y), Color.Red * .5f);
+            //    }
             //});
+            wordslist.ForEach(n =>
+            {
+                n.ond?.Invoke();
+                batch.DrawWord(n, pos);
+            });
+            rsw.Stop();
+            //Console.WriteLine(rsw.ElapsedTicks);
         }
 
         public static implicit operator string(TextBuilder tb)

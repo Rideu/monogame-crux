@@ -82,11 +82,11 @@ namespace Crux
             if (true)
             {
                 Textarea t;
-                Slider s;
-                f.AddNewControl(s = new Slider(20, 60, 415, 10, Slider.Type.Horizontal));
+                //Slider s;
+                //f.AddNewControl(s = new Slider(20, 60, 415, 10, Slider.Type.Horizontal));
                 f.AddNewControl(t = new Textarea(20, 80, 415, 280));
 
-                s.OnSlide += delegate { t.FontSize = (0.2f + (int)(s.Value * 10) * 0.1f); };
+                //s.OnSlide += delegate { t.FontSize = (0.2f + (int)(s.Value * 10) * 0.1f); };
 
                 TextSeeker ts = new TextSeeker();
 

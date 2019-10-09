@@ -12,8 +12,18 @@ namespace Crux.dControls
         public override int GetID { get; }
 
         string tc;
-        public override string Text { get => tc; set { tc = value; Width = font.MeasureString(tc).X; } } // TODO: 
+        internal bool isFixedWidth;
+        public override string Text
+        {
+            get => tc; set
+            {
+                tc = value; if (!isFixedWidth)
+                    Width = font.MeasureString(tc).X;
+            }
+        } // TODO: 
         public float TextSize { get; set; } = 1f;
+
+        internal bool drawBackground;
 
         #endregion
 
@@ -34,7 +44,7 @@ namespace Crux.dControls
 
         internal override void Initialize()
         {
-            BorderSize = 0;
+            Bounds = Rectangle(X, Y, Width = Width - Owner.BorderSize - BorderSize, Height = Height - Owner.BorderSize - BorderSize);
             base.Initialize();
         }
         public Color ForeColor = Color.White;
@@ -51,6 +61,7 @@ namespace Crux.dControls
         public override void InnerUpdate()
         {
             Bounds = Rectangle(X, Y, Width, Height);
+            base.EventProcessor();
         }
 
         public override void Draw()
@@ -59,7 +70,9 @@ namespace Crux.dControls
             Batch.GraphicsDevice.ScissorRectangle = drawb;
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
-                Batch.DrawString(font, tc, new Vector2(X, Y), ForeColor, 0, TextSize);
+                if(drawBackground)
+                Batch.DrawFill(Bounds, BackColor);
+                Batch.DrawString(font, tc, new Vector2(X + BorderSize, Y), ForeColor, 0, TextSize);
             }
             Batch.End();
 

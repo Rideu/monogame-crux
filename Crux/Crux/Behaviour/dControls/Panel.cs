@@ -65,7 +65,6 @@ namespace Crux.dControls
                 ScrollValue = ContentSlider.Value;
                 MappingOffset.Y = -ContentOverflow * ContentSlider.Value;
             };
-            // Assemble form texture here.
             base.Initialize();
         }
 

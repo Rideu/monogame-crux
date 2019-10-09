@@ -602,16 +602,16 @@ namespace Crux.dControls
 
                 for (int i = Controls.Count - 1; i >= 0; i--)
                 {
+                    //Parallel.For(0, Controls.Count, (i) => { lock (Batch) { Controls[i].Draw(); } });
                     Controls[i].Draw();
-
-                    if (false) // DBG: Drawing bounds debug
-                    {
-                        Batch.Begin(SpriteSortMode.Deferred, null, null, null);
-                        {
-                            Batch.DrawFill(Controls[i].DrawingBounds, Color.Red * 0.5f);
-                        }
-                        Batch.End();
-                    }
+                    //if (false) // DBG: Drawing bounds debug
+                    //{
+                    //    Batch.Begin(SpriteSortMode.Deferred, null, null, null);
+                    //    {
+                    //Batch.DrawFill(Controls[i].DrawingBounds, Color.Red * 0.5f);
+                    //    }
+                    //    Batch.End();
+                    //}
                 }
 
 
