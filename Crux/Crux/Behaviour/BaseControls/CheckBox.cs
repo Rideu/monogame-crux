@@ -9,13 +9,13 @@ using static Crux.Core;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux.dControls
+namespace Crux.BaseControls
 {
-    public class CheckBox : uControl
+    public class CheckBox : ControlBase
     {
         #region Fields
-        private uControl OwnerField;
-        public override uControl Owner { get { return OwnerField; } set { OwnerField = value; } }
+        private ControlBase OwnerField;
+        public override ControlBase Owner { get { return OwnerField; } set { OwnerField = value; } }
 
         private int ID;
         public override int GetID { get { return ID; } }

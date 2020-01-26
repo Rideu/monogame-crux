@@ -9,13 +9,13 @@ using static Crux.Simplex;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux.dControls
+namespace Crux.BaseControls
 {
-    public class Slider : uControl
+    public class Slider : ControlBase
     {
         #region Fields
-        uControl OwnerField;
-        public override uControl Owner { get { return OwnerField; } set { OwnerField = value; } }
+        ControlBase OwnerField;
+        public override ControlBase Owner { get { return OwnerField; } set { OwnerField = value; } }
 
         int ID;
         public override int GetID { get { return ID; } }
@@ -91,8 +91,8 @@ namespace Crux.dControls
 
         internal override void Initialize()
         {
-            ID = Owner.GetControlsCount + 1;
-            Bounds = Rectangle((Owner.X + X), (Owner.Y + Y), Width, Height);
+            //ID = Owner.GetControlsCount + 1;
+            //Bounds = Rectangle((Owner.X + X), (Owner.Y + Y), Width, Height);
             BorderColor = BackColor * 1.5f;
             ChangeType(dtype);
 

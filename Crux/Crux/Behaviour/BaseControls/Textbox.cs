@@ -12,13 +12,13 @@ using static Crux.Core;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux.dControls
+namespace Crux.BaseControls
 {
-    public class Textbox : uControl // Unused
+    public class Textbox : ControlBase // Unused
     {
         #region Fields
-        private uControl OwnerField;
-        public override uControl Owner { get { return OwnerField; } set { OwnerField = value; } }
+        private ControlBase OwnerField;
+        public override ControlBase Owner { get { return OwnerField; } set { OwnerField = value; } }
 
         private int ID;
         public override int GetID { get { return ID; } }
@@ -50,8 +50,7 @@ namespace Crux.dControls
         }
 
         internal override void Initialize()
-        {
-            ID = Owner.GetControlsCount + 1;
+        { 
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
             OnMouseLeave += delegate { Invalidate(); };
 
@@ -224,6 +223,7 @@ namespace Crux.dControls
                 Vector2 tsc = new Vector2();
                 //Vector2 ts = font.MeasureString(text.Text);
                 //if (InputMode)
+                if(!string.IsNullOrEmpty(text.Text))
                 {
                     var sub = text.Text.Substring(0, caretpos);
                     tsc = font.MeasureString(sub);

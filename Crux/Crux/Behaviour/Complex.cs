@@ -15,7 +15,7 @@ using static System.Math;
 using static Crux.Core;
 using static Crux.Simplex;
 
-using Crux.dControls;
+using Crux.BaseControls;
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
 
@@ -60,8 +60,8 @@ namespace Crux
         public Vector2 GetTotalSize => textscale;
         Textarea owner; // TODO: to uControl
         bool af;
-        float fontscale = 1f; public float FontSize { get => fontscale; set { fontscale = value; UpdateText(Text); } }
-        bool multiline = true; public bool Multiline { get => multiline; set { multiline = value; UpdateText(Text); } }
+        float fontscale = 1f; public float FontSize { get => fontscale; set { fontscale = value; UpdateText(); } }
+        bool multiline = true; public bool Multiline { get => multiline; set { multiline = value; UpdateText(); } }
 
 
 
@@ -77,7 +77,14 @@ namespace Crux
             areasize = size;
             col = color;
             owner = label;
+            owner.OnResize += Owner_OnResize;
             //UpdateText(text);
+        }
+
+        private void Owner_OnResize(object sender, EventArgs e)
+        {
+            areasize = new Vector2(owner.Width - 5 - owner.Padding.Width, owner.Height);
+            UpdateText();
         }
 
         void UpdateOrigin(Vector2 origin)
@@ -94,11 +101,13 @@ namespace Crux
 
         Stopwatch mea = new Stopwatch();
 
+        public void UpdateText() => UpdateText(Text);
+
         public void UpdateText(string text)
         {
             //Console.Write(text);
             mea.Restart();
-            t = Replace(t = text, "\\r\\n", " ^n");
+            t = Replace(t = text + " ", "\\r\\n", " ^n");
             Vector2 cp = new Vector2();
             var l = 0;
             var c = Matches(t, @" +|(.+?)(?=({| ))");

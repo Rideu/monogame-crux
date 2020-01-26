@@ -8,50 +8,66 @@ using static Crux.Simplex;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux.dControls
+namespace Crux.BaseControls
 {
-    public class Button : uControl
+    public class Button : ControlBase
     {
         #region Fields
-        public override uControl Owner { get { return OwnerField; } set { OwnerField = value; } }
-        private uControl OwnerField;
+        public override ControlBase Owner { get { return OwnerField; } set { OwnerField = value; } }
+        private ControlBase OwnerField;
 
+        public override Align TextAlign
+        {
+            get => base.TextAlign;
+
+            set
+            {
+
+                base.TextAlign = value;
+            }
+        }
         //PERF: wrap; precalculate text position in getter, then alter it's drawing code
         public override string Text { get => text; set { text = value; } }
-        
+        public float TextScale { get; set; } = 1f;
+
 
         public event EventHandler OnLeftClick;
         public event EventHandler OnRightClick;
         #endregion
 
-        public Button(Vector4 posform, Color color = default(Color))
+        public Button()
         {
-            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W; cl = color;
+            X = 10; Y = 10; Width = 60; Height = 40; BackColor = default;
         }
 
-        public Button(Vector2 pos, Vector2 size, Color color = default(Color))
+        public Button(Vector4 posform, Color color = default)
         {
-            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y; cl = color;
+            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
         }
 
-        public Button(float x, float y, float width, float height, Color color = default(Color))
+        public Button(Vector2 pos, Vector2 size, Color color = default)
         {
-            X = x; Y = y; Width = width; Height = height; cl = color;
+            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
+        }
+
+        public Button(float x, float y, float width, float height, Color color = default)
+        {
+            X = x; Y = y; Width = width; Height = height; BackColor = color;
         }
 
         public Button(float x, float y, Texture2D image)
         {
-            X = x; Y = y; Width = image.Width; Height = image.Height; cl = Color.White;
+            X = x; Y = y; Width = image.Width; Height = image.Height; BackColor = Color.White;
             Tex = image;
         }
 
-        Color cl;
+        //Color BackColor;
         internal override void Initialize()
         {
-            cl = cl == default(Color) ? Owner.BackColor : cl;
-            ID = Owner.GetControlsCount + 1;
-            Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
-            BorderColor = cl * 1.5f;
+            BackColor = BackColor == default ? Owner.BackColor : BackColor;
+            //ID = Owner.GetControlsCount + 1;
+            //Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
+            BorderColor = BackColor * 1.5f;
             base.Initialize();
         }
 
@@ -107,10 +123,17 @@ namespace Crux.dControls
                 // Uncomment lines below to enable 3d-like border style
                 //Batch.DrawFill(Bounds, IsHolding ? Palette.DarkenGray : Palette.LightenGray); // TL border
                 //Batch.DrawFill(Bounds.OffsetBy(1, 1), IsHolding ? Palette.LightenGray : Palette.DarkenGray); // BR border
-                Batch.DrawFill(Bounds, BorderColor); // Primary
-                Batch.DrawFill(Bounds.InflateBy(-2), new Color(cl * f, 1f)); // Primary
+                if (DrawBorder)
+                {
+                    Batch.DrawFill(Bounds, BorderColor); // Primary
+                    Batch.DrawFill(Bounds.InflateBy(-BorderSize), new Color(BackColor * f, 1f)); // Primary
+                }
+                else
+                {
+                    Batch.DrawFill(Bounds, new Color(BackColor * f, 1f)); // Primary
+                }
                 if (Tex != null)
-                    Batch.Draw(Tex, Bounds, BackColor);
+                    Batch.Draw(Tex, Bounds, base.BackColor);
             }
             Batch.End();
 
@@ -124,7 +147,7 @@ namespace Crux.dControls
                 // var am = of > 1 ? Text : Text.Substring(0, (int)(Text.Length*of));
                 // mea = Game1.font1.MeasureString(am);
                 // }
-                Batch.DrawString(font, Text, Bounds.Location.ToVector2() + (new Vector2(Width, Height) / 2 - mea / 2).ToPoint().ToVector2(), Color.White, 0f, new Vector2(), 1f, SpriteEffects.None, 1f);
+                Batch.DrawString(font, Text, Bounds.Location.ToVector2() + (new Vector2(Width, Height) / 2 - mea / 2 * TextScale).ToPoint().ToVector2(), Color.White, 0f, new Vector2(), TextScale, SpriteEffects.None, 1f);
             }
             Batch.End();
         }

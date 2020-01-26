@@ -1,12 +1,26 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System;
+using System.Linq;
+using System.IO;
+using System.IO.Compression;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
+using System.Data;
+using System.Windows.Forms;
+using System.Net.Sockets;
+using System.Drawing.Imaging;
+using static System.Math;
+using static System.Text.RegularExpressions.Regex;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
-using System;
+
 using sRectangle = Microsoft.Xna.Framework.Rectangle;
-using static System.Math;
 using static Crux.Core;
 
 namespace Crux
@@ -24,14 +38,16 @@ namespace Crux
         {
             pixel = new Texture2D(graphicsDevice, 1, 1);
             pixel.SetData(new Color[] { new Color(255, 255, 255, 255) });
+
             var tc = new Color[]
             {
-                new Color(0, 0, 0, 0),
+                //new Color(0, 0, 0, 0),
                 new Color(255, 255, 255, 255),
-                new Color(0, 0, 0, 0)
+                //new Color(0, 0, 0, 0)
             };
             px = new Texture2D(graphicsDevice, 1, tc.Length);
             px.SetData(tc);
+
             tc = new Color[]
             {
                 new Color(0, 0, 0, 0), new Color(0, 0, 0, 0), new Color(0, 0, 0, 0), new Color(0, 0, 0, 0), new Color(0, 0, 0, 0),
@@ -44,16 +60,24 @@ namespace Crux
             rpx.SetData(tc);
         }
 
+        public static void DrawLine(this SpriteBatch sb, Vector2 start, Vector2 end, Texture2D tex, Color col) => D_L(sb, new Line(start, end), tex, col);
+
         public static void DrawLine(this SpriteBatch sb, Vector2 start, Vector2 end, Color col) => DrawLine(start, end, col, sb);
 
+        public static void DrawLine(this SpriteBatch sb, Line line, Color col, float size = 1f) => DrawLine(line.Start, line.End, col, size, sb);
 
         public static void DrawLine(Vector2 start, Vector2 end, Color col, SpriteBatch sb) => D_L(sb, new Line(start, end), col);
 
+        public static void DrawLine(Vector2 start, Vector2 end, Color col, float size, SpriteBatch sb) => D_L(sb, new Line(start, end), col);
 
-        public static void DrawLine(this SpriteBatch sb, Vector2 start, Vector2 end, Texture2D tex, Color col) => D_L(sb, new Line(start, end), tex, col);
+        internal static void D_L(this SpriteBatch batch, Line l, Color col, float size)
+            => batch.Draw(px, l.Start, null, col, l.Angle, new Vector2(0), new Vector2(l.Length, size), SpriteEffects.None, 0);
 
+        internal static void D_L(this SpriteBatch batch, Line l, Color col)
+            => batch.Draw(px, l.Start, null, col, l.Angle, new Vector2(0f, 0f), new Vector2(l.Length, 1.0f), SpriteEffects.None, 0);
 
-        public static void DrawLine(this SpriteBatch sb, Line line, Color col) => DrawLine(line.Start, line.End, col, sb);
+        internal static void D_L(this SpriteBatch batch, Line l, Texture2D tex, Color col)
+            => batch.Draw(tex, l.Start, null, col, l.Angle, new Vector2(0), new Vector2(l.Length, 1), SpriteEffects.None, 0);
 
 
         public static void DrawPath(SpriteBatch sb, Vector2[] pos, Color col)
@@ -64,12 +88,12 @@ namespace Crux
             }
         }
 
-        public static void DrawRect(this SpriteBatch sb, Vector2 pos, Vector2 size, Color col)
+        public static void DrawRect(this SpriteBatch sb, Vector2 pos, Vector2 size, Color col, float scale = 1f)
         {
-            DrawLine(pos, new Vector2(pos.X + size.X, pos.Y), col, sb);
-            DrawLine(new Vector2(pos.X + size.X, pos.Y), pos + size, col, sb);
-            DrawLine(pos + size, new Vector2(pos.X, pos.Y + size.Y), col, sb);
-            DrawLine(new Vector2(pos.X, pos.Y + size.Y), pos, col, sb);
+            DrawLine(pos, new Vector2(pos.X + size.X, pos.Y), col, scale, sb);
+            DrawLine(new Vector2(pos.X + size.X, pos.Y), pos + size, col, scale, sb);
+            DrawLine(pos + size, new Vector2(pos.X, pos.Y + size.Y), col, scale, sb);
+            DrawLine(new Vector2(pos.X, pos.Y + size.Y), pos, col, scale, sb);
         }
 
         public static void DrawRect(this SpriteBatch sb, Rectangle rect, Color col)
@@ -147,11 +171,6 @@ namespace Crux
             batch.DrawString(font, text, pos, col, a, Vector2.Zero, s, SpriteEffects.None, 0f);
         }
 
-
-        internal static void D_L(this SpriteBatch batch, Line l, Color col) => batch.Draw(px, l.Start, null, col, l.Angle, new Vector2(0f, 1.5f), new Vector2(l.Length, 1), SpriteEffects.None, 0);
-
-
-        internal static void D_L(this SpriteBatch batch, Line l, Texture2D tex, Color col) => batch.Draw(tex, l.Start, null, col, l.Angle, new Vector2(0), new Vector2(l.Length, 1), SpriteEffects.None, 0);
 
 
         //public static void BatchDraw(this SpriteBatch batch, BatchSet bs, Action a, Matrix? t = null)
@@ -407,7 +426,7 @@ namespace Crux
             //var y = p.Y;
             var sheetbuf = new Color[rect.Width * rect.Height];
             tex.GetData(0, rect, sheetbuf, 0, rect.Width * rect.Height);
-            Texture2D rtex = new Texture2D(graphics.GraphicsDevice, rect.Width, rect.Height);
+            Texture2D rtex = new Texture2D(tex.GraphicsDevice, rect.Width, rect.Height);
             rtex.SetData(sheetbuf);
             return rtex;
         }
@@ -421,7 +440,7 @@ namespace Crux
             //var y = p.Y;
             var sheetbuf = new Color[source.Width * source.Height];
             tex.GetData(0, source, sheetbuf, 0, source.Width * source.Height);
-            Texture2D rtex = new Texture2D(graphics.GraphicsDevice, target.Width, target.Height);
+            Texture2D rtex = new Texture2D(tex.GraphicsDevice, target.Width, target.Height);
             rtex.SetData(sheetbuf);
             return rtex;
         }
@@ -440,6 +459,8 @@ namespace Crux
         public static Rectangle Rectangle(Vector2 l, Vector2 s) => new Rectangle((int)l.X, (int)l.Y, (int)s.X, (int)s.Y);
 
         public static Rectangle OffsetBy(this Rectangle src, Point offset) { src.Location += offset; return src; }
+
+        public static Rectangle OffsetBy(this Rectangle src, (float, float) xy) { src.Location += new Point((int)xy.Item1, (int)xy.Item2); return src; }
 
         public static Rectangle OffsetBy(this Rectangle src, float x, float y) { src.Location += new Point((int)x, (int)y); return src; }
 
@@ -461,6 +482,8 @@ namespace Crux
         public static Point Edging(this Rectangle src) => src.Location + src.Size;
 
         #endregion
+
+        public static Point Add(this Point p, (int, int) xy) => p + new Point(xy.Item1, xy.Item2);
 
         public static Vector2 Trunc(this Vector2 v, float val)
         {
@@ -487,7 +510,10 @@ namespace Crux
         public static float Trunc(this float v, float by) => v > by ? by : v;
         public static float Clamp(this float v, float l, float r) => v > r ? r : v < l ? l : v;
 
+        #region GenericX & Macro
+        public static T Clamp<T>(this T v, T min, T max) where T : IComparable => v.CompareTo(max) == 1 ? max : v.CompareTo(min) == -1 ? min : v;
 
+        public static bool IsBetween<T>(this T v, T min, T max) where T : IComparable => v.CompareTo(max) == 1 || v.CompareTo(min) == -1 ? false : true;
 
         public static void Swap<A>(this A from, A to)
         {
@@ -504,19 +530,51 @@ namespace Crux
             }
         }
 
-        public static void MoveToStart<A>(this IList<A> list, A item)
+        //public static void ToStart<A>(this IList<A> list, A item)
+        //{
+        //    if (list.Contains(item))
+        //    {
+        //        if (!list[0].Equals(item))
+        //        {
+        //            var i = list.IndexOf(item);
+        //            var a = list[0];
+        //            list[0] = item;
+        //            list[i] = a;
+        //        }
+        //    }
+        //}
+
+        //public static void ToEnd<A>(this IList<A> list, A item)
+        //{
+        //    if (list.Contains(item))
+        //    {
+        //        if (!list[list.Count].Equals(item))
+        //        {
+        //            var i = list.IndexOf(item);
+        //            var a = list[list.Count];
+        //            list[list.Count] = item;
+        //            list[i] = a;
+        //        }
+        //    }
+        //}
+
+        public static void Push<A>(this IList<A> list, A item) => list.Insert(0, item);
+
+        public static void ToStart<A>(this ObservableCollection<A> c, A item)
         {
-            if (list.Contains(item))
-            {
-                if (!list[0].Equals(item))
-                {
-                    var i = list.IndexOf(item);
-                    var a = list[0];
-                    list[0] = item;
-                    list[i] = a;
-                }
-            }
+            c.Move(c.IndexOf(item), 0);
         }
+
+        public static void ToEnd<A>(this ObservableCollection<A> c, A item)
+        {
+            c.Move(c.IndexOf(item), c.Count - 1);
+        }
+
+        public static Match Match(this string s, string pattern) => Regex.Match(s, pattern);
+        public static string Regplace(this string s, string pattern, string with) => Regex.Replace(s, pattern, with);
+        #endregion
+
+
 
         public static bool DrawGrid;
 
@@ -525,6 +583,14 @@ namespace Crux
 
         }
 
+        public static System.Drawing.Color ToSystem(this Color c) => System.Drawing.Color.FromArgb(c.A, c.R, c.G, c.B);
+        public static Color ToXNA(this System.Drawing.Color c) => new Color(c.R, c.G, c.B, c.A);
+
+        public static System.Drawing.Rectangle ToSystem(this Rectangle r) => new System.Drawing.Rectangle(r.X, r.Y, r.Width, r.Height);
+        public static Rectangle ToXNA(this System.Drawing.Rectangle r) => Rectangle(r.X, r.Y, r.Width, r.Height);
+
+        public static System.Drawing.Point ToSystem(this Point p) => new System.Drawing.Point(p.X, p.Y);
+        public static Point ToXNA(this System.Drawing.Point p) => new Point(p.X, p.Y);
     }
 
     public struct Line
@@ -674,6 +740,7 @@ namespace Crux
         public static Color DarkenGray => new Color(65, 65, 65, 255);
         public static Color NanoBlue => new Color(86, 156, 214, 255);
     }
+
 
     public static class RegexLib
     {

@@ -12,7 +12,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Input;
-using Crux.dControls;
+using Crux.BaseControls;
 
 using static System.Math;
 using static Crux.Simplex;
@@ -53,7 +53,7 @@ namespace Crux
             base.Initialize();
             IsMouseVisible = true;
 
-            uControl.SetDefaultFont = font1;
+            ControlBase.DefaultFont = font1;
             var nsf = new SpriteFont(font1.Texture,
                 font1.Glyphs.Select(n => n.BoundsInTexture).ToList(),
                 font1.Glyphs.Select(n => n.Cropping).ToList(),
@@ -72,11 +72,11 @@ namespace Crux
                 IsResizable = true,
                 IsVisible = true
             };
-            Button b;
-            f.AddNewControl(b = new Button(460, 450, 70, 20, new Color(50, 50, 50))
-            {
-                Text = "Continue"
-            });
+            //Button b;
+            //f.AddNewControl(b = new Button(460, 450, 70, 20, new Color(50, 50, 50))
+            //{
+            //    Text = "Continue"
+            //});
 
             #region Sample text
             if (true)
@@ -84,7 +84,11 @@ namespace Crux
                 Textarea t;
                 //Slider s;
                 //f.AddNewControl(s = new Slider(20, 60, 415, 10, Slider.Type.Horizontal));
-                f.AddNewControl(t = new Textarea(20, 80, 415, 280));
+                f.AddNewControl(t = new Textarea(20, 80, 415, 280)
+                { 
+                    Text =
+@"{blue();}MonoGame is free {#(25,25,25);}software used by game {#(244,170,0):p;} developers to make {@p;} their {blue():h;}Windows and Windows Phone games run on other systems. ",
+                });
 
                 //s.OnSlide += delegate { t.FontSize = (0.2f + (int)(s.Value * 10) * 0.1f); };
 
@@ -95,9 +99,6 @@ namespace Crux
                 //ts.AddSeeker("f", "{censore();norm():h;}");
 
                 t.GetTextBuilder.AttachSeeker(ts);
-
-                t.Text =
-@"{blue();}MonoGame is free {#(25,25,25);}software used by game {#(244,170,0):p;} developers to make {@p;} their {blue():h;}Windows and Windows Phone games run on other systems. ";
 
                 (t as Textarea).Font = font1;
             }
@@ -131,26 +132,26 @@ namespace Crux
             }
             #endregion
 
-            var cb = new Combobox(50, 50, 120, 20);
-            f.AddNewControl(cb);
-            for (int i = 0; i < 5; i++)
-            {
-                cb.AddItem(new TestObject($"Item{i}"));
-            }
+            //var cb = new Combobox(50, 50, 120, 20);
+            //f.AddNewControl(cb);
+            //for (int i = 0; i < 5; i++)
+            //{
+            //    cb.AddItem(new TestObject($"Item{i}"));
+            //}
 
             //f.AddNewControl(new Slider(20, 80, 10, 200, Slider.Type.Vertical) { Filler = Slider.FillStyle.Slider });
             //f.AddNewControl(new Slider(50, 50, 200, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
 
-            f.CreateLayout(hud_form_headname,
-            hud_form_headseam,
-            hud_form_headend,
-            hud_form_leftborder,
-            hud_form_rightborder,
-            hud_form_bottomleft,
-            hud_form_bottomseam,
-            hud_form_bottomright);
+            //f.CreateLayout(hud_form_headname,
+            //hud_form_headseam,
+            //hud_form_headend,
+            //hud_form_leftborder,
+            //hud_form_rightborder,
+            //hud_form_bottomleft,
+            //hud_form_bottomseam,
+            //hud_form_bottomright);
 
-            f.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 0.9f, ForeColor = new Color(238, 195, 114) });
+            f.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = new Color(238, 195, 114) });
             f.OnKeyUp += (s, e) =>
             {
                 var k = e.KeysHandled;

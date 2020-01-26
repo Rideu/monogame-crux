@@ -4,12 +4,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using static Crux.Simplex;
 
-namespace Crux.dControls
+namespace Crux.BaseControls
 {
-    public class Combobox : uControl
+    public class Combobox : ControlBase
     {
         #region Fields
-        public override uControl Owner { get; set; }
+        public override ControlBase Owner { get; set; }
         public override int GetID { get; }
 
         string tc = "Combox";
@@ -56,7 +56,7 @@ namespace Crux.dControls
 
         public void AddItem(object item)
         {
-            var i = new Label(BorderSize, BorderSize + Container.Controls.Count * 17, Container.Width, 20) { BackColor = Palette.NanoBlue * 0.2f, isFixedWidth = true,  };
+            var i = new Label(BorderSize, BorderSize + Container.Controls.Count * 17, Container.Width, 20) { BackColor = Palette.NanoBlue * 0.2f, IsFixedWidth = true,  };
             i.Text = item.ToString();
             i.BorderSize = 2;
             Container.AddNewControl(i);

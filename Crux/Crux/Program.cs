@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Crux
 {
@@ -13,7 +16,7 @@ namespace Crux
         /// </summary>
         [STAThread]
         static void Main()
-        {
+        { 
             using (var game = new Core())
                 game.Run();
         }

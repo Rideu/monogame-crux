@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Diagnostics;
 using System.Text;
@@ -15,7 +16,7 @@ using static Crux.Core;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux.dControls
+namespace Crux.BaseControls
 {
 
     #region Message Box
@@ -84,14 +85,14 @@ namespace Crux.dControls
     #region FormManager
     public static class FormManager
     {
-        public static Dictionary<string, Form> GlobalForms = new Dictionary<string, Form>();
+        public static ObservableCollection<Form> GlobalForms = new ObservableCollection<Form>();
         internal static void Init()
         {
             MessageBox.InitMessageBox();
         }
         public static void AddForm(string name, Form f)
         {
-            GlobalForms.Add(name, f);
+            GlobalForms.Add(f);
             f.Alias = name;
         }
 
@@ -110,7 +111,7 @@ namespace Crux.dControls
             // TODO: holding control
             fusw.Restart();
 
-            foreach (var f in GlobalForms.Values)
+            foreach (var f in GlobalForms)
             {
                 if (!f.IsVisible) continue;
                 f.IsActive = false;
@@ -120,6 +121,12 @@ namespace Crux.dControls
                     ActiveForm.IsActive = true;
                 }
                 f.Update();
+            }
+            if (ActiveForm != null)
+            {
+                if (ActiveForm.IsHovering && Control.LeftButtonPressed)
+                    ActiveForm.BringToFront();
+                //GlobalForms.Move(GlobalForms.IndexOf(ActiveForm), 0);
             }
             fusw.Stop();
             DebugDevice.fums = fusw.ElapsedTicks;
@@ -132,7 +139,7 @@ namespace Crux.dControls
             fdsw.Restart();
             for (int i = GlobalForms.Count - 1; i >= 0; i--)
             {
-                GlobalForms.ElementAt(i).Value.Draw();
+                GlobalForms.ElementAt(i).Draw();
             }
             fdsw.Stop();
             DebugDevice.fdms = fdsw.ElapsedTicks;
@@ -141,12 +148,12 @@ namespace Crux.dControls
 
         static public bool AnyResizing()
         { // PERF: AMF IEnum 
-            return GlobalForms.Any(n => n.Value.AnyResizing);
+            return GlobalForms.Any(n => n.AnyResizing);
         }
 
         static public bool AnyHovering()
         { // PERF: AMF IEnum 
-            return GlobalForms.Any(n => n.Value.IsHovering);
+            return GlobalForms.Any(n => n.IsHovering);
         }
     }
     #endregion
@@ -154,7 +161,7 @@ namespace Crux.dControls
     /// <summary>
     /// Represents basic complex form with aggregate of specified interactive elements.
     /// </summary>
-    public class Form : uControl
+    public class Form : ControlBase
     {
         static Form()
         {
@@ -169,8 +176,8 @@ namespace Crux.dControls
         /// </summary>
         public bool IsIndepend { get; set; }
 
-        private uControl owner;
-        public override uControl Owner { get { return owner; } set { owner = value; } }
+        private ControlBase owner;
+        public override ControlBase Owner { get { return owner; } set { owner = value; } }
 
         private int id = 0; //TODO: field
         public override int GetID { get { return id; } }
@@ -185,6 +192,12 @@ namespace Crux.dControls
 
         #region Constructors
 
+        public Form()
+        {
+            BackColor = new Color();
+            X = 10; Y = 10; Width = 500; Height = 500;
+            Initialize();
+        }
 
         /// <summary>
         /// Creates form using Vector4.
@@ -284,7 +297,7 @@ namespace Crux.dControls
         /// <param name="id"></param>
         public void DeleteControl(int id) => Controls.RemoveAt(id - 1);
 
-        public uControl ActiveControl, SideControl;
+        public ControlBase ActiveControl, SideControl;
 
         public override void Invalidate()
         {
@@ -468,21 +481,41 @@ namespace Crux.dControls
 
         #endregion
 
+        public override void BringToFront()
+        {
+            FormManager.GlobalForms.Move(FormManager.GlobalForms.IndexOf(this), 0);
+            //Owner.Controls.Move(Owner.Controls.IndexOf(this), 0);
+        }
+
+        public override void SendToBack()
+        {
+            FormManager.GlobalForms.Move(FormManager.GlobalForms.IndexOf(this), FormManager.GlobalForms.Count - 1);
+            //Owner.Controls.Move(Owner.Controls.IndexOf(this), Owner.Controls.Count - 1);
+        }
+
         public override void Update()
         {
             if (IsActive)
             {
+
+                //if (EnterHold)
+                //{
+                //    //IsClicked = true;
+                //    IsHovering = false;
+                //}
+
                 if (Bounds.Contains(Control.MousePos) && !EnterHold)
                 {
-                    IsHovering = IgnoreControl == true ? true : !true;
+                    IsHovering = !IgnoreControl ? true : false;
                 }
+                else IsHovering = false;
 
 
                 if ((IsActive/* && !MessageBox.IsOpened*/) || IsIndepend)
                 {
 
                     var picked = false;
-                    foreach (uControl n in Controls)
+                    foreach (ControlBase n in Controls)
                     {
 
                         n.IsActive = n.IsHovering = !true;
@@ -604,11 +637,11 @@ namespace Crux.dControls
                 {
                     //Parallel.For(0, Controls.Count, (i) => { lock (Batch) { Controls[i].Draw(); } });
                     Controls[i].Draw();
-                    //if (false) // DBG: Drawing bounds debug
+                    //if (true) // DBG: Drawing bounds debug
                     //{
                     //    Batch.Begin(SpriteSortMode.Deferred, null, null, null);
                     //    {
-                    //Batch.DrawFill(Controls[i].DrawingBounds, Color.Red * 0.5f);
+                    //        Batch.DrawFill(Controls[i].DrawingBounds, Color.Red * 0.5f);
                     //    }
                     //    Batch.End();
                     //}

@@ -8,24 +8,29 @@ using static Crux.Simplex;
 // OR FOLLOWING MODIFIACTION
 /// </summary>
 
-namespace Crux.dControls
+namespace Crux.BaseControls
 {
-    public class Panel : uControl
+    public class Panel : ControlBase
     {
         #region Fields
-        public override uControl Owner { get { return OwnerField; } set { OwnerField = value; } }
-        private uControl OwnerField;
+        public override ControlBase Owner { get { return OwnerField; } set { OwnerField = value; } }
+        private ControlBase OwnerField;
 
 
 
         //TODO: wrap
         public override string Text { get => text; set { text = value; } }
 
-        Slider ContentSlider;
+        internal Slider ContentSlider;
 
         private Texture2D Tex;
 
         #endregion
+
+        public Panel()
+        {
+            X = 10; Y = 10; Width = 100; Height = 200; BackColor = Palette.DarkenGray;
+        }
 
         public Panel(Vector4 posform, Color color = default)
         {
@@ -47,11 +52,11 @@ namespace Crux.dControls
             ID = Owner.GetControlsCount + 1;
             Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
             BorderColor = (BackColor = BackColor == default ? Palette.DarkenGray : BackColor) * 1.5f;
-            OnMouseScroll += (uControl c, ControlArgs e) =>
+            OnMouseScroll += (ControlBase c, ControlArgs e) =>
             {
                 ScrollValue = (SlideSpeed.Y += Control.WheelVal / 50) * 0.025f;
             };
-            ContentSlider = new Slider(Bounds.Width - 10, BorderSize, 8, Bounds.Height - BorderSize - 2, Slider.Type.Vertical)
+            ContentSlider = new Slider(Bounds.Width - 8 - BorderSize, BorderSize, 8, Bounds.Height - BorderSize * 2, Slider.Type.Vertical)
             {
                 Owner = this,
                 IsFixed = true,
@@ -68,6 +73,15 @@ namespace Crux.dControls
             base.Initialize();
         }
 
+        public override void UpdateBounds()
+        {
+            ContentSlider.SetOrigin(Bounds.Width - 8 - BorderSize, BorderSize);
+            ContentSlider.Width = 8;
+            ContentSlider.Height = Bounds.Height - BorderSize * 2;
+
+            base.UpdateBounds();
+        }
+
         public override void Invalidate()
         {
             IsActive = IsHovering = IsHolding = false;
@@ -81,7 +95,7 @@ namespace Crux.dControls
             //ContentSlider.Update();
         }
 
-        public uControl ActiveControl;
+        public ControlBase ActiveControl;
 
         public override void Update()
         {
@@ -97,7 +111,7 @@ namespace Crux.dControls
                 if (IsActive)
                 {
                     var picked = false;
-                    foreach (uControl n in Controls)
+                    foreach (ControlBase n in Controls)
                     {
                         n.IsActive = n.IsHovering = !true;
                         if (n.Bounds.Contains(Core.MS.Position) && !picked)
@@ -164,13 +178,7 @@ namespace Crux.dControls
         public override void Draw()
         {
             Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
-            Batch.Begin(SpriteSortMode.Deferred, rasterizerState: originForm.SideControl == this ? null: rasterizer);
-            {
-                Batch.DrawFill(Bounds, BorderColor);
-                Batch.DrawFill(Bounds.InflateBy(-2), BackColor);
-                //Batch.DrawString(Game1.font, Text, new Vector2(Owner.X + X, Owner.Y + Y) - Game1.font.MeasureString(Text) / 2 + new Vector2(Width, Height) / 2, Color.White);
-            }
-            Batch.End();
+            DrawBorders();
 
 
             for (int i = Controls.Count - 1; i >= 0; i--)

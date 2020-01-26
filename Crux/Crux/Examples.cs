@@ -10,7 +10,7 @@ using WinForms = System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Crux.dControls;
+using Crux.BaseControls;
 
 using static System.Math;
 using static Crux.Simplex;
@@ -57,14 +57,14 @@ namespace Crux
             {
                 IsVisible = true
             };
-            f.CreateLayout(hud_form_headname,
-            hud_form_headseam,
-            hud_form_headend,
-            hud_form_leftborder,
-            hud_form_rightborder,
-            hud_form_bottomleft,
-            hud_form_bottomseam,
-            hud_form_bottomright);
+            //f.CreateLayout(hud_form_headname,
+            //hud_form_headseam,
+            //hud_form_headend,
+            //hud_form_leftborder,
+            //hud_form_rightborder,
+            //hud_form_bottomleft,
+            //hud_form_bottomseam,
+            //hud_form_bottomright);
 
             Textarea lb;
 

@@ -3,21 +3,23 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using static Crux.Simplex;
 
-namespace Crux.dControls
+namespace Crux.BaseControls
 {
-    public class Label : uControl
+    public class Label : ControlBase
     {
         #region Fields
-        public override uControl Owner { get; set; }
+        public override ControlBase Owner { get; set; }
         public override int GetID { get; }
 
         string tc;
-        internal bool isFixedWidth;
+        public bool IsFixedWidth { get; set; }
         public override string Text
         {
-            get => tc; set
+            get => tc;
+            set
             {
-                tc = value; if (!isFixedWidth)
+                tc = value;
+                if (!IsFixedWidth)
                     Width = font.MeasureString(tc).X;
             }
         } // TODO: 
@@ -27,18 +29,18 @@ namespace Crux.dControls
 
         #endregion
 
-        public Label(Vector4 posform)
+        public Label()
         {
-            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W;
+            X = 10; Y = 10; Width = 60; Height = 40; BackColor = default;
         }
 
-        public Label(Vector2 pos, Vector2 size)
-        {
-            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y;
-        }
+        public Label(Vector4 posform) : this(posform.X, posform.Y, posform.Z, posform.W) { }
 
-        public Label(float x, float y, float width, float height)
+        public Label(Vector2 pos, Vector2 size) : this(pos.X, pos.Y, size.X, size.Y) { }
+
+        public Label(float x, float y, float width, float height, Color? col = default)
         {
+             ForeColor = col.HasValue ? col.Value : Color.White;
             X = x; Y = y; Width = width; Height = height;
         }
 
@@ -60,7 +62,8 @@ namespace Crux.dControls
 
         public override void InnerUpdate()
         {
-            Bounds = Rectangle(X, Y, Width, Height);
+            //Bounds = Rectangle(X, Y, Width, Height);
+            UpdateBounds();
             base.EventProcessor();
         }
 
@@ -70,9 +73,9 @@ namespace Crux.dControls
             Batch.GraphicsDevice.ScissorRectangle = drawb;
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
-                if(drawBackground)
-                Batch.DrawFill(Bounds, BackColor);
-                Batch.DrawString(font, tc, new Vector2(X + BorderSize, Y), ForeColor, 0, TextSize);
+                if (drawBackground)
+                    Batch.DrawFill(Bounds, BackColor);
+                Batch.DrawString(font, tc, new Vector2(X + 0, Y), ForeColor, 0, TextSize);
             }
             Batch.End();
 
