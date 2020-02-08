@@ -7,7 +7,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{E2175B1A-2104-49B0-8F09-A907897B4B6E}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Crux</RootNamespace>
     <AssemblyName>libcrux</AssemblyName>
@@ -114,7 +114,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Behaviour\BaseControls\AMF.cs" />
+    <Compile Include="Behaviour\BaseControls\Forms.cs" />
     <Compile Include="Behaviour\Complex.cs" />
     <Compile Include="Behaviour\Control.cs" />
     <Compile Include="Behaviour\BaseControls\Button.cs" />
@@ -127,6 +127,7 @@
     <Compile Include="Behaviour\BaseControls\Textbox.cs" />
     <Compile Include="Behaviour\DebugDevice.cs" />
     <Compile Include="Behaviour\Design\ControlBaseDesigner.cs" />
+    <Compile Include="Behaviour\Design\ControlLayout.cs" />
     <Compile Include="Behaviour\IUnify.cs" />
     <Compile Include="Behaviour\Simplex.cs" />
     <Compile Include="Behaviour\TextSeeker.cs" />

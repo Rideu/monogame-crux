@@ -51,10 +51,10 @@
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.fastColoredTextBox1 = new FastColoredTextBoxNS.FastColoredTextBox();
-            this.cruxEditor = new Editor.CruxEditor();
             this.buttonTextarea = new System.Windows.Forms.Button();
             this.buttonLabel = new System.Windows.Forms.Button();
             this.buttonPanel = new System.Windows.Forms.Button();
+            this.cruxEditor = new Editor.CruxEditor();
             this.toolStripMenu.SuspendLayout();
             this.toolStripDesign.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fastColoredTextBox1)).BeginInit();
@@ -138,35 +138,35 @@
             // toolStripMenuItemNewForm
             // 
             this.toolStripMenuItemNewForm.Name = "toolStripMenuItemNewForm";
-            this.toolStripMenuItemNewForm.Size = new System.Drawing.Size(141, 22);
+            this.toolStripMenuItemNewForm.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemNewForm.Text = "New Form";
             // 
             // toolStripMenuItemNewControl
             // 
             this.toolStripMenuItemNewControl.Name = "toolStripMenuItemNewControl";
-            this.toolStripMenuItemNewControl.Size = new System.Drawing.Size(141, 22);
+            this.toolStripMenuItemNewControl.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemNewControl.Text = "New Control";
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(138, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // toolStripMenuItemSave
             // 
             this.toolStripMenuItemSave.Name = "toolStripMenuItemSave";
-            this.toolStripMenuItemSave.Size = new System.Drawing.Size(141, 22);
+            this.toolStripMenuItemSave.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemSave.Text = "Save...";
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(138, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
             // 
             // toolStripMenuItemExit
             // 
             this.toolStripMenuItemExit.Name = "toolStripMenuItemExit";
-            this.toolStripMenuItemExit.Size = new System.Drawing.Size(141, 22);
+            this.toolStripMenuItemExit.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItemExit.Text = "Exit";
             this.toolStripMenuItemExit.Click += new System.EventHandler(this.toolStripMenuItemExit_Click);
             // 
@@ -314,18 +314,6 @@
             this.fastColoredTextBox1.Zoom = 100;
             this.fastColoredTextBox1.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.fastColoredTextBox1_TextChanged);
             // 
-            // cruxEditor
-            // 
-            this.cruxEditor.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
-            this.cruxEditor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.cruxEditor.Location = new System.Drawing.Point(0, 51);
-            this.cruxEditor.Name = "cruxEditor";
-            this.cruxEditor.Size = new System.Drawing.Size(565, 565);
-            this.cruxEditor.TabIndex = 10;
-            this.cruxEditor.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cruxEditor2_MouseDown);
-            this.cruxEditor.MouseMove += new System.Windows.Forms.MouseEventHandler(this.cruxEditor2_MouseMove);
-            this.cruxEditor.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cruxEditor2_MouseUp);
-            // 
             // buttonTextarea
             // 
             this.buttonTextarea.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
@@ -379,6 +367,18 @@
             this.buttonPanel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.buttonPanel.UseVisualStyleBackColor = false;
             this.buttonPanel.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // cruxEditor
+            // 
+            this.cruxEditor.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.cruxEditor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.cruxEditor.Location = new System.Drawing.Point(0, 51);
+            this.cruxEditor.Name = "cruxEditor";
+            this.cruxEditor.Size = new System.Drawing.Size(565, 565);
+            this.cruxEditor.TabIndex = 10;
+            this.cruxEditor.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cruxEditor2_MouseDown);
+            this.cruxEditor.MouseMove += new System.Windows.Forms.MouseEventHandler(this.cruxEditor2_MouseMove);
+            this.cruxEditor.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cruxEditor2_MouseUp);
             // 
             // EditorWindow
             // 

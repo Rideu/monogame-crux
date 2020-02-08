@@ -140,7 +140,7 @@ namespace Editor
 
         private void Editor_KeyDown(object sender, WF.KeyEventArgs e)
         {
-            if (e.KeyCode == WF.Keys.F5) 
+            if (e.KeyCode == WF.Keys.F5)
                 cruxEditor.BuildAll();
 
             if (e.KeyCode == WF.Keys.ShiftKey)
@@ -148,17 +148,20 @@ namespace Editor
         }
 
         private void Editor_KeyUp(object sender, WF.KeyEventArgs e)
-        { 
+        {
             if (e.KeyCode == WF.Keys.ShiftKey)
                 LShift = false;
 
             if (e.KeyCode == WF.Keys.D && LShift)
                 cruxEditor.Duplicate();
+
+            if (e.KeyCode == WF.Keys.X)
+                cruxEditor.DeleteSelected();
         }
 
         private void toolStripMenuItemExit_Click(object sender, EventArgs e) => Close();
 
-         
+
 
     }
 }

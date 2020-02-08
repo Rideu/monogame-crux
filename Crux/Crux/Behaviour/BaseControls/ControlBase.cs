@@ -57,7 +57,7 @@ namespace Crux.BaseControls
 
         public int BorderSize { get; set; } = 1;
 
-        protected Texture2D Tex { get; set; }
+        protected Texture2D Image { get; set; }
 
         #endregion
 
@@ -155,7 +155,7 @@ namespace Crux.BaseControls
         {
             ID = Owner.GetControlsCount + 1;
             originForm = Owner is Form ? (Owner as Form) : Owner.MainForm;
-            OriginPosition = new Point((int)X, (int)Y);
+            RelativePosition = new Point((int)AbsX, (int)AbsY);
             //Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
             UpdateBounds();
             IsInitialized = true;
@@ -196,7 +196,7 @@ namespace Crux.BaseControls
 
         #region Bounds and positioning
 
-        protected internal Point OriginPosition { get; set; }
+        protected internal Point RelativePosition { get; set; }
 
         public Rectangle Bounds { get; set; }
 
@@ -212,16 +212,24 @@ namespace Crux.BaseControls
 
         protected float RelContentScale;
 
-        public virtual float X { get => Bounds.X; set => Bounds = Rectangle(value, Y, Width, Height); }
+        public virtual float AbsX
+        {
+            get => Bounds.X;
+            protected set => Bounds = Rectangle(value, AbsY, Width, Height);
+        }
 
-        public virtual float Y { get => Bounds.Y; set => Bounds = Rectangle(X, value, Width, Height); }
+        public virtual float AbsY
+        {
+            get => Bounds.Y;
+            protected set => Bounds = Rectangle(AbsX, value, Width, Height);
+        }
 
         public virtual float Width
         {
             get => Bounds.Width;
             set
             {
-                Bounds = Rectangle(X, Y, value, Height);
+                Bounds = Rectangle(AbsX, AbsY, value, Height);
                 OnResize?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -231,27 +239,27 @@ namespace Crux.BaseControls
             get => Bounds.Height;
             set
             {
-                Bounds = Rectangle(X, Y, Width, value);
+                Bounds = Rectangle(AbsX, AbsY, Width, value);
                 OnResize?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        internal void SetOrigin(int x, int y) => OriginPosition = new Point(x, y);
+        public virtual void SetRelative(int x, int y) => RelativePosition = new Point(x, y);
 
         public virtual void UpdateBounds()
         {
             dbg_boundsUpdates++;
             if (Owner != this)
             {
-                X = Owner.X + (IsFixed ? 0 : Owner.MappingOffset.X) + OriginPosition.X;
-                Y = Owner.Y + (IsFixed ? 0 : Owner.MappingOffset.Y) + OriginPosition.Y;
+                AbsX = Owner.AbsX + (IsFixed ? 0 : Owner.MappingOffset.X) + RelativePosition.X;
+                AbsY = Owner.AbsY + (IsFixed ? 0 : Owner.MappingOffset.Y) + RelativePosition.Y;
             }
             else
             {
-                X = (IsFixed ? 0 : Owner.MappingOffset.X) + OriginPosition.X;
-                Y = (IsFixed ? 0 : Owner.MappingOffset.Y) + OriginPosition.Y;
+                AbsX = RelativePosition.X;
+                AbsY = RelativePosition.Y;
             }
-            Bounds = Rectangle(X, Y, Width, Height);
+            Bounds = Rectangle(AbsX, AbsY, Width, Height);
             foreach (var n in Controls)
             {
                 n.UpdateBounds();
@@ -263,10 +271,10 @@ namespace Crux.BaseControls
         /// </summary>
         void CalcContentBounds()
         {
-            var x = Controls.Min(n => n.OriginPosition.X);
-            var y = Controls.Min(n => n.OriginPosition.Y);
-            var w = Controls.Max(n => n.OriginPosition.X + n.Bounds.Width);
-            var h = Controls.Max(n => n.OriginPosition.Y + n.Bounds.Height);
+            var x = Controls.Min(n => n.RelativePosition.X);
+            var y = Controls.Min(n => n.RelativePosition.Y);
+            var w = Controls.Max(n => n.RelativePosition.X + n.Bounds.Width);
+            var h = Controls.Max(n => n.RelativePosition.Y + n.Bounds.Height);
             ContentBounds = new Rectangle(x, y, w, h);
 
 #if DEBUG
@@ -420,14 +428,14 @@ namespace Crux.BaseControls
 
         private bool disposedValue = false; // To detect redundant calls
 
-        protected virtual void Dispose(bool disposing)
+        public virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects).
-                    Tex.Dispose();
+                    Owner.Controls.Remove(this);
+                    // TODO: dispose managed state (managed objects). 
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

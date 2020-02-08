@@ -483,6 +483,8 @@ namespace Crux
 
         #endregion
 
+        public static Point Add(this Point p, int x, int y) => p + new Point(x, y);
+
         public static Point Add(this Point p, (int, int) xy) => p + new Point(xy.Item1, xy.Item2);
 
         public static Vector2 Trunc(this Vector2 v, float val)

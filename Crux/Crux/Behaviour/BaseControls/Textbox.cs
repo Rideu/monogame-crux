@@ -36,22 +36,22 @@ namespace Crux.BaseControls
 
         public Textbox(Vector4 posform)
         {
-            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W;
+            AbsX = posform.X; AbsY = posform.Y; Width = posform.Z; Height = posform.W;
         }
 
         public Textbox(Vector2 pos, Vector2 size)
         {
-            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y;
+            AbsX = pos.X; AbsY = pos.Y; Width = size.X; Height = size.Y;
         }
 
         public Textbox(float x, float y, float width, float height)
         {
-            X = x; Y = y; Width = width; Height = height;
+            AbsX = x; AbsY = y; Width = width; Height = height;
         }
 
         internal override void Initialize()
         { 
-            Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
+            Bounds = new Rectangle((int)(Owner.AbsX + AbsX), (int)(Owner.AbsY + AbsY), (int)Width, (int)Height);
             OnMouseLeave += delegate { Invalidate(); };
 
             text = new TextBuilder(Font, "[Null text]", new Vector2(0 /*+ (padding.X - scroll.Width)*/, 0), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, true/*, this*/);
@@ -236,7 +236,7 @@ namespace Crux.BaseControls
                 Line cline = new Line(
                     (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, BorderSize + Bounds.Y)).ToPoint().ToVector2(),
                     (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, -BorderSize + Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
-                text.Render(new Vector2(X + BorderSize + offset, 2 + Y));
+                text.Render(new Vector2(AbsX + BorderSize + offset, 2 + AbsY));
 
 
                 //text.Render(Batch, new Vector2(Owner.X, Owner.Y + 1)/* + textpos*/);

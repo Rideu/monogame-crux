@@ -195,7 +195,7 @@ namespace Crux.BaseControls
         public Form()
         {
             BackColor = new Color();
-            X = 10; Y = 10; Width = 500; Height = 500;
+            AbsX = 10; AbsY = 10; Width = 500; Height = 500;
             Initialize();
         }
 
@@ -206,7 +206,7 @@ namespace Crux.BaseControls
         public Form(Vector4 posform, Color col = new Color())
         {
             BackColor = col;
-            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W;
+            AbsX = posform.X; AbsY = posform.Y; Width = posform.Z; Height = posform.W;
             Initialize();
         }
 
@@ -218,7 +218,7 @@ namespace Crux.BaseControls
         public Form(Vector2 pos, Vector2 size, Color col = new Color())
         {
             BackColor = col;
-            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y;
+            AbsX = pos.X; AbsY = pos.Y; Width = size.X; Height = size.Y;
             Initialize();
         }
 
@@ -232,7 +232,7 @@ namespace Crux.BaseControls
         public Form(float x, float y, float width, float height, Color col = new Color())
         {
             BackColor = col;
-            X = x; Y = y; Width = width; Height = height;
+            AbsX = x; AbsY = y; Width = width; Height = height;
             Initialize();
         }
 
@@ -261,17 +261,30 @@ namespace Crux.BaseControls
             form_rightbottom = rightbottom;
             hasLayout = true;
         }
+
+        public void CreateLayout(ControlLayout layout)
+        {
+            form_lefttop = layout.TopLeft;
+            form_top = layout.TopBorder;
+            form_righttop = layout.TopRight;
+            form_left = layout.LeftBorder;
+            form_right = layout.RightBorder;
+            form_leftbottom = layout.BottomLeft;
+            form_bottom = layout.BottomBorder;
+            form_rightbottom = layout.BottomRight;
+            hasLayout = true;
+        }
         /// <summary>
         /// Called after form created.
         /// </summary>
         internal override void Initialize()
         {
-            Bounds = new Rectangle((int)X, (int)Y, (int)Width, (int)Height);
-            BottomBorder = new Rectangle((int)X, (int)Y + (int)Height - 4, (int)Width, (int)4);
-            RightBorder = new Rectangle((int)X + (int)Width - 4, (int)Y, (int)4, (int)Height);
-            LeftBorder = new Rectangle((int)X, (int)Y, (int)4, (int)Height);
-            TopBorder = new Rectangle((int)X, (int)Y, (int)Width, (int)4);
-            Header = Rectangle(X, Y, Width, 20 + 8);
+            Bounds = new Rectangle((int)AbsX, (int)AbsY, (int)Width, (int)Height);
+            BottomBorder = new Rectangle((int)AbsX, (int)AbsY + (int)Height - 4, (int)Width, (int)4);
+            RightBorder = new Rectangle((int)AbsX + (int)Width - 4, (int)AbsY, (int)4, (int)Height);
+            LeftBorder = new Rectangle((int)AbsX, (int)AbsY, (int)4, (int)Height);
+            TopBorder = new Rectangle((int)AbsX, (int)AbsY, (int)Width, (int)4);
+            Header = Rectangle(AbsX, AbsY, Width, 20 + 8);
             BorderColor = Color.LightGray;
             Batch.GraphicsDevice.ScissorRectangle = Bounds;
 
@@ -314,30 +327,30 @@ namespace Crux.BaseControls
         public void RenewBounds()
         {
             var pv = Batch.GraphicsDevice.Viewport;
-            if (X < 0)
+            if (AbsX < 0)
             {
-                Width += X;
-                X = 0;
+                Width += AbsX;
+                AbsX = 0;
             }
-            if (Y < 0)
+            if (AbsY < 0)
             {
-                Height += Y;
-                Y = 0;
+                Height += AbsY;
+                AbsY = 0;
             }
-            if (X + Width > pv.Width)
+            if (AbsX + Width > pv.Width)
             {
-                Width = pv.Width - X;
+                Width = pv.Width - AbsX;
             }
-            if (Y + Height > pv.Height)
+            if (AbsY + Height > pv.Height)
             {
-                Height = pv.Height - Y;
+                Height = pv.Height - AbsY;
             }
-            Bounds = Rectangle(X, Y, Width, Height);
-            BottomBorder = Rectangle(X, Y + Height - 4, Width, 4);
-            RightBorder = Rectangle(X + Width - 4, Y, 4, Height);
-            LeftBorder = Rectangle(X, Y, 4, Height);
-            TopBorder = Rectangle(X, Y, Width, 4);
-            Header = Rectangle(X, Y, Width, 20 + 8);
+            Bounds = Rectangle(AbsX, AbsY, Width, Height);
+            BottomBorder = Rectangle(AbsX, AbsY + Height - 4, Width, 4);
+            RightBorder = Rectangle(AbsX + Width - 4, AbsY, 4, Height);
+            LeftBorder = Rectangle(AbsX, AbsY, 4, Height);
+            TopBorder = Rectangle(AbsX, AbsY, Width, 4);
+            Header = Rectangle(AbsX, AbsY, Width, 20 + 8);
             Batch.GraphicsDevice.ScissorRectangle = Bounds;
 
             foreach (var n in Controls)
@@ -375,7 +388,7 @@ namespace Crux.BaseControls
             {
 
                 Width -= HoldOffset.X;
-                X += HoldOffset.X;
+                AbsX += HoldOffset.X;
                 RenewBounds();
             }
             else if (LBL && Width - HoldOffset.X < 67)
@@ -399,7 +412,7 @@ namespace Crux.BaseControls
             {
 
                 Height -= HoldOffset.Y;
-                Y += HoldOffset.Y;
+                AbsY += HoldOffset.Y;
                 RenewBounds();
             }
             else if (TBL && Height - HoldOffset.Y < 31)
@@ -591,20 +604,17 @@ namespace Crux.BaseControls
         {
             if (IsVisible)
             {
-                Batch.Begin(SpriteSortMode.Deferred);
-                {
-                    Batch.DrawRect(Bounds, BorderColor);
-                }
-                Batch.End();
-                Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)X, (int)Y), new Point((int)Width, (int)Height));
+                Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)AbsX, (int)AbsY), new Point((int)Width, (int)Height));
                 Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState:rasterizer*/);
                 {
                     if (!hasLayout)
                     {
                         Batch.GraphicsDevice.ScissorRectangle = Bounds;
-                        Batch.DrawFill(Bounds, IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
-                        if (IsActive && false) // DBG: Debug
-                            Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
+                        Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f)); // Primary
+                        Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
+
+                        //if (IsActive && false) // DBG: Debug
+                        //    Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
                     }
                     else
                     {
@@ -623,6 +633,9 @@ namespace Crux.BaseControls
                         Batch.Draw(form_left, new Rectangle(Bounds.X, Bounds.Y + form_lefttop.Height, form_left.Width, fh - form_leftbottom.Height - form_lefttop.Height), Color.White);
                         Batch.Draw(form_right, new Rectangle(Bounds.X + fw - form_right.Width, Bounds.Y + form_lefttop.Height, form_right.Width, fh - form_righttop.Height - form_rightbottom.Height), Color.White);
 
+                        //Batch.DrawFill(new Vector2(Bounds.X, Bounds.Y + fh - form_leftbottom.Height), form_leftbottom.Bounds.Size.ToVector2(), Color.White);
+                        //Batch.DrawFill(new Rectangle(Bounds.X + form_leftbottom.Width, Bounds.Y + fh - form_bottom.Height, fw - form_leftbottom.Width - form_rightbottom.Width, form_bottom.Height), Color.White);
+                        //Batch.DrawFill(new Vector2(Bounds.X + form_leftbottom.Width + bottom, Bounds.Y + fh - form_rightbottom.Height), form_rightbottom.Bounds.Size.ToVector2(), Color.White);
                         Batch.Draw(form_leftbottom, new Vector2(Bounds.X, Bounds.Y + fh - form_leftbottom.Height), Color.White);
                         Batch.Draw(form_bottom, new Rectangle(Bounds.X + form_leftbottom.Width, Bounds.Y + fh - form_bottom.Height, fw - form_leftbottom.Width - form_rightbottom.Width, form_bottom.Height), Color.White);
                         Batch.Draw(form_rightbottom, new Vector2(Bounds.X + form_leftbottom.Width + bottom, Bounds.Y + fh - form_rightbottom.Height), Color.White);
@@ -659,10 +672,11 @@ namespace Crux.BaseControls
                     //Batch.DrawFill(Rectangle(X + Width - 18 - 18 - 18 - 6, Y + 4 + 4, 16, 16), new Color(0, 115, 230));
                     if (IsResizable)
                     {
-                        Batch.DrawFill(LeftBorder, (LBL ? new Color(75, 75, 75, 255) : LBH ? new Color(155, 155, 155, 255) : BackColor) * (hasLayout ? 0.3f : 1f));
-                        Batch.DrawFill(TopBorder, (TBL ? new Color(75, 75, 75, 255) : TBH ? new Color(155, 155, 155, 255) : BackColor) * (hasLayout ? 0.3f : 1f));
-                        Batch.DrawFill(RightBorder, (RBL ? new Color(75, 75, 75, 255) : RBH ? new Color(155, 155, 155, 255) : BackColor) * (hasLayout ? 0.3f : 1f));
-                        Batch.DrawFill(BottomBorder, (BBL ? new Color(75, 75, 75, 255) : BBH ? new Color(155, 155, 155, 255) : BackColor) * (hasLayout ? 0.3f : 1f));
+                        //new Color(75, 75, 75, 255)
+                        Batch.DrawFill(LeftBorder, (LBL ? new Color(75, 75, 75, 255) : LBH ? new Color(155, 155, 155, 255) : new Color(0)) * (hasLayout ? 0.3f : 1f));
+                        Batch.DrawFill(TopBorder, (TBL ? new Color(75, 75, 75, 255) : TBH ? new Color(155, 155, 155, 255) : new Color(0)) * (hasLayout ? 0.3f : 1f));
+                        Batch.DrawFill(RightBorder, (RBL ? new Color(75, 75, 75, 255) : RBH ? new Color(155, 155, 155, 255) : new Color(0)) * (hasLayout ? 0.3f : 1f));
+                        Batch.DrawFill(BottomBorder, (BBL ? new Color(75, 75, 75, 255) : BBH ? new Color(155, 155, 155, 255) : new Color(0)) * (hasLayout ? 0.3f : 1f));
                     }
                 }
                 Batch.End();

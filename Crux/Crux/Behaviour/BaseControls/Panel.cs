@@ -29,28 +29,26 @@ namespace Crux.BaseControls
 
         public Panel()
         {
-            X = 10; Y = 10; Width = 100; Height = 200; BackColor = Palette.DarkenGray;
+            AbsX = 10; AbsY = 10; Width = 100; Height = 200; BackColor = Palette.DarkenGray;
         }
 
         public Panel(Vector4 posform, Color color = default)
         {
-            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
+            AbsX = posform.X; AbsY = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
         }
 
         public Panel(Vector2 pos, Vector2 size, Color color = default)
         {
-            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
+            AbsX = pos.X; AbsY = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
         }
 
         public Panel(float x, float y, float width, float height, Color color = default)
         {
-            X = x; Y = y; Width = width; Height = height; BackColor = color;
+            AbsX = x; AbsY = y; Width = width; Height = height; BackColor = color;
         }
         internal override void Initialize()
         {
-            Alias = "Panel";
-            ID = Owner.GetControlsCount + 1;
-            Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
+            Alias = "Panel"; 
             BorderColor = (BackColor = BackColor == default ? Palette.DarkenGray : BackColor) * 1.5f;
             OnMouseScroll += (ControlBase c, ControlArgs e) =>
             {
@@ -75,7 +73,7 @@ namespace Crux.BaseControls
 
         public override void UpdateBounds()
         {
-            ContentSlider.SetOrigin(Bounds.Width - 8 - BorderSize, BorderSize);
+            ContentSlider.SetRelative(Bounds.Width - 8 - BorderSize, BorderSize);
             ContentSlider.Width = 8;
             ContentSlider.Height = Bounds.Height - BorderSize * 2;
 

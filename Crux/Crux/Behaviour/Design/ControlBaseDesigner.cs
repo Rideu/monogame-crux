@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.ComponentModel;
 using System.ComponentModel.Design.Serialization;
 using System.Reflection;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows.Forms.Layout;
 using System.ComponentModel.Design;
@@ -29,7 +30,7 @@ using XColor = Microsoft.Xna.Framework.Color;
 
 namespace Crux
 {
-    public abstract class ControlBaseDesigner
+    public abstract class ControlBaseDesigner : IDisposable
     {
 
         [Browsable(false)]
@@ -40,6 +41,8 @@ namespace Crux
         [Category("Layout")]
         public abstract Rectangle Bounds { get; set; }
         [Category("Layout")]
+        public abstract Size Size { get; set; }
+        [Category("Layout")]
         public abstract int X { get; set; }
         [Category("Layout")]
         public abstract int Y { get; set; }
@@ -47,6 +50,8 @@ namespace Crux
         public abstract int Width { get; set; }
         [Category("Layout")]
         public abstract int Height { get; set; }
+        [Category("Layout")]
+        public abstract int Border { get; set; }
 
         #region DesignProps
         [ReadOnly(true)]
@@ -63,6 +68,79 @@ namespace Crux
         public abstract void ToBack();
         public abstract ControlBaseDesigner IntCopy<DT>() where DT : ControlBaseDesigner, new();
         public abstract ControlBaseDesigner Copy();
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        public virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    (TargetObject as ControlBase).Dispose(true);
+                    // TODO: dispose managed state (managed objects).
+                }
+
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~ControlBaseDesigner()
+        // {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
+    }
+
+    internal class ShowAllFields : ExpandableObjectConverter
+    {
+
+        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        {
+            if (destinationType == typeof(string))
+            {
+                return "";
+            }
+
+            return base.ConvertTo(context, culture, value, destinationType);
+        }
+
+        public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes)
+        {
+            //if (context != null && context.Instance is Button)
+            //{
+            //    Attribute[] attributes2 = new Attribute[attributes.Length + 1];
+            //    attributes.CopyTo(attributes2, 0);
+            //    attributes2[attributes.Length] = new ApplicableToButtonAttribute();
+            //    attributes = attributes2;
+            //}
+
+            return TypeDescriptor.GetProperties(value, attributes);
+        }
+
+    }
+
+    [TypeConverter(typeof(ShowAllFields))]
+    public struct Size
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
     }
 
     public partial class ControlBaseDesigner<C> : ControlBaseDesigner where C : ControlBase, new()
@@ -84,6 +162,16 @@ namespace Crux
             }
         }
 
+        public override Size Size
+        {
+            get => new Size { Height = Height, Width = Width };
+            set
+            {
+                Width = value.Width;
+                Height = value.Height;
+            }
+        }
+
         public override Color BackColor
         {
             get => target.BackColor.ToSystem();
@@ -92,21 +180,20 @@ namespace Crux
 
         public override int X
         {
-            get => target.OriginPosition.X;
+            get => target.RelativePosition.X;
             set
             {
-                target.SetOrigin(value, Y);
+                target.SetRelative(value, Y);
                 target.UpdateBounds();
             }
         }
 
         public override int Y
         {
-            get => target.OriginPosition.Y;
+            get => target.RelativePosition.Y;
             set
             {
-                //target = new C();
-                target.SetOrigin(X, value);
+                target.SetRelative(X, value);
                 target.UpdateBounds();
             }
         }
@@ -117,7 +204,6 @@ namespace Crux
             set
             {
                 target.Width = value;
-                //target.Bounds = new XRectangle((int)target.X - target.OriginPosition.X, (int)target.Y - target.OriginPosition.Y, value, Height);
                 target.UpdateBounds();
             }
         }
@@ -128,13 +214,11 @@ namespace Crux
             set
             {
                 target.Height = value;
-                //target.Height = new XRectangle((int)target.X - target.OriginPosition.X, (int)target.Y - target.OriginPosition.Y, Width, value);
                 target.UpdateBounds();
             }
         }
 
-        [Category("Layout")]
-        public int Border { get => target.BorderSize; set => target.BorderSize = value; }
+        public override int Border { get => target.BorderSize; set => target.BorderSize = value; }
 
         public Color BorderColor
         {
@@ -156,8 +240,6 @@ namespace Crux
             C t = new C();
             var dt = new DT();
             dt.TargetObject = t;
-            t.X = target.X + 10;
-            t.Y = target.Y + 10;
             t.Width = Width;
             t.Height = Height;
             t.Text = Text;
@@ -182,21 +264,21 @@ namespace Crux
 
         public override int X
         {
-            get => (int)target.X;
+            get => (int)target.AbsX;
             set
             {
-                target.SetOrigin(value, Y);
+                target.SetRelative(value, Y);
                 target.UpdateBounds();
             }
         }
 
         public override int Y
         {
-            get => (int)target.Y;
+            get => (int)target.AbsY;
             set
             {
                 //target = new C();
-                target.SetOrigin(X, value);
+                target.SetRelative(X, value);
                 target.UpdateBounds();
             }
         }
@@ -207,7 +289,7 @@ namespace Crux
         public LabelDesigner() : base() { }
         public LabelDesigner(L c) : base(c) { }
 
-        public float TextScale { get => target.TextSize; set => target.TextSize = value; }
+        public float TextSize { get => target.TextSize; set => target.TextSize = value; }
 
         public bool IsFixedWidth { get => target.IsFixedWidth; set => target.IsFixedWidth = value; }
 
@@ -215,7 +297,7 @@ namespace Crux
         {
             var xc = base.IntCopy<LabelDesigner<L>>();
             var c = xc.TargetObject as L;
-            c.TextSize = TextScale;
+            c.TextSize = TextSize;
             return xc;
         }
     }
@@ -233,7 +315,7 @@ namespace Crux
             set => base.Text = value/*.Regplace("\r\n", "^n")*/;
         }
         //[]
-        public float TextScale { get => target.FontSize; set => target.FontSize = value; }
+        public float FontSize { get => target.FontSize; set => target.FontSize = value; }
 
         public bool RenderBack { get => target.RenderBack; set => target.RenderBack = value; }
         //public bool IsFixedWidth { get => target.IsFixedWidth; set => target.IsFixedWidth = value; }

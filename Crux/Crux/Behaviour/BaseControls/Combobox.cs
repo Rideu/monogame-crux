@@ -22,22 +22,22 @@ namespace Crux.BaseControls
 
         public Combobox(Vector4 posform)
         {
-            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W;
+            AbsX = posform.X; AbsY = posform.Y; Width = posform.Z; Height = posform.W;
         }
 
         public Combobox(Vector2 pos, Vector2 size)
         {
-            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y;
+            AbsX = pos.X; AbsY = pos.Y; Width = size.X; Height = size.Y;
         }
 
         public Combobox(float x, float y, float width, float height)
         {
-            X = x; Y = y; Width = width; Height = height;
+            AbsX = x; AbsY = y; Width = width; Height = height;
         }
 
         internal override void Initialize()
         {
-            Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
+            Bounds = new Rectangle((int)(Owner.AbsX + AbsX), (int)(Owner.AbsY + AbsY), (int)Width, (int)Height);
             base.Initialize();
             Container = new Panel(0, Height, Width, 0) { Owner = this };
             Container.Initialize();
@@ -116,7 +116,7 @@ namespace Crux.BaseControls
             {
                 Batch.DrawFill(Bounds, BorderColor);
                 Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor);
-                Batch.DrawString(font, tc, new Vector2(X + BorderSize, Y + BorderSize), ForeColor * forecl_mult, 0, TextSize);
+                Batch.DrawString(font, tc, new Vector2(AbsX + BorderSize, AbsY + BorderSize), ForeColor * forecl_mult, 0, TextSize);
             }
             Batch.End();
 

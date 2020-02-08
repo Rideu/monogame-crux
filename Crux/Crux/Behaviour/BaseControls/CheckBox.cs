@@ -32,23 +32,23 @@ namespace Crux.BaseControls
 
         public CheckBox(Vector4 posform)
         {
-            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W;
+            AbsX = posform.X; AbsY = posform.Y; Width = posform.Z; Height = posform.W;
         }
 
         public CheckBox(Vector2 pos, Vector2 size)
         {
-            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y;
+            AbsX = pos.X; AbsY = pos.Y; Width = size.X; Height = size.Y;
         }
 
         public CheckBox(float x, float y, float width, float height)
         {
-            X = x; Y = y; Width = width; Height = height;
+            AbsX = x; AbsY = y; Width = width; Height = height;
         }
 
         internal override void Initialize()
         {
             ID = Owner.GetControlsCount + 1;
-            Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
+            Bounds = new Rectangle((int)(Owner.AbsX + AbsX), (int)(Owner.AbsY + AbsY), (int)Width, (int)Height);
             // Assemble form texture here.
             Tex = new Texture2D(Batch.GraphicsDevice, (int)Width, (int)Height);
             var layer1 = new Color[(int)Width * (int)Height];
@@ -91,11 +91,11 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
-            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X + X), (int)(Owner.Y + Y)), new Point((int)(Width + font.MeasureString(text).X + 3), (int)Height));
+            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.AbsX + AbsX), (int)(Owner.AbsY + AbsY)), new Point((int)(Width + font.MeasureString(text).X + 3), (int)Height));
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, Batch.GraphicsDevice.RasterizerState);
             {
-                Batch.Draw(Tex, new Vector2(Owner.X + X, Owner.Y + Y), Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
-                Batch.DrawString(font, text, new Vector2(Owner.X + X + Width + 3, Owner.Y + Y - 2), Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
+                Batch.Draw(Tex, new Vector2(Owner.AbsX + AbsX, Owner.AbsY + AbsY), Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
+                Batch.DrawString(font, text, new Vector2(Owner.AbsX + AbsX + Width + 3, Owner.AbsY + AbsY - 2), Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
             }
             Batch.End();
         }

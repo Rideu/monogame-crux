@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.ComponentModel;
 using static Crux.Simplex;
 
 /// <summary>
@@ -11,6 +12,7 @@ using static Crux.Simplex;
 
 namespace Crux.BaseControls
 {
+    [TypeConverter(typeof(ShowAllFields))]
     public class Slider : ControlBase
     {
         #region Fields
@@ -56,19 +58,19 @@ namespace Crux.BaseControls
         public Slider(Vector4 posform, Type type)
         {
             dtype = type;
-            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W;
+            AbsX = posform.X; AbsY = posform.Y; Width = posform.Z; Height = posform.W;
         }
 
         public Slider(Vector2 pos, Vector2 size, Type type)
         {
             dtype = type;
-            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y;
+            AbsX = pos.X; AbsY = pos.Y; Width = size.X; Height = size.Y;
         }
 
         public Slider(float x, float y, float width, float height, Type type)
         {
             dtype = type;
-            X = x; Y = y; Width = width; Height = height;
+            AbsX = x; AbsY = y; Width = width; Height = height;
         }
         int w = 0, h = 0;
         void ChangeType(Type type)

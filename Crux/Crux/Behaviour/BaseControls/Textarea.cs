@@ -70,7 +70,7 @@ namespace Crux.BaseControls
 
         public Textarea()
         {
-            X = 10; Y = 40; Width = 400; Height = 200;
+            AbsX = 10; AbsY = 40; Width = 400; Height = 200;
         }
 
         public Textarea(Vector4 posform) : this(posform.X, posform.Y, posform.Z, posform.W) { }
@@ -80,7 +80,7 @@ namespace Crux.BaseControls
         public Textarea(float x, float y, float width, float height, Color? col = default)
         {
             BackColor = col.HasValue ? col.Value : Palette.DarkenGray;
-            X = x; Y = y; Width = width; Height = height;
+            AbsX = x; AbsY = y; Width = width; Height = height;
         }
 
         Rectangle padding;
@@ -107,7 +107,7 @@ namespace Crux.BaseControls
 
         public override void Invalidate()
         {
-            text.ScrollPosition = new Vector2(X, Y + 1) + textpos;
+            text.ScrollPosition = new Vector2(AbsX, AbsY + 1) + textpos;
             text.Update();
             foreach (var c in Controls)
             {
@@ -123,7 +123,7 @@ namespace Crux.BaseControls
             if ((Bounds.Contains(Core.MS.Position.ToVector2())))
             {
                 IsHovering = true;
-                text.ScrollPosition = new Vector2(X, Y + 1) + textpos;
+                text.ScrollPosition = new Vector2(AbsX, AbsY + 1) + textpos;
                 text.Update();
                 if (Control.WheelVal != 0 && text.GetTotalSize.Y > Height)
                 {
@@ -195,7 +195,7 @@ namespace Crux.BaseControls
             Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-BorderSize);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                text.Render(Batch, new Vector2(X + 1, Y + 1) + textpos);
+                text.Render(Batch, new Vector2(AbsX + 1, AbsY + 1) + textpos);
             }
             Batch.End();
 
@@ -203,9 +203,9 @@ namespace Crux.BaseControls
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 // TODO: replace with normal Slider control 
-                Batch.DrawFill(new Rectangle((int)(X + Width - 5 - BorderSize), (int)(Y + BorderSize), 5, (int)Height - 2 - BorderSize), new Color(55, 55, 55, 255));
+                Batch.DrawFill(new Rectangle((int)(AbsX + Width - 5 - BorderSize), (int)(AbsY + BorderSize), 5, (int)Height - 2 - BorderSize), new Color(55, 55, 55, 255));
                 var h = (int)(Height * (float.IsInfinity(Height / ContentBounds.Y) ? 1 : Height / ContentBounds.Y));
-                var scrollpos = new Point((int)(X + Width - 4 - BorderSize), (int)(Y + 1 - textpos.Y * (float.IsInfinity(Height / ContentBounds.Y) ? 1 : Height / ContentBounds.Y)));
+                var scrollpos = new Point((int)(AbsX + Width - 4 - BorderSize), (int)(AbsY + 1 - textpos.Y * (float.IsInfinity(Height / ContentBounds.Y) ? 1 : Height / ContentBounds.Y)));
                 var scrollsize = new Point(3, h > Height ? (int)Height - 2 : h);
                 Batch.DrawFill(new Rectangle(scrollpos, scrollsize), new Color(155, 155, 155, 255));
             }

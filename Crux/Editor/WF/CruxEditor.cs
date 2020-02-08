@@ -118,18 +118,32 @@ namespace Editor
             UpdateListing();
         }
 
+        public void DeleteSelected()
+        {
+            if (selectedControl != null && selectedControl.TargetObject != BuildingForm)
+            {
+                BuildingControls.Remove(selectedControl);
+                ParentEditor.SelectedObject = null;
+                selectedControl.Dispose();
+                selectedControl = null;
+                UpdateListing();
+            }
+        }
+
         public void Duplicate()
         {
             if (selectedControl != null && selectedControl.TargetObject != BuildingForm)
             {
 
-                var c = selectedControl.Copy();
-                if (BuildingForm != c.TargetObject)
-                    BuildingForm.AddNewControl(c.TargetObject as ControlBase);
-                var tn = c.TypeName.ToLower();
-                c.Name = tn + (BuildingControls.Where(n => n.Name.Match(tn).Success).Count() + 1);
-                selectedControl = c;
-                BuildingControls.Push(c);
+                var dt = selectedControl.Copy();
+                var c = dt.TargetObject as ControlBase;
+                if (BuildingForm != dt.TargetObject)
+                    BuildingForm.AddNewControl(c);
+                var tn = dt.TypeName.ToLower();
+                dt.Name = tn + (BuildingControls.Where(n => n.Name.Match(tn).Success).Count() + 1);
+                c.SetRelative(selectedControl.X + 10, selectedControl.Y + 10);
+                selectedControl = dt;
+                BuildingControls.Push(dt);
                 UpdateListing();
 
 
@@ -144,7 +158,7 @@ namespace Editor
         protected override void Update(GameTime gameTime)
         {
             FormManager.Update();
-            var ms = PointToClient(MousePosition).ToXNA().Add((-(int)BuildingForm.X, -(int)BuildingForm.Y));
+            var ms = PointToClient(MousePosition).ToXNA().Add((-(int)BuildingForm.AbsX, -(int)BuildingForm.AbsY));
 
             if (pickedControl == null)
             {
@@ -215,7 +229,7 @@ namespace Editor
             if (selectedControl != null)
             {
                 if (selectedControl.TargetObject != BuildingForm)
-                    batch.DrawRect(selectedControl.Bounds.ToXNA().OffsetBy(BuildingForm.X, BuildingForm.Y), Palette.NanoBlue);
+                    batch.DrawRect(selectedControl.Bounds.ToXNA().OffsetBy(BuildingForm.AbsX, BuildingForm.AbsY), Palette.NanoBlue);
                 else
                     batch.DrawRect(selectedControl.Bounds.ToXNA(), Palette.NanoBlue);
 
@@ -223,7 +237,7 @@ namespace Editor
             if (pickedControl != null)
             {
                 if (pickedControl.TargetObject != BuildingForm)
-                    batch.DrawRect(pickedControl.Bounds.ToXNA().OffsetBy(BuildingForm.X, BuildingForm.Y), Color.White);
+                    batch.DrawRect(pickedControl.Bounds.ToXNA().OffsetBy(BuildingForm.AbsX, BuildingForm.AbsY), Color.White);
                 else
                     batch.DrawRect(pickedControl.Bounds.ToXNA(), Color.White);
             }
@@ -231,7 +245,7 @@ namespace Editor
             if (activeControl != null)
             {
                 if (activeControl.TargetObject != BuildingForm)
-                    batch.DrawRect(activeControl.Bounds.ToXNA().OffsetBy(BuildingForm.X, BuildingForm.Y), Color.Gray);
+                    batch.DrawRect(activeControl.Bounds.ToXNA().OffsetBy(BuildingForm.AbsX, BuildingForm.AbsY), Color.Gray);
                 else
                     batch.DrawRect(activeControl.Bounds.ToXNA(), Color.Gray);
             }

@@ -37,28 +37,28 @@ namespace Crux.BaseControls
 
         public Button()
         {
-            X = 10; Y = 10; Width = 60; Height = 40; BackColor = default;
+            AbsX = 10; AbsY = 10; Width = 60; Height = 40; BackColor = default;
         }
 
         public Button(Vector4 posform, Color color = default)
         {
-            X = posform.X; Y = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
+            AbsX = posform.X; AbsY = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
         }
 
         public Button(Vector2 pos, Vector2 size, Color color = default)
         {
-            X = pos.X; Y = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
+            AbsX = pos.X; AbsY = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
         }
 
         public Button(float x, float y, float width, float height, Color color = default)
         {
-            X = x; Y = y; Width = width; Height = height; BackColor = color;
+            AbsX = x; AbsY = y; Width = width; Height = height; BackColor = color;
         }
 
         public Button(float x, float y, Texture2D image)
         {
-            X = x; Y = y; Width = image.Width; Height = image.Height; BackColor = Color.White;
-            Tex = image;
+            AbsX = x; AbsY = y; Width = image.Width; Height = image.Height; BackColor = Color.White;
+            Image = image;
         }
 
         //Color BackColor;
@@ -113,6 +113,8 @@ namespace Crux.BaseControls
             base.EventProcessor();
         }
 
+        public Texture2D Image { get; set; }
+
         public override void Draw()
         {
             Rectangle drawb;
@@ -132,8 +134,8 @@ namespace Crux.BaseControls
                 {
                     Batch.DrawFill(Bounds, new Color(BackColor * f, 1f)); // Primary
                 }
-                if (Tex != null)
-                    Batch.Draw(Tex, Bounds, base.BackColor);
+                if (Image != null)
+                    Batch.Draw(Image, Bounds, Color.White);
             }
             Batch.End();
 

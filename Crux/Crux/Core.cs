@@ -67,7 +67,7 @@ namespace Crux
 
 
             #region Test
-            Form f = new Form(30, 100, 550, 500, new Color(14, 14, 14))
+            Form f = new Form(30, 100, 550, 550, new Color(74, 74, 74))
             {
                 IsResizable = true,
                 IsVisible = true
@@ -85,7 +85,7 @@ namespace Crux
                 //Slider s;
                 //f.AddNewControl(s = new Slider(20, 60, 415, 10, Slider.Type.Horizontal));
                 f.AddNewControl(t = new Textarea(20, 80, 415, 280)
-                { 
+                {
                     Text =
 @"{blue();}MonoGame is free {#(25,25,25);}software used by game {#(244,170,0):p;} developers to make {@p;} their {blue():h;}Windows and Windows Phone games run on other systems. ",
                 });
@@ -156,7 +156,7 @@ namespace Crux
             {
                 var k = e.KeysHandled;
             };
-
+            f.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout")));
             FormManager.AddForm("MainForm", f);
             #endregion
 
@@ -217,15 +217,8 @@ namespace Crux
 
 
             { // TODO: Form Layout
-                hud_formbase = Content.Load<Texture2D>("images\\form_layout");
-                hud_form_headname = CutOut(hud_formbase, new Rectangle(1, 1, 230, 42));
-                hud_form_headseam = CutOut(hud_formbase, new Rectangle(232, 1, 1, 42));
-                hud_form_headend = CutOut(hud_formbase, new Rectangle(234, 1, 60, 42));
-                hud_form_leftborder = CutOut(hud_formbase, new Rectangle(1, 44, 10, 1));
-                hud_form_rightborder = CutOut(hud_formbase, new Rectangle(284, 44, 10, 1));
-                hud_form_bottomleft = CutOut(hud_formbase, new Rectangle(1, 46, 230, 20));
-                hud_form_bottomseam = CutOut(hud_formbase, new Rectangle(232, 46, 1, 20));
-                hud_form_bottomright = CutOut(hud_formbase, new Rectangle(234, 46, 60, 20));
+                hud_formbase = Content.Load<Texture2D>("images\\form_layout"); 
+                
             }
             #endregion
 
