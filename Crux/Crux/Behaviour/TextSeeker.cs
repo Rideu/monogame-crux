@@ -32,7 +32,7 @@ namespace Crux
         public void AddSeeker(string wordtoseek, string textrule) =>
             seeklist.Add(new seek(wordtoseek, TextBuilder.rule.analyse(textrule)));
 
-        internal bool bypass(TextBuilder.word w)
+        internal bool bypass(TextBuilder.Word w)
         {
             var text = w.text;
             var sf = seeklist.Find(n => text.Contains(n.word));

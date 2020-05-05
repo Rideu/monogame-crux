@@ -123,7 +123,7 @@ namespace Crux
             ct = Replace(t = text, "{.+?}", "");
             wordslist.Clear();
 
-            word _wordbuffer = null;
+            Word _wordbuffer = null;
             float lineoverflow = 0;
             try
             {
@@ -143,7 +143,7 @@ namespace Crux
                         _line_index += 1;
                         lineoverflow = _wordscale.X;
                     }
-                    _wordbuffer = new word(p + currentPoint, f, _root, col, _wordscale.X, _wordscale.Y, _line_index, fontscale, this);
+                    _wordbuffer = new Word(p + currentPoint, f, _root, col, _wordscale.X, _wordscale.Y, _line_index, fontscale, this);
 
                     if (applyFormatting)
                         F_C_APPLY(_wordbuffer);
@@ -154,13 +154,13 @@ namespace Crux
                     if (wordslist.Count > 1 && _wordbuffer.text.Trim().Length > 0)
                     {
                         var tx = ""; var idx = wordslist.Count;
-                        
+
                         while (string.IsNullOrWhiteSpace(tx)) // Trace index of the first non-empty word among prevous ones
                         {
                             idx--;
                             tx = wordslist[idx].text;
                         }
-                        
+
                         var prev = wordslist[idx];
 
                         prev.prevnext[1] = _wordbuffer; // Set neighbours
@@ -186,20 +186,43 @@ namespace Crux
                 s.fc = owner != null ? owner.IsActive : true;
                 s.upd(sp);
             }
+
+            foreach (var wg in wordsgroups)
+            {
+                wg.onUpdate?.Invoke(ScrollPosition);
+            }
         }
 
-        void F_C_APPLY(word s)
+        bool is_grouping;
+
+        void F_C_APPLY(Word s)
         {
             if (string.IsNullOrWhiteSpace(s.text)) return;
             if (mainseeker != null && mainseeker.bypass(s)) return;
+
             while (IsMatch(s.text, "{.+?}")) // Keep processing commands until they gone...
             {
+                var prop_detect = (is_prop_def || is_prop_hov);
+
                 var pc = rule.analyse(s.text); // Parse command
+
+                if ((is_prop_def || is_prop_hov) && !prop_detect)
+                {
+                    wordsgroups.Add(new WordGroup());
+                    is_grouping = true;
+                }
+                else
+                {
+                    is_grouping = false;
+                }
+
                 if (pc.Length > 0)
                 {
                     s.text = Replace(s.text, "^.+?}+", "");
+
                     // Reset word's bounds width.
                     s.bounds.Width = (int)(f.MeasureString(s.text).X * fontscale);
+
                     for (int i = 0; i < pc.Length; i++)
                     {
                         var cmd = pc[i];
@@ -224,6 +247,11 @@ namespace Crux
             }
             if (is_prop_def)
             {
+                var group = wordsgroups.Last();
+                s.group = group;
+                group.AddLast(s);
+                s.onGroupAssign?.Invoke(s.group);
+
                 s.def = prop_def;
                 s = prop_def.aplog(s, prop_def.val);
             };
@@ -240,7 +268,7 @@ namespace Crux
             internal string val;
 
             /// <summary> Runs once (!), when logic definition happened </summary>
-            public Func<word, string, word> aplog;
+            public Func<Word, string, Word> aplog;
             //public sub p(sub s, string v = "") => logic.Invoke(s, v); // "v" is addition parameters for commands. Unused currently.
             //public bool pr; // Propagator flag that allows applying specified formatting for next words until new command defined.
             public static rule[] analyse(string c) // Command analyzer. Selects proper command, applies directive for it if there is.
@@ -287,11 +315,28 @@ namespace Crux
 
         #region word desc
 
-        List<word> wordslist = new List<word>();
+        internal class WordGroup : LinkedList<Word>
+        {
+            public Action<Vector2> onUpdate = null;
+            public void Each(Action<Word> m)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    m(this.ElementAt(i));
+                }
+            }
+
+        }
+
+        List<WordGroup> wordsgroups = new List<WordGroup>();
+
+        List<Word> wordslist = new List<Word>();
 
         [DebuggerDisplay("Text: {text}")]
-        internal class word  // A dedicated word pointer
+        internal class Word  // A dedicated word pointer
         {
+            #region Fields
+
             /// <summary> Word's spritefont </summary>
             public SpriteFont font;
 
@@ -317,7 +362,10 @@ namespace Crux
             public Color defaultcol;
 
             /// <summary> Reference-list for previous and next words. 0 - previous, 1 - next. </summary>
-            public word[] prevnext;
+            public Word[] prevnext;
+
+            /// <summary> Group pointer this word is listed at. </summary>
+            public WordGroup group;
 
             /// <summary> Word's width </summary>
             public float width;
@@ -334,16 +382,18 @@ namespace Crux
             /// <summary> Container of this word </summary>
             public TextBuilder container;
 
-            public word(Vector2 pos, SpriteFont font, string wordstring, Color wordcolor, float wordwidth, float wordheight, int wordline, float wordscale, TextBuilder builder)
+            #endregion
+
+            public Word(Vector2 pos, SpriteFont font, string wordstring, Color wordcolor, float wordwidth, float wordheight, int wordline, float wordscale, TextBuilder builder)
             {
-                originaltext = text = wordstring; this.font = font; defaultcol = color = wordcolor; width = wordwidth; height = wordheight; line = wordline; prevnext = new word[] { null, null }; scale = wordscale; origin = Vector2.Zero;
+                originaltext = text = wordstring; this.font = font; defaultcol = color = wordcolor; width = wordwidth; height = wordheight; line = wordline; prevnext = new Word[] { null, null }; scale = wordscale; origin = Vector2.Zero;
                 container = builder;
                 bounds = Rectangle(pos.X, pos.Y, wordwidth, wordheight);
                 foreach (var n in wordstring)
                     chs.Add(new w_char(n, wordcolor));
                 hov = def = new rule() // Set default rules
                 {
-                    aplog = delegate (word s, string v) { s.color = wordcolor; s.font = font; return s; },
+                    aplog = delegate (Word s, string v) { s.color = wordcolor; s.font = font; return s; },
                 };
             }
 
@@ -352,19 +402,20 @@ namespace Crux
             {
                 {
                     cur = Control.MouseHoverOverG(new Rectangle(bounds.Location + scrollpos.ToPoint(), bounds.Size)) && fc && !sne(hov.ct) ? hov : def;
-                    onUpdate?.Invoke(this, scrollpos);
+                    onUpdate?.Invoke(this, bounds.Location.ToVector2() + scrollpos, scrollpos);
                     //cur.aplog(this, cur.val);
                 }
             }
             public List<w_char> chs = new List<w_char>();
             public Action<string> Exec = null;
-            public Action<word, Vector2> onUpdate = null;
+            public Action<WordGroup> onGroupAssign = null;
+            public Action<Word, Vector2, Vector2> onUpdate = null;
             public Action<SpriteBatch, Vector2> onDraw = null; // Action applied when word is drawn.
-            public static implicit operator string(word t) { return t.text; }
-            public static implicit operator Vector2(word t) { return t.bounds.Location.ToVector2(); }
-            public static implicit operator Color(word t) { return t.color; }
-            public static implicit operator Rectangle(word t) { return t.bounds; }
-            public static implicit operator SpriteFont(word t) { return t.font; }
+            public static implicit operator string(Word t) { return t.text; }
+            public static implicit operator Vector2(Word t) { return t.bounds.Location.ToVector2(); }
+            public static implicit operator Color(Word t) { return t.color; }
+            public static implicit operator Rectangle(Word t) { return t.bounds; }
+            public static implicit operator SpriteFont(Word t) { return t.font; }
 
             public static bool sne(string s) => string.IsNullOrEmpty(s);
         }
@@ -389,14 +440,14 @@ namespace Crux
         static bool is_prop_hov, is_prop_def;
         static rule prop_hov, prop_def;
 
-        static List<word> tg = new List<word>();
+        static List<Word> tg = new List<Word>();
 
         readonly static List<rule> rules = new List<rule>() // A predefined list of commands
         {
             new rule() // Sample. A command that makes words blue.
             {
                 ct = "{blue}", // Define command text
-                aplog = delegate(word s, string v) // Define an action that will be applied for specified word 
+                aplog = delegate(Word s, string v) // Define an action that will be applied for specified word 
                 {
                     s.color = new Color(25,125,255);
                     return s;
@@ -405,7 +456,7 @@ namespace Crux
             new rule()
             {
                 ct = "{#}",
-                aplog = delegate(word s, string v)
+                aplog = delegate(Word s, string v)
                 {
                     // Extract each color channel value
                     var m = Matches(v, "\\d+");
@@ -418,7 +469,7 @@ namespace Crux
             new rule()
             {
                 ct = "{norm}",
-                aplog = delegate(word s, string v)
+                aplog = delegate(Word s, string v)
                 {
                     s.text = s.originaltext;
                     return s;
@@ -427,7 +478,7 @@ namespace Crux
             new rule()
             {
                 ct = "{scale}",
-                aplog = delegate(word s, string v)
+                aplog = delegate(Word s, string v)
                 {
                     var m = Matches(v, "\\d+.\\d+")[0].Value;
                     s.scale = (float)double.Parse(m);
@@ -437,7 +488,7 @@ namespace Crux
             new rule()
             {
                 ct = "{censore}",
-                aplog = delegate(word s, string v)
+                aplog = delegate(Word s, string v)
                 {
                     s.text = Replace(s.originaltext, ".", "*");
                     return s;
@@ -446,7 +497,7 @@ namespace Crux
             new rule()
             {
                 ct = "{exec}",
-                aplog = delegate(word s, string v)
+                aplog = delegate(Word s, string v)
                 {
                     s.Exec?.Invoke(s.text);
                     return s;
@@ -455,7 +506,7 @@ namespace Crux
             new rule()
             {
                 ct = "{click}",
-                aplog = delegate(word s, string v)
+                aplog = delegate(Word s, string v)
                 {
                     if(Control.LeftClick())
                     s.Exec?.Invoke(s.text);
@@ -465,32 +516,60 @@ namespace Crux
             new rule()
             {
                 ct = "{link}",
-                aplog = delegate(word s, string v)
+                aplog = delegate(Word s, string v)
                 {
-
-                    s.onUpdate = (w, sp) =>
+                    s.onGroupAssign = (group) =>
                     {
-                        if(Control.LeftClick())
-                            s.Exec?.Invoke(s.text);
+                        if(group.onUpdate == null)
+                        {
+                            group.onUpdate = (sc) =>
+                            {
+                                var cc = new Color(38, 138, 175);
+                                var ints = group.Any(n =>
+                                {
+                                    var p = n.bounds.Location.ToVector2() + sc;
+                                    return (Rectangle(p, n.bounds.Size.ToVector2()).Contains(Control.MousePos));
+
+                                });
+                                
+                                s.group.Each(n => n.color = new Color(38, 138,175));
+
+                                if(ints && Control.LeftClick())
+                                {
+                                     s.Exec?.Invoke(s.text);
+                                }
+                                else if(ints)
+                                {
+                                    if(Control.LeftButtonPressed)
+                                        s.group.Each(n => n.color = new Color(38, 138,175)*.3f);
+                                    else
+                                        s.group.Each(n => n.color = new Color(38, 138,175)*.6f);
+                                }
+                            };
+                        }
                     };
 
                     // Draw underline
                     s.onDraw = (b, p) =>
                     {
-                        var pos = p;
-                        var size = s.bounds.Size.ToVector2();
-                        b.DrawLine(pos + new Vector2(0, size.Y), pos + size, new Color(38, 138, 175));
+                        //s.group.Each(n =>
+                        {
+                            var pos = p;
+                            var size = s.bounds.Size.ToVector2();
+                            b.DrawLine(pos + new Vector2(0, size.Y), pos + size, new Color(38, 138, 175));
+                        }
+                        //);
                     };
 
 
-                    s.color = new Color(38,138,175);
+                    s.color = new Color(38, 138,175);
                     return s;
                 }
             },
             new rule()
             {
                 ct = "{@p}", // A null-command that prevents continued propagation
-                aplog = delegate(word s, string v)
+                aplog = delegate(Word s, string v)
                 {
                     is_prop_def = is_prop_hov = false;
                     return s;
@@ -560,12 +639,12 @@ namespace Crux
 
     public static partial class Complex
     {
-        internal static void DrawWord(this SpriteBatch b, TextBuilder.word w)
+        internal static void DrawWord(this SpriteBatch b, TextBuilder.Word w)
         {
             b.DrawString(w, w, (w + Vector2.Zero).Floor(), w, 0f, Vector2.Zero, w.scale, SpriteEffects.None, 1f);
         }
 
-        internal static void DrawWord(this SpriteBatch b, TextBuilder.word w, Vector2 pos)
+        internal static void DrawWord(this SpriteBatch b, TextBuilder.Word w, Vector2 pos)
         {
             var p = (w + pos).Floor();
             b.DrawString(w, w, p, w, 0f, w.origin, new Vector2(w.scale), SpriteEffects.None, 1f);

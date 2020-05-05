@@ -27,7 +27,8 @@ namespace Crux.BaseControls
                 if (text != null && !string.IsNullOrEmpty(text.Text))
                 {
                     text.Font = value;
-                    text.UpdateText(text.Text);
+                    if (text.Font != value)
+                        text.UpdateText(text.Text);
                 }
             }
             get => font;
