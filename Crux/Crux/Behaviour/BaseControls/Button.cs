@@ -15,49 +15,39 @@ namespace Crux.BaseControls
         #region Fields
         public override ControlBase Owner { get { return OwnerField; } set { OwnerField = value; } }
         private ControlBase OwnerField;
-
-        public override Align TextAlign
-        {
-            get => base.TextAlign;
-
-            set
-            {
-
-                base.TextAlign = value;
-            }
-        }
+         
         //PERF: wrap; precalculate text position in getter, then alter it's drawing code
         public override string Text { get => text; set { text = value; } }
         public float TextScale { get; set; } = 1f;
 
 
-        public event EventHandler OnLeftClick;
-        public event EventHandler OnRightClick;
+        //public event EventHandler OnLeftClick;
+        //public event EventHandler OnRightClick;
         #endregion
 
         public Button()
         {
-            AbsX = 10; AbsY = 10; Width = 60; Height = 40; BackColor = default;
+            AbsoluteX = 10; AbsoluteY = 10; Width = 60; Height = 40; BackColor = default;
         }
 
         public Button(Vector4 posform, Color color = default)
         {
-            AbsX = posform.X; AbsY = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
+            AbsoluteX = posform.X; AbsoluteY = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
         }
 
         public Button(Vector2 pos, Vector2 size, Color color = default)
         {
-            AbsX = pos.X; AbsY = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
+            AbsoluteX = pos.X; AbsoluteY = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
         }
 
         public Button(float x, float y, float width, float height, Color color = default)
         {
-            AbsX = x; AbsY = y; Width = width; Height = height; BackColor = color;
+            AbsoluteX = x; AbsoluteY = y; Width = width; Height = height; BackColor = color;
         }
 
         public Button(float x, float y, Texture2D image)
         {
-            AbsX = x; AbsY = y; Width = image.Width; Height = image.Height; BackColor = Color.White;
+            AbsoluteX = x; AbsoluteY = y; Width = image.Width; Height = image.Height; BackColor = Color.White;
             Image = image;
         }
 
@@ -83,27 +73,27 @@ namespace Crux.BaseControls
         public override void Update()
         {
 
-            IsClicked = !true;
-            IsHovering = Bounds.Contains(Core.MS.Position.ToVector2());
-            IsHolding = IsHovering && Control.LeftButtonPressed;
+            //IsClicked = !true;
+            //IsHovering = Bounds.Contains(Core.MS.Position.ToVector2());
+            //IsHolding = IsHovering && Control.LeftButtonPressed;
 
-            if (IsHovering && Control.LeftClick() && !EnterHold)
-            {
-                IsClicked = true;
-                OnLeftClick?.Invoke(this, EventArgs.Empty);
-                IsHovering = !true;
-            }
+            //if (IsHovering && Control.LeftClick() && !EnterHold)
+            //{
+            //    IsClicked = true;
+            //    //OnLeftClick?.Invoke(this, EventArgs.Empty);
+            //    IsHovering = !true;
+            //}
 
-            if (IsHovering && Control.RightClick())
-            {
-                IsClicked = true;
-                OnRightClick?.Invoke(this, EventArgs.Empty);
-            }
+            //if (IsHovering && Control.RightClick())
+            //{
+            //    IsClicked = true;
+            //    //OnRightClick?.Invoke(this, EventArgs.Empty);
+            //}
 
-            if (EnterHold && !Control.LeftButtonPressed)
-            {
-                EnterHold = false;
-            }
+            //if (EnterHold && !Control.LeftButtonPressed)
+            //{
+            //    EnterHold = false;
+            //}
             base.Update();
         }
 
@@ -122,18 +112,24 @@ namespace Crux.BaseControls
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 var f = IsHovering && !EnterHold ? IsHolding ? 0.3f : 0.6f : 1f;
-                // Uncomment lines below to enable 3d-like border style
-                //Batch.DrawFill(Bounds, IsHolding ? Palette.DarkenGray : Palette.LightenGray); // TL border
-                //Batch.DrawFill(Bounds.OffsetBy(1, 1), IsHolding ? Palette.LightenGray : Palette.DarkenGray); // BR border
-                if (DrawBorder)
+
+                if (!hasLayout)
                 {
-                    Batch.DrawFill(Bounds, BorderColor); // Primary
-                    Batch.DrawFill(Bounds.InflateBy(-BorderSize), new Color(BackColor * f, 1f)); // Primary
+                    if (DrawBorder)
+                    {
+                        Batch.DrawFill(Bounds, BorderColor); // Primary
+                        Batch.DrawFill(Bounds.InflateBy(-BorderSize), new Color(BackColor * f, 1f)); // Primary
+                    }
+                    else
+                    {
+                        Batch.DrawFill(Bounds, new Color(BackColor * f, 1f)); // Primary
+                    }
                 }
                 else
                 {
-                    Batch.DrawFill(Bounds, new Color(BackColor * f, 1f)); // Primary
+                    DrawLayout(Color.White.MulRGB(f));
                 }
+
                 if (Image != null)
                     Batch.Draw(Image, Bounds, Color.White);
             }

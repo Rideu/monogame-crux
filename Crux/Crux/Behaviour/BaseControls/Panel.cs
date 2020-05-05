@@ -29,22 +29,22 @@ namespace Crux.BaseControls
 
         public Panel()
         {
-            AbsX = 10; AbsY = 10; Width = 100; Height = 200; BackColor = Palette.DarkenGray;
+            AbsoluteX = 10; AbsoluteY = 10; Width = 100; Height = 200; BackColor = Palette.DarkenGray;
         }
 
         public Panel(Vector4 posform, Color color = default)
         {
-            AbsX = posform.X; AbsY = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
+            AbsoluteX = posform.X; AbsoluteY = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
         }
 
         public Panel(Vector2 pos, Vector2 size, Color color = default)
         {
-            AbsX = pos.X; AbsY = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
+            AbsoluteX = pos.X; AbsoluteY = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
         }
 
         public Panel(float x, float y, float width, float height, Color color = default)
         {
-            AbsX = x; AbsY = y; Width = width; Height = height; BackColor = color;
+            AbsoluteX = x; AbsoluteY = y; Width = width; Height = height; BackColor = color;
         }
         internal override void Initialize()
         {

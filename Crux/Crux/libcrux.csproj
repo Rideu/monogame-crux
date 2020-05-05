@@ -116,6 +116,7 @@
   <ItemGroup>
     <Compile Include="Behaviour\BaseControls\Forms.cs" />
     <Compile Include="Behaviour\Complex.cs" />
+    <Compile Include="Behaviour\TextBuilder.cs" />
     <Compile Include="Behaviour\Control.cs" />
     <Compile Include="Behaviour\BaseControls\Button.cs" />
     <Compile Include="Behaviour\BaseControls\CheckBox.cs" />

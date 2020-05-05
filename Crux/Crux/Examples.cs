@@ -43,11 +43,16 @@ namespace Crux
             colorPicker.AddNewControl(s_val = new Slider(20, 70, 300, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
             colorPicker.AddNewControl(v_val = new Slider(20, 90, 300, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
 
+            h_val.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true));
+            s_val.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true));
+            v_val.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true));
+
             h_val.OnSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
             s_val.OnSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
             v_val.OnSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
 
-            colorPicker.CreateLayout(hud_form_headname, hud_form_headseam, hud_form_headend, hud_form_leftborder, hud_form_rightborder, hud_form_bottomleft, hud_form_bottomseam, hud_form_bottomright);
+            colorPicker.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout2")));
+
 
             FormManager.AddForm("colorPicker", colorPicker);
             #endregion
@@ -94,16 +99,17 @@ namespace Crux
                 bsum = new Button(buttonx + 160, buttony + 200, 40, 40) { Text = "+" }
                 );
 
+            lb.Padding = new Microsoft.Xna.Framework.Rectangle(4, 4, 4, 4);
             lb.Text = "0";
 
             List<Button> digs = new List<Button>() { b1, b2, b3, b4, b5, b6, b7, b8, b9, b0 };
             List<Button> acts = new List<Button>() { bdiv, bmul, bsub, bsum };
             String v1 = "";
 
-            Func<string> div = delegate { return (int.Parse(v1) / int.Parse(lb.Text)).ToString(); };
-            Func<string> mul = delegate { return (int.Parse(v1) * int.Parse(lb.Text)).ToString(); };
-            Func<string> sub = delegate { return (int.Parse(v1) - int.Parse(lb.Text)).ToString(); };
-            Func<string> sum = delegate { return (int.Parse(v1) + int.Parse(lb.Text)).ToString(); };
+            Func<string> div = delegate { return (long.Parse(v1) / long.Parse(lb.Text)).ToString(); };
+            Func<string> mul = delegate { return (long.Parse(v1) * long.Parse(lb.Text)).ToString(); };
+            Func<string> sub = delegate { return (long.Parse(v1) - long.Parse(lb.Text)).ToString(); };
+            Func<string> sum = delegate { return (long.Parse(v1) + long.Parse(lb.Text)).ToString(); };
 
             Func<string> sel = null;
 
@@ -136,6 +142,8 @@ namespace Crux
             {
                 lb.Text = lb.Text.Length == 1 ? "0" : lb.Text.Substring(0, lb.Text.Length - 1);
             };
+
+            f.ApplyLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout2"), true));
 
             FormManager.AddForm("CalcForm", f);
             #endregion

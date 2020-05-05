@@ -29,47 +29,16 @@ namespace Crux
 
         public Color Diffuse { get; private set; }
 
-        Point GetPointFromX(int x, int w) => new Point(x % w, (x - w) / w);
-        float ync(float x, float w)
-        {
-            return (x - w) / w + 1;
-        }
+        Point GetPointFromX(int x, int w) => new Point(x % w, (x - w) / w + 1);
 
-        float xnc(float x, float w)
-        {
-            return (x + 1) % (w / 2 + 1);
-        }
-
-        Point GetXFromPoint(int x, int y, int w) => new Point(w - x, (x - w) / w + 1);
-
-        float fract(float v, float depth)
-        {
-            if (depth <= 1) return v;
-            var p = xnc(v, fract(v % (484), depth - 1) + 1);
-            var c = ync(v, fract(v % (484), depth - 1) + 1);
-            //var p = GetPointFromX(v, depth);
-            return (p + 1) / c;
-        }
-
-        float hash(float v, float depth)
-        {
-            var r = 100 / v;
-            var f = fract(v, depth);
-            if (float.IsNaN(f)) return 0;
-            var ds = f - (int)f;
-            var sc = ds * short.MaxValue;
-            var ret = sc / short.MaxValue;
-            return ret;
-        }
-
-        Point centerator;
+        Point centerator1;
 
         public ControlLayout() { }
-        public ControlLayout(Texture2D layout) : this()
+        public ControlLayout(Texture2D layout, bool grad = false) : this()
         {
             main = layout;
             Color[] cl = new Color[main.Width * main.Height];
-            main.GetData(cl); 
+            main.GetData(cl);
 
             for (int x = 0; x < cl.Length; x++)
             {
@@ -77,37 +46,60 @@ namespace Crux
                 var c = cl[x];
                 if (cl[x].R == 0 && cl[x].G == 0 && cl[x].B == 255 && cl[x].A == 255)
                 {
-                    var f = x % main.Width;
-                    var hs = (x - f) / main.Width;
-                    if (hs == 0)
+                    centerator1 = GetPointFromX(x, main.Width);
+                    //var f = x % main.Width;
+                    //var hs = (x - f) / main.Width;
+                    if (centerator1.X == 0 || centerator1.Y == 0)
                     {
-                        centerator = new Point(f, 0);
+                        throw new Exception("Wrong marker position.");
                     }
                     else
                     {
-                        centerator = GetPointFromX(x, main.Width).Add(0, 0);
+                        centerator1 = GetPointFromX(x, main.Width);
                         Diffuse = cl[x + main.Width + 1];
                         break;
                     }
                 }
             }
 
-            TopLeft = CutOut(main, new Rectangle(0, 0, centerator.X, centerator.Y + 1));
+            if (centerator1.X == 0)
+                throw new Exception("Blue marker not found on the layout image.");
 
-            TopBorder = CutOut(main, new Rectangle(centerator.X + 1, 0, 1, centerator.Y + 1));
+            if (!grad)
+            { 
+                TopLeft = CutOut(main, new Rectangle(0, 0, centerator1.X, centerator1.Y));
 
-            TopRight = CutOut(main, new Rectangle(centerator.X + 3, 0, main.Width - centerator.X - 3, centerator.Y + 1));
+                TopBorder = CutOut(main, new Rectangle(centerator1.X + 1, 0, 1, centerator1.Y));
 
-            LeftBorder = CutOut(main, new Rectangle(0, centerator.Y + 2, centerator.X, 1));
+                TopRight = CutOut(main, new Rectangle(centerator1.X + 3, 0, main.Width - centerator1.X - 3, centerator1.Y));
 
-            RightBorder = CutOut(main, new Rectangle(centerator.X + 3, centerator.Y + 2, main.Width - centerator.X - 3, 1));
+                LeftBorder = CutOut(main, new Rectangle(0, centerator1.Y + 1, centerator1.X, 1));
 
-            BottomLeft = CutOut(main, new Rectangle(0, centerator.Y + 4, centerator.X, main.Height - centerator.Y - 4));
+                RightBorder = CutOut(main, new Rectangle(centerator1.X + 3, centerator1.Y + 1, main.Width - centerator1.X - 3, 1));
 
-            BottomBorder = CutOut(main, new Rectangle(centerator.X + 1, centerator.Y + 4, 1, main.Height - centerator.Y - 4));
+                BottomLeft = CutOut(main, new Rectangle(0, centerator1.Y + 3, centerator1.X, main.Height - centerator1.Y - 3));
 
-            BottomRight = CutOut(main, new Rectangle(centerator.X + 3, centerator.Y + 4, main.Width - centerator.X - 3, main.Height - centerator.Y - 4));
+                BottomBorder = CutOut(main, new Rectangle(centerator1.X + 1, centerator1.Y + 3, 1, main.Height - centerator1.Y - 3));
 
+                BottomRight = CutOut(main, new Rectangle(centerator1.X + 3, centerator1.Y + 3, main.Width - centerator1.X - 3, main.Height - centerator1.Y - 3));
+            }
+            else
+            {
+                TopLeft = CutOut(main, new Rectangle(0, 0, centerator1.X, centerator1.Y));
+                TopRight = CutOut(main, new Rectangle(centerator1.X + 3, 0, main.Width - centerator1.X - 3, centerator1.Y));
+                BottomLeft = CutOut(main, new Rectangle(0, centerator1.Y + 3, centerator1.X, main.Height - centerator1.Y - 3)); 
+                BottomRight = CutOut(main, new Rectangle(centerator1.X + 3, centerator1.Y + 3, main.Width - centerator1.X - 3, main.Height - centerator1.Y - 3));
+
+
+                TopBorder = CutOut(main, new Rectangle(centerator1.X + 0, 0, 3, centerator1.Y));
+
+                LeftBorder = CutOut(main, new Rectangle(0, centerator1.Y + 0, centerator1.X, 3));
+
+                RightBorder = CutOut(main, new Rectangle(centerator1.X + 3, centerator1.Y + 0, main.Width - centerator1.X - 3, 3));
+
+                BottomBorder = CutOut(main, new Rectangle(centerator1.X + 0, centerator1.Y + 3, 3, main.Height - centerator1.Y - 3));
+
+            }
         }
 
     }

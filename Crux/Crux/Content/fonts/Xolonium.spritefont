@@ -9,19 +9,14 @@ with.
   <Asset Type="Graphics:FontDescription">
     <FontName>Xolonium</FontName> <!-- Euphemia, -->
     <Size>11</Size>
-    <Spacing>0</Spacing>
+    <Spacing>0.5</Spacing>
     <UseKerning>false</UseKerning>
     <Style>Regular</Style><!-- "Regular", "Bold", "Italic" -->
     <CharacterRegions>
       <CharacterRegion>
         <Start>&#32;</Start>
-        <End>&#126;</End>
+        <End>&#1203;</End>
       </CharacterRegion>
-	  
-		<CharacterRegion> 
-		<Start>&#1040;</Start>
-		<End>&#1103;</End>
-		</CharacterRegion> 
     </CharacterRegions>
   </Asset>
 </XnaContent>

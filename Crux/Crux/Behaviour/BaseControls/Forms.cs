@@ -98,7 +98,9 @@ namespace Crux.BaseControls
 
         internal static Stopwatch fusw = new Stopwatch();
 
-        public static Form ActiveForm, PrevForm = null;
+        public static Form
+            ActiveForm,
+            PrevForm = null; // ???
         public static void Update()
         {
             Core.MS = Mouse.GetState();
@@ -115,6 +117,12 @@ namespace Crux.BaseControls
             {
                 if (!f.IsVisible) continue;
                 f.IsActive = false;
+                if (f.IsResized)
+                {
+                    ActiveForm = f;
+                    ActiveForm.IsActive = true;
+                }
+                else
                 if (f.Bounds.Contains(Control.MousePos) && ActiveForm == null)
                 {
                     ActiveForm = PrevForm = f;
@@ -148,7 +156,7 @@ namespace Crux.BaseControls
 
         static public bool AnyResizing()
         { // PERF: AMF IEnum 
-            return GlobalForms.Any(n => n.AnyResizing);
+            return GlobalForms.Any(n => n.IsResized);
         }
 
         static public bool AnyHovering()
@@ -195,7 +203,7 @@ namespace Crux.BaseControls
         public Form()
         {
             BackColor = new Color();
-            AbsX = 10; AbsY = 10; Width = 500; Height = 500;
+            AbsoluteX = 10; AbsoluteY = 10; Width = 500; Height = 500;
             Initialize();
         }
 
@@ -206,7 +214,7 @@ namespace Crux.BaseControls
         public Form(Vector4 posform, Color col = new Color())
         {
             BackColor = col;
-            AbsX = posform.X; AbsY = posform.Y; Width = posform.Z; Height = posform.W;
+            AbsoluteX = posform.X; AbsoluteY = posform.Y; Width = posform.Z; Height = posform.W;
             Initialize();
         }
 
@@ -218,7 +226,7 @@ namespace Crux.BaseControls
         public Form(Vector2 pos, Vector2 size, Color col = new Color())
         {
             BackColor = col;
-            AbsX = pos.X; AbsY = pos.Y; Width = size.X; Height = size.Y;
+            AbsoluteX = pos.X; AbsoluteY = pos.Y; Width = size.X; Height = size.Y;
             Initialize();
         }
 
@@ -232,59 +240,24 @@ namespace Crux.BaseControls
         public Form(float x, float y, float width, float height, Color col = new Color())
         {
             BackColor = col;
-            AbsX = x; AbsY = y; Width = width; Height = height;
+            AbsoluteX = x; AbsoluteY = y; Width = width; Height = height;
             Initialize();
         }
 
         #endregion
 
-        public Texture2D
-            form_lefttop,
-            form_top,
-            form_righttop,
-            form_left,
-            form_right,
-            form_leftbottom,
-            form_bottom,
-            form_rightbottom;
 
-        bool hasLayout;
-        public void CreateLayout(Texture2D lefttop, Texture2D top, Texture2D rigttop, Texture2D left, Texture2D right, Texture2D leftbottom, Texture2D bottom, Texture2D rightbottom)
-        {
-            form_lefttop = lefttop;
-            form_top = top;
-            form_righttop = rigttop;
-            form_left = left;
-            form_right = right;
-            form_leftbottom = leftbottom;
-            form_bottom = bottom;
-            form_rightbottom = rightbottom;
-            hasLayout = true;
-        }
-
-        public void CreateLayout(ControlLayout layout)
-        {
-            form_lefttop = layout.TopLeft;
-            form_top = layout.TopBorder;
-            form_righttop = layout.TopRight;
-            form_left = layout.LeftBorder;
-            form_right = layout.RightBorder;
-            form_leftbottom = layout.BottomLeft;
-            form_bottom = layout.BottomBorder;
-            form_rightbottom = layout.BottomRight;
-            hasLayout = true;
-        }
         /// <summary>
         /// Called after form created.
         /// </summary>
         internal override void Initialize()
         {
-            Bounds = new Rectangle((int)AbsX, (int)AbsY, (int)Width, (int)Height);
-            BottomBorder = new Rectangle((int)AbsX, (int)AbsY + (int)Height - 4, (int)Width, (int)4);
-            RightBorder = new Rectangle((int)AbsX + (int)Width - 4, (int)AbsY, (int)4, (int)Height);
-            LeftBorder = new Rectangle((int)AbsX, (int)AbsY, (int)4, (int)Height);
-            TopBorder = new Rectangle((int)AbsX, (int)AbsY, (int)Width, (int)4);
-            Header = Rectangle(AbsX, AbsY, Width, 20 + 8);
+            Bounds = new Rectangle((int)AbsoluteX, (int)AbsoluteY, (int)Width, (int)Height);
+            BottomBorder = new Rectangle((int)AbsoluteX, (int)AbsoluteY + (int)Height - 4, (int)Width, (int)4);
+            RightBorder = new Rectangle((int)AbsoluteX + (int)Width - 4, (int)AbsoluteY, (int)4, (int)Height);
+            LeftBorder = new Rectangle((int)AbsoluteX, (int)AbsoluteY, (int)4, (int)Height);
+            TopBorder = new Rectangle((int)AbsoluteX, (int)AbsoluteY, (int)Width, (int)4);
+            Header = Rectangle(AbsoluteX, AbsoluteY, Width, 20 + 8);
             BorderColor = Color.LightGray;
             Batch.GraphicsDevice.ScissorRectangle = Bounds;
 
@@ -327,30 +300,30 @@ namespace Crux.BaseControls
         public void RenewBounds()
         {
             var pv = Batch.GraphicsDevice.Viewport;
-            if (AbsX < 0)
+            if (AbsoluteX < 0)
             {
-                Width += AbsX;
-                AbsX = 0;
+                Width += AbsoluteX;
+                AbsoluteX = 0;
             }
-            if (AbsY < 0)
+            if (AbsoluteY < 0)
             {
-                Height += AbsY;
-                AbsY = 0;
+                Height += AbsoluteY;
+                AbsoluteY = 0;
             }
-            if (AbsX + Width > pv.Width)
+            if (AbsoluteX + Width > pv.Width)
             {
-                Width = pv.Width - AbsX;
+                Width = pv.Width - AbsoluteX;
             }
-            if (AbsY + Height > pv.Height)
+            if (AbsoluteY + Height > pv.Height)
             {
-                Height = pv.Height - AbsY;
+                Height = pv.Height - AbsoluteY;
             }
-            Bounds = Rectangle(AbsX, AbsY, Width, Height);
-            BottomBorder = Rectangle(AbsX, AbsY + Height - 4, Width, 4);
-            RightBorder = Rectangle(AbsX + Width - 4, AbsY, 4, Height);
-            LeftBorder = Rectangle(AbsX, AbsY, 4, Height);
-            TopBorder = Rectangle(AbsX, AbsY, Width, 4);
-            Header = Rectangle(AbsX, AbsY, Width, 20 + 8);
+            Bounds = Rectangle(AbsoluteX, AbsoluteY, Width, Height);
+            BottomBorder = Rectangle(AbsoluteX, AbsoluteY + Height - 4, Width, 4);
+            RightBorder = Rectangle(AbsoluteX + Width - 4, AbsoluteY, 4, Height);
+            LeftBorder = Rectangle(AbsoluteX, AbsoluteY, 4, Height);
+            TopBorder = Rectangle(AbsoluteX, AbsoluteY, Width, 4);
+            Header = Rectangle(AbsoluteX, AbsoluteY, Width, 20 + 8);
             Batch.GraphicsDevice.ScissorRectangle = Bounds;
 
             foreach (var n in Controls)
@@ -362,10 +335,7 @@ namespace Crux.BaseControls
 
         Rectangle RightBorder, LeftBorder, TopBorder, BottomBorder, Header;
         // PERF: x1 hop
-        public Rectangle FillingArea =>
-            hasLayout ?
-            new Rectangle(Bounds.X + form_left.Width, Bounds.Y + form_top.Height, Bounds.Width - form_right.Width - form_left.Width, Bounds.Height - form_bottom.Height - form_top.Height) :
-            Bounds;
+
         bool RBH, LBH, TBH, BBH;
         bool lockhold;
         Point OHP, NHP;
@@ -388,7 +358,7 @@ namespace Crux.BaseControls
             {
 
                 Width -= HoldOffset.X;
-                AbsX += HoldOffset.X;
+                AbsoluteX += HoldOffset.X;
                 RenewBounds();
             }
             else if (LBL && Width - HoldOffset.X < 67)
@@ -412,7 +382,7 @@ namespace Crux.BaseControls
             {
 
                 Height -= HoldOffset.Y;
-                AbsY += HoldOffset.Y;
+                AbsoluteY += HoldOffset.Y;
                 RenewBounds();
             }
             else if (TBL && Height - HoldOffset.Y < 31)
@@ -424,7 +394,7 @@ namespace Crux.BaseControls
 
         bool UnsetResize() => lockhold = RBH = LBH = TBH = BBH = TBL = RBL = LBL = BBL = false;
 
-        public bool AnyResizing => TBL || RBL || LBL || BBL;
+        public bool IsResized => TBL || RBL || LBL || BBL;
 
         bool AnyBorderHovered => TBH || RBH || LBH || BBH;
 
@@ -598,53 +568,51 @@ namespace Crux.BaseControls
             base.Update();
         }
 
+        /// <summary>
+        /// Recursively create layout for this and each contained control from existing one.
+        /// </summary>
+        public void ApplyLayout(ControlLayout layout)
+        {
+            CreateLayout(layout);
+            foreach (var c in Controls)
+            {
+                c.CreateLayout(layout);
+            }
+        }
+
         public event Action OnDraw;
 
         public override void Draw()
         {
             if (IsVisible)
             {
-                Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)AbsX, (int)AbsY), new Point((int)Width, (int)Height));
+                Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)AbsoluteX, (int)AbsoluteY), new Point((int)Width, (int)Height));
                 Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState:rasterizer*/);
                 {
-                    if (!hasLayout)
-                    {
-                        Batch.GraphicsDevice.ScissorRectangle = Bounds;
-                        Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f)); // Primary
-                        Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
+                    var fa = FillingArea;
 
-                        //if (IsActive && false) // DBG: Debug
-                        //    Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
-                    }
-                    else
-                    {
-                        var fw = Bounds.Width;
-                        var fh = Bounds.Height;
-                        var top = fw - form_lefttop.Width - form_righttop.Width;
-                        var bottom = fw - form_lefttop.Width - form_righttop.Width;
-                        var fa = FillingArea;
-                        Batch.GraphicsDevice.ScissorRectangle = fa;
-                        Batch.DrawFill(fa, BackColor);
+                    Batch.DrawFill(fa, BackColor);
 
-                        Batch.Draw(form_lefttop, Bounds.Location.ToVector2(), Color.White);
-                        Batch.Draw(form_top, new Rectangle(Bounds.X + form_lefttop.Width, Bounds.Y, fw - form_lefttop.Width - form_righttop.Width, form_top.Height), Color.White);
-                        Batch.Draw(form_righttop, new Vector2(Bounds.X + form_lefttop.Width + top, Bounds.Y), Color.White);
+                    // Border
+                    //Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f)); // Primary
+                    // Diffuse
+                    //Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
 
-                        Batch.Draw(form_left, new Rectangle(Bounds.X, Bounds.Y + form_lefttop.Height, form_left.Width, fh - form_leftbottom.Height - form_lefttop.Height), Color.White);
-                        Batch.Draw(form_right, new Rectangle(Bounds.X + fw - form_right.Width, Bounds.Y + form_lefttop.Height, form_right.Width, fh - form_righttop.Height - form_rightbottom.Height), Color.White);
+                    //if (IsActive && false) // DBG: Debug
+                    //    Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
 
-                        //Batch.DrawFill(new Vector2(Bounds.X, Bounds.Y + fh - form_leftbottom.Height), form_leftbottom.Bounds.Size.ToVector2(), Color.White);
-                        //Batch.DrawFill(new Rectangle(Bounds.X + form_leftbottom.Width, Bounds.Y + fh - form_bottom.Height, fw - form_leftbottom.Width - form_rightbottom.Width, form_bottom.Height), Color.White);
-                        //Batch.DrawFill(new Vector2(Bounds.X + form_leftbottom.Width + bottom, Bounds.Y + fh - form_rightbottom.Height), form_rightbottom.Bounds.Size.ToVector2(), Color.White);
-                        Batch.Draw(form_leftbottom, new Vector2(Bounds.X, Bounds.Y + fh - form_leftbottom.Height), Color.White);
-                        Batch.Draw(form_bottom, new Rectangle(Bounds.X + form_leftbottom.Width, Bounds.Y + fh - form_bottom.Height, fw - form_leftbottom.Width - form_rightbottom.Width, form_bottom.Height), Color.White);
-                        Batch.Draw(form_rightbottom, new Vector2(Bounds.X + form_leftbottom.Width + bottom, Bounds.Y + fh - form_rightbottom.Height), Color.White);
-
-                    }
                 }
                 Batch.End();
 
+
                 OnDraw?.Invoke();
+
+                Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState:rasterizer*/);
+                if (hasLayout)
+                {
+                    DrawLayout(null);
+                }
+                Batch.End();
 
                 for (int i = Controls.Count - 1; i >= 0; i--)
                 {

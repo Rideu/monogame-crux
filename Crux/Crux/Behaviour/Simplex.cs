@@ -33,10 +33,11 @@ namespace Crux
         internal static Texture2D rpx;
         public const float fPI = (float)PI;
         public delegate void VoidFunc();
+        static GraphicsDevice gd;
 
         public static void Init(GraphicsDevice graphicsDevice)
         {
-            pixel = new Texture2D(graphicsDevice, 1, 1);
+            pixel = new Texture2D(gd = graphicsDevice, 1, 1);
             pixel.SetData(new Color[] { new Color(255, 255, 255, 255) });
 
             var tc = new Color[]
@@ -298,36 +299,20 @@ namespace Crux
 
 
 
-        //public static Vector2 SetLength(Vector2 target, float len)
-        //{
-        //    return new Vector2((float)Math.Cos(GetAngle(target) * len), (float)Math.Sin(GetAngle(target) * len));
-        //}
+        public static Vector2 SetLength(Vector2 target, float len)
+        {
+            return new Vector2((float)Math.Cos(GetAngle(target) * len), (float)Math.Sin(GetAngle(target) * len));
+        }
 
-        /// <summary>
-        /// Returns left-up position of the centered rectangle.
-        /// </summary>
-        //public static Vector2 SnapToWindowCenter(Vector2 size) => (LocalDrawingBounds.Size).ToVector2() / 2 - (size) / 2;
+        public static Vector2 SnapToWindowCenter(Vector2 size) => (gd.Viewport.Bounds.Size).ToVector2() / 2 - (size) / 2;
 
+        public static Point SnapToWindowCenterP(Vector2 size) => ((gd.Viewport.Bounds.Size).ToVector2() / 2 - (size) / 2).ToPoint();
 
-        /// <summary>
-        /// Returns left-up position of the centered rectangle.
-        /// </summary>
-        //public static Point SnapToWindowCenterP(Vector2 size) => ((LocalDrawingBounds.Size).ToVector2() / 2 - (size) / 2).ToPoint();
+        public static Vector2 SnapToWindowCenter(Point size) => SnapToWindowCenter(size.ToVector2());
 
-
-        /// <summary>
-        /// Returns left-up position of the centered rectangle.
-        /// </summary>
-        //public static Vector2 SnapToWindowCenter(Point size) => SnapToWindowCenter(size.ToVector2());
-
-        /// <summary>
-        /// Returns left-up position of the centered rectangle.
-        /// </summary>
-        //public static Point SnapToWindowCenterP(Point size) => SnapToWindowCenterP(size.ToVector2());
-
+        public static Point SnapToWindowCenterP(Point size) => SnapToWindowCenterP(size.ToVector2());
 
         public static float GetLength(Vector2 target) => (float)Math.Sqrt((target.X * target.X) - (target.Y * target.Y));
-
 
         public static float AngleBetween(Vector2 v1, Vector2 v2)
         {
@@ -351,15 +336,8 @@ namespace Crux
 
         public static float AngleDiff(Vector2 v1, Vector2 v2) => (float)(fPI - Abs(Abs(v2.Angle() - v1.Angle()) - fPI));
 
-
-        /// <summary>
-        /// Use Line().ReflectPoint instead
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="normal"></param>
-        /// <returns></returns>
+        [Obsolete("Use Line().ReflectPoint instead")]
         public static Vector2 ReflectNormal(Vector2 point, Line normal) => Vector2.Reflect(-point, normal.GetUnitAngle());
-
 
         public static Vector2 GetWCenter() => new Vector2(Core.PrimaryViewport.Width / 2, Core.PrimaryViewport.Height / 2);
 
@@ -450,6 +428,7 @@ namespace Crux
             return tex.Bounds.Center.ToVector2();
         }
 
+        public static Color MulRGB(this Color c, float by) => new Color(c.ToVector3() * by);
 
         #region Rectangle
 
@@ -504,6 +483,8 @@ namespace Crux
             v.Normalize();
             return v;
         }
+
+        public static Vector2 Floor(this Vector2 v) => new Vector2((int)v.X, (int)v.Y);
 
         public static Vector3 GetVector3(this Vector2 v) => new Vector3(v, 0);
 

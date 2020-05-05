@@ -61,23 +61,8 @@ namespace Editor
             FormManager.AddForm("form", BuildingForm = new Form(10, 10, Width - 20, Height - 20));
 
             var hud_formbase = Content.Load<Texture2D>("images\\form_layout");
-            var hud_form_headname = CutOut(hud_formbase, new Rectangle(1, 1, 230, 42));
-            var hud_form_headseam = CutOut(hud_formbase, new Rectangle(232, 1, 1, 42));
-            var hud_form_headend = CutOut(hud_formbase, new Rectangle(234, 1, 60, 42));
-            var hud_form_leftborder = CutOut(hud_formbase, new Rectangle(1, 44, 10, 1));
-            var hud_form_rightborder = CutOut(hud_formbase, new Rectangle(284, 44, 10, 1));
-            var hud_form_bottomleft = CutOut(hud_formbase, new Rectangle(1, 46, 230, 20));
-            var hud_form_bottomseam = CutOut(hud_formbase, new Rectangle(232, 46, 1, 20));
-            var hud_form_bottomright = CutOut(hud_formbase, new Rectangle(234, 46, 60, 20));
 
-            BuildingForm.CreateLayout(hud_form_headname,
-            hud_form_headseam,
-            hud_form_headend,
-            hud_form_leftborder,
-            hud_form_rightborder,
-            hud_form_bottomleft,
-            hud_form_bottomseam,
-            hud_form_bottomright);
+            BuildingForm.CreateLayout(new ControlLayout(hud_formbase));
 
             ControlBase.DefaultFont = font = Content.Load<SpriteFont>("fonts\\xolonium");
             font.Glyphs[0].Width = 3; // Alters space size
@@ -158,7 +143,7 @@ namespace Editor
         protected override void Update(GameTime gameTime)
         {
             FormManager.Update();
-            var ms = PointToClient(MousePosition).ToXNA().Add((-(int)BuildingForm.AbsX, -(int)BuildingForm.AbsY));
+            var ms = PointToClient(MousePosition).ToXNA().Add((-(int)BuildingForm.AbsoluteX, -(int)BuildingForm.AbsoluteY));
 
             if (pickedControl == null)
             {
@@ -229,7 +214,7 @@ namespace Editor
             if (selectedControl != null)
             {
                 if (selectedControl.TargetObject != BuildingForm)
-                    batch.DrawRect(selectedControl.Bounds.ToXNA().OffsetBy(BuildingForm.AbsX, BuildingForm.AbsY), Palette.NanoBlue);
+                    batch.DrawRect(selectedControl.Bounds.ToXNA().OffsetBy(BuildingForm.AbsoluteX, BuildingForm.AbsoluteY), Palette.NanoBlue);
                 else
                     batch.DrawRect(selectedControl.Bounds.ToXNA(), Palette.NanoBlue);
 
@@ -237,7 +222,7 @@ namespace Editor
             if (pickedControl != null)
             {
                 if (pickedControl.TargetObject != BuildingForm)
-                    batch.DrawRect(pickedControl.Bounds.ToXNA().OffsetBy(BuildingForm.AbsX, BuildingForm.AbsY), Color.White);
+                    batch.DrawRect(pickedControl.Bounds.ToXNA().OffsetBy(BuildingForm.AbsoluteX, BuildingForm.AbsoluteY), Color.White);
                 else
                     batch.DrawRect(pickedControl.Bounds.ToXNA(), Color.White);
             }
@@ -245,7 +230,7 @@ namespace Editor
             if (activeControl != null)
             {
                 if (activeControl.TargetObject != BuildingForm)
-                    batch.DrawRect(activeControl.Bounds.ToXNA().OffsetBy(BuildingForm.AbsX, BuildingForm.AbsY), Color.Gray);
+                    batch.DrawRect(activeControl.Bounds.ToXNA().OffsetBy(BuildingForm.AbsoluteX, BuildingForm.AbsoluteY), Color.Gray);
                 else
                     batch.DrawRect(activeControl.Bounds.ToXNA(), Color.Gray);
             }

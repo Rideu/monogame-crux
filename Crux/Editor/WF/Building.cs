@@ -64,7 +64,7 @@ namespace Editor
 
             load_list += cd;
 
-            load_list += $"\n\tFormManager.AddForm(\"form\", BuildingForm = new Form({BuildingForm.AbsX}, {BuildingForm.AbsY}, {BuildingForm.Width}, {BuildingForm.Height}));";
+            load_list += $"\n\tFormManager.AddForm(\"form\", BuildingForm = new Form({BuildingForm.AbsoluteX}, {BuildingForm.AbsoluteY}, {BuildingForm.Width}, {BuildingForm.Height}));";
             load_list += $"\n\tBuildingForm.AddNewControl({cs.Trim(',', ' ')});\t";
 
             load_list += "\n}";

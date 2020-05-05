@@ -19,8 +19,8 @@ namespace Crux.BaseControls
             set
             {
                 tc = value;
-                if (!IsFixedWidth)
-                    Width = font.MeasureString(tc).X;
+                //if (!IsFixedWidth)
+                    //Width = font.MeasureString(tc).X;
             }
         } // TODO: 
         public float TextSize { get; set; } = 1f;
@@ -31,7 +31,7 @@ namespace Crux.BaseControls
 
         public Label()
         {
-            AbsX = 10; AbsY = 10; Width = 60; Height = 40; BackColor = default;
+            AbsoluteX = 10; AbsoluteY = 10; Width = 60; Height = 40; BackColor = default;
         }
 
         public Label(Vector4 posform) : this(posform.X, posform.Y, posform.Z, posform.W) { }
@@ -41,12 +41,12 @@ namespace Crux.BaseControls
         public Label(float x, float y, float width, float height, Color? col = default)
         {
              ForeColor = col.HasValue ? col.Value : Color.White;
-            AbsX = x; AbsY = y; Width = width; Height = height;
+            AbsoluteX = x; AbsoluteY = y; Width = width; Height = height;
         }
 
         internal override void Initialize()
         {
-            Bounds = Rectangle(AbsX, AbsY, Width = Width - Owner.BorderSize - BorderSize, Height = Height - Owner.BorderSize - BorderSize);
+            Bounds = Rectangle(AbsoluteX, AbsoluteY, Width = Width - Owner.BorderSize - BorderSize, Height = Height - Owner.BorderSize - BorderSize);
             base.Initialize();
         }
         public Color ForeColor = Color.White;
@@ -69,13 +69,13 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
-            var drawb = singleHop;
+            var drawb = DrawingBounds;
             Batch.GraphicsDevice.ScissorRectangle = drawb;
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
                 if (drawBackground)
                     Batch.DrawFill(Bounds, BackColor);
-                Batch.DrawString(font, tc, new Vector2(AbsX + 0, AbsY), ForeColor, 0, TextSize);
+                Batch.DrawString(font, tc, new Vector2(AbsoluteX + 0, AbsoluteY), ForeColor, 0, TextSize);
             }
             Batch.End();
 

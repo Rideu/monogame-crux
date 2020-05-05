@@ -180,7 +180,7 @@ namespace Crux
 
         public override int X
         {
-            get => target.RelativePosition.X;
+            get => (int)target.RelativePosition.X;
             set
             {
                 target.SetRelative(value, Y);
@@ -190,7 +190,7 @@ namespace Crux
 
         public override int Y
         {
-            get => target.RelativePosition.Y;
+            get => (int)target.RelativePosition.Y;
             set
             {
                 target.SetRelative(X, value);
@@ -264,7 +264,7 @@ namespace Crux
 
         public override int X
         {
-            get => (int)target.AbsX;
+            get => (int)target.AbsoluteX;
             set
             {
                 target.SetRelative(value, Y);
@@ -274,7 +274,7 @@ namespace Crux
 
         public override int Y
         {
-            get => (int)target.AbsY;
+            get => (int)target.AbsoluteY;
             set
             {
                 //target = new C();

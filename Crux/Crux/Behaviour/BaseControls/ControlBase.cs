@@ -79,7 +79,7 @@ namespace Crux.BaseControls
 
         public string Name { get => GetType().ToString() + " : " + Alias; set => Alias = value; }
 
-        internal protected string Alias = "uControl";
+        internal protected string Alias = "ControlBase";
 
         #endregion
 
@@ -88,11 +88,20 @@ namespace Crux.BaseControls
 
         public float ScrollValue { get; set; }
 
-        protected Align align = Align.TopLeft;
-        public virtual Align CurrentAlign { set { align = value; } get => align; }
+        protected Alignment anchor = Alignment.TopLeft;
+        public virtual Alignment Anchor
+        {
+            set
+            {
+                anchor = value;
+                if (Owner != null)
+                    OwnerRelDiff = Rectangle(Owner.Width - RelativePosition.X, Owner.Height - RelativePosition.Y, Width, Height);
+            }
+            get => anchor;
+        }
 
-        protected Align textalign = Align.Middle;
-        public virtual Align TextAlign { set { textalign = value; } get => textalign; }
+        protected Alignment textalign = Alignment.Middle;
+        public virtual Alignment TextAlign { set { textalign = value; } get => textalign; }
 
 
         #region Controls
@@ -153,9 +162,11 @@ namespace Crux.BaseControls
         /// </summary>
         internal virtual void Initialize()
         {
+            Anchor = anchor;
+            OwnerRelDiff = Rectangle(Owner.Width - RelativePosition.X, Owner.Height - RelativePosition.Y, Width, Height);
             ID = Owner.GetControlsCount + 1;
             originForm = Owner is Form ? (Owner as Form) : Owner.MainForm;
-            RelativePosition = new Point((int)AbsX, (int)AbsY);
+            RelativePosition = new Vector2(AbsoluteX, AbsoluteY);
             //Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
             UpdateBounds();
             IsInitialized = true;
@@ -196,7 +207,13 @@ namespace Crux.BaseControls
 
         #region Bounds and positioning
 
-        protected internal Point RelativePosition { get; set; }
+        protected Rectangle OwnerRelDiff;
+
+        protected internal Vector2 RelativePosition
+        {
+            get;
+            set;
+        }
 
         public Rectangle Bounds { get; set; }
 
@@ -212,16 +229,16 @@ namespace Crux.BaseControls
 
         protected float RelContentScale;
 
-        public virtual float AbsX
+        public virtual float AbsoluteX
         {
             get => Bounds.X;
-            protected set => Bounds = Rectangle(value, AbsY, Width, Height);
+            internal protected set => Bounds = Rectangle(value, AbsoluteY, Width, Height);
         }
 
-        public virtual float AbsY
+        public virtual float AbsoluteY
         {
             get => Bounds.Y;
-            protected set => Bounds = Rectangle(AbsX, value, Width, Height);
+            internal protected set => Bounds = Rectangle(AbsoluteX, value, Width, Height);
         }
 
         public virtual float Width
@@ -229,7 +246,7 @@ namespace Crux.BaseControls
             get => Bounds.Width;
             set
             {
-                Bounds = Rectangle(AbsX, AbsY, value, Height);
+                Bounds = Rectangle(AbsoluteX, AbsoluteY, value, Height);
                 OnResize?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -239,27 +256,66 @@ namespace Crux.BaseControls
             get => Bounds.Height;
             set
             {
-                Bounds = Rectangle(AbsX, AbsY, Width, value);
+                Bounds = Rectangle(AbsoluteX, AbsoluteY, Width, value);
                 OnResize?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        public virtual void SetRelative(int x, int y) => RelativePosition = new Point(x, y);
+        public virtual void SetRelative(int x, int y) => RelativePosition = new Vector2(x, y);
 
         public virtual void UpdateBounds()
         {
             dbg_boundsUpdates++;
             if (Owner != this)
             {
-                AbsX = Owner.AbsX + (IsFixed ? 0 : Owner.MappingOffset.X) + RelativePosition.X;
-                AbsY = Owner.AbsY + (IsFixed ? 0 : Owner.MappingOffset.Y) + RelativePosition.Y;
+                var rp = RelativePosition;
+                switch (Anchor)
+                {
+                    case Alignment.TopLeft:
+                        break;
+                    case Alignment.Top:
+                        rp.X = ((Owner.Width) / 2) + RelativePosition.X - (OwnerRelDiff.X / 2);
+                        break;
+                    case Alignment.TopRight:
+                        //Owner.Width - RelativePosition.X;
+
+                        rp.X = (Owner.Width - OwnerRelDiff.X + RelativePosition.X);
+
+                        break;
+                    case Alignment.MiddleLeft:
+                        break;
+                    case Alignment.Middle:
+                        rp.X = ((Owner.Width) / 2) + RelativePosition.X - (OwnerRelDiff.X / 2)/* + Owner.Height / 2*/;
+                        rp.Y = ((Owner.Height) / 2) + RelativePosition.Y - (OwnerRelDiff.Y / 2) /* + Owner.Height / 2*/;
+                        //rp.X = ((Owner.Width) / 2) - (Width - (Owner.Width / 2 + RelativePosition.X)) / 2;
+                        //rp.Y = ((Owner.Height) / 2) - (Height - (Owner.Height / 2 + RelativePosition.Y)) / 2;
+                        break;
+                    case Alignment.MiddleRight:
+                        break;
+                    case Alignment.BottomLeft:
+                        rp.Y = Owner.Height - (OwnerRelDiff.Y) + RelativePosition.Y;
+                        break;
+                    case Alignment.Bottom:
+                        rp.X = ((Owner.Width) / 2) + RelativePosition.X - (OwnerRelDiff.X / 2);
+                        rp.Y = Owner.Height - (OwnerRelDiff.Y) + RelativePosition.Y;
+                        break;
+                    case Alignment.BottomRight:
+                        rp.X = Owner.Width - (OwnerRelDiff.X) + RelativePosition.X;
+                        rp.Y = Owner.Height - (OwnerRelDiff.Y) + RelativePosition.Y;
+                        break;
+                    default:
+                        break;
+                }
+
+                AbsoluteX = Owner.AbsoluteX + (IsFixed ? 0 : Owner.MappingOffset.X) + rp.X;
+                AbsoluteY = Owner.AbsoluteY + (IsFixed ? 0 : Owner.MappingOffset.Y) + rp.Y;
             }
             else
             {
-                AbsX = RelativePosition.X;
-                AbsY = RelativePosition.Y;
+                AbsoluteX = RelativePosition.X;
+                AbsoluteY = RelativePosition.Y;
             }
-            Bounds = Rectangle(AbsX, AbsY, Width, Height);
+            Bounds = Rectangle(AbsoluteX, AbsoluteY, Width, Height);
             foreach (var n in Controls)
             {
                 n.UpdateBounds();
@@ -275,7 +331,7 @@ namespace Crux.BaseControls
             var y = Controls.Min(n => n.RelativePosition.Y);
             var w = Controls.Max(n => n.RelativePosition.X + n.Bounds.Width);
             var h = Controls.Max(n => n.RelativePosition.Y + n.Bounds.Height);
-            ContentBounds = new Rectangle(x, y, w, h);
+            ContentBounds = Rectangle(x, y, w, h);
 
 #if DEBUG
             if (this is Panel)
@@ -315,7 +371,7 @@ namespace Crux.BaseControls
         public event EventHandler OnFocus;
         public event EventHandler OnLeave;
         public event EventHandler OnResize;
-        public event EventHandler OnFocusChange;
+        public event EventHandler OnFocusChanged;
         public event EventHandler OnLeftClick;
         public event EventHandler OnRightClick;
 
@@ -332,6 +388,9 @@ namespace Crux.BaseControls
 
 
             IsClicked = !true;
+
+            #region Focusing
+
             if (F_Focus != IsActive)
             {
                 if (F_Focus == false && IsActive == true)
@@ -343,39 +402,77 @@ namespace Crux.BaseControls
                     Invalidate();
                     OnLeave?.Invoke(this, EventArgs.Empty);
                 }
-                OnFocusChange?.Invoke(this, new ControlArgs { });
+                OnFocusChanged?.Invoke(this, new ControlArgs { });
             }
 
-            if (!IsActive) OMEOccured = false;
-            if (IsActive && !OMEOccured)
-            {
-                OnMouseEnter?.Invoke(this, ControlArgs.GetState);
-                EnterHold = Control.LeftButtonPressed;
-                OMEOccured = true;
-            }
+            #endregion
+
+            #region Mouse Activity
+
+            //if (!IsActive) OMEOccured = false;
+            //if (IsActive && !OMEOccured)
+            //{
+            //    OnMouseEnter?.Invoke(this, ControlArgs.GetState);
+            //    EnterHold = Control.LeftButtonPressed;
+            //    OMEOccured = true;
+            //}
+
+            //if (IsActive)
+            //{
+            //    if (Control.WheelVal != 0)
+            //    {
+            //        OnMouseScroll?.Invoke(this, ControlArgs.GetState);
+            //    }
+            //}
+
+            //if (IsActive) OMLOccured = false;
+            //if (!IsActive && !OMLOccured)
+            //{
+            //    OnMouseLeave?.Invoke(this, ControlArgs.GetState);
+            //    EnterHold = !(OMLOccured = true);
+            //}
+
 
             if (IsActive)
             {
+                if (!OMEOccured)
+                {
+                    OnMouseEnter?.Invoke(this, ControlArgs.GetState);
+                    EnterHold = Control.LeftButtonPressed;
+                    Owner.EnterHold = EnterHold;
+                    OMEOccured = true;
+                }
+
                 if (Control.WheelVal != 0)
                 {
                     OnMouseScroll?.Invoke(this, ControlArgs.GetState);
                 }
-            }
 
-            if (IsActive) OMLOccured = false;
-            if (!IsActive && !OMLOccured)
+                OMLOccured = false;
+            }
+            else
             {
-                OnMouseLeave?.Invoke(this, ControlArgs.GetState);
-                EnterHold = !(OMLOccured = true);
-            }
+                OMEOccured = false;
 
+                if (!OMLOccured)
+                {
+                    OnMouseLeave?.Invoke(this, ControlArgs.GetState);
+                    EnterHold = !(OMLOccured = true);
+                    Owner.EnterHold = EnterHold;
+                }
+            }
             F_Focus = IsActive;
+            #endregion
+            #region Holding Activity
+
+            IsHovering = Bounds.Contains(Core.MS.Position.ToVector2()) && Owner.IsActive;
+            IsHolding = IsHovering && Control.LeftButtonPressed;
 
             if (IsHovering && Control.LeftClick() && !EnterHold)
             {
                 IsClicked = true;
                 OnLeftClick?.Invoke(this, EventArgs.Empty);
-                IsHovering = !true;
+                //IsHovering = !true;
             }
 
             if (IsHovering && Control.RightClick())
@@ -387,6 +484,8 @@ namespace Crux.BaseControls
             {
                 EnterHold = false;
             }
+
+            #endregion
 
             dbg_eventUpdates++;
         }
@@ -401,6 +500,63 @@ namespace Crux.BaseControls
 
         #region Drawing
 
+        ControlLayout layout;
+        public ControlLayout Layout { get => layout; set { CreateLayout(value); } }
+
+        protected bool hasLayout;
+
+        /// <summary>
+        /// Create layout for this control from existing one.
+        /// </summary>
+        /// <param name="layout"></param>
+        public void CreateLayout(ControlLayout layout)
+        {
+            this.layout = layout;
+
+            BackColor = layout.Diffuse;
+            hasLayout = true;
+        }
+
+        public virtual Rectangle FillingArea => hasLayout ?
+            new Rectangle(Bounds.X + Layout.LeftBorder.Width,
+                Bounds.Y + Layout.TopBorder.Height,
+                Bounds.Width - Layout.RightBorder.Width - Layout.LeftBorder.Width,
+                Bounds.Height - Layout.BottomBorder.Height - Layout.TopBorder.Height)
+            : Bounds;
+
+        protected virtual void DrawLayout(Color? d)
+        {
+
+            if (hasLayout)
+            {
+                var diffuse = d.HasValue ? d.Value : Color.White;
+                var fw = Bounds.Width;
+                var fh = Bounds.Height;
+
+                var top = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
+                var bottom = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
+                //var fa = FillingArea;
+                //Batch.GraphicsDevice.ScissorRectangle = fa;
+                //Batch.DrawFill(fa, BackColor);
+
+                //OnDraw?.Invoke();
+                Batch.Draw(Layout.TopLeft, Bounds.Location.ToVector2(), diffuse);
+                Batch.Draw(Layout.TopBorder, new Rectangle(Bounds.X + Layout.TopLeft.Width, Bounds.Y, fw - Layout.TopLeft.Width - Layout.TopRight.Width, Layout.TopBorder.Height), diffuse);
+                Batch.Draw(Layout.TopRight, new Vector2(Bounds.X + Layout.TopLeft.Width + top, Bounds.Y), diffuse);
+
+                Batch.Draw(Layout.LeftBorder, new Rectangle(Bounds.X, Bounds.Y + Layout.TopLeft.Height, Layout.LeftBorder.Width, fh - Layout.BottomLeft.Height - Layout.TopLeft.Height), diffuse);
+                Batch.Draw(Layout.RightBorder, new Rectangle(Bounds.X + fw - Layout.RightBorder.Width, Bounds.Y + Layout.TopLeft.Height, Layout.RightBorder.Width, fh - Layout.TopRight.Height - Layout.BottomRight.Height), diffuse);
+
+                Batch.Draw(Layout.BottomLeft, new Vector2(Bounds.X, Bounds.Y + fh - Layout.BottomLeft.Height), diffuse);
+                Batch.Draw(Layout.BottomBorder, new Rectangle(Bounds.X + Layout.BottomLeft.Width, Bounds.Y + fh - Layout.BottomBorder.Height, fw - Layout.BottomLeft.Width - Layout.BottomRight.Width, Layout.BottomBorder.Height), diffuse);
+                Batch.Draw(Layout.BottomRight, new Vector2(Bounds.X + Layout.BottomLeft.Width + bottom, Bounds.Y + fh - Layout.BottomRight.Height), diffuse);
+
+                //Batch.DrawFill(new Vector2(Bounds.X, Bounds.Y + fh - Layout.BottomLeft.Height), Layout.BottomLeft.Bounds.Size.ToVector2(), Color.White);
+                //Batch.DrawFill(new Rectangle(Bounds.X + Layout.BottomLeft.Width, Bounds.Y + fh - Layout.BottomBorder.Height, fw - Layout.BottomLeft.Width - Layout.BottomRight.Width, Layout.BottomBorder.Height), Color.White);
+                //Batch.DrawFill(new Vector2(Bounds.X + Layout.BottomLeft.Width + bottom, Bounds.Y + fh - Layout.BottomRight.Height), Layout.BottomRight.Bounds.Size.ToVector2(), Color.White);
+
+            }
+        }
 
         public virtual void DrawBorders()
         {
@@ -417,10 +573,28 @@ namespace Crux.BaseControls
             Batch.End();
         }
 
+        public event Action OnDraw;
         /// <summary>
         /// Describes draw-per-frame logic.
         /// </summary>
-        public virtual void Draw() { }
+        public virtual void Draw()
+        {
+            Rectangle drawb;
+            Batch.GraphicsDevice.ScissorRectangle = drawb = DrawingBounds;
+            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+            {
+                if (!hasLayout)
+                {
+                    Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f)); // Primary
+                    Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
+                }
+                else
+                {
+                    DrawLayout(null);
+                }
+            }
+            Batch.End();
+        }
 
         #endregion
 
@@ -516,10 +690,18 @@ namespace Crux.BaseControls
         }
     }
 
-    public enum Align
+    //public enum Align
+    //{
+    //    TopLeft, Top, TopRight,
+    //    MiddleLeft, Middle, MiddleRight,
+    //    BottomLeft, Bottom, BottomRight
+    //}
+
+
+    public enum Alignment
     {
         TopLeft, Top, TopRight,
-        Left, Middle, MiddleRight,
+        MiddleLeft, Middle, MiddleRight,
         BottomLeft, Bottom, BottomRight
     }
 

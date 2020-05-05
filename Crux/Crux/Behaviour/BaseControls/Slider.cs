@@ -21,7 +21,7 @@ namespace Crux.BaseControls
 
         int ID;
         public override int GetID { get { return ID; } }
-        
+
         public override string Text { get => text; set { text = value; } }
 
         public Color SliderColor { get; set; } = Palette.LightenGray;
@@ -37,7 +37,10 @@ namespace Crux.BaseControls
             get { return val; }
             set
             {
-                val = value.Clamp(0, 1); Invalidate();
+                if (value != val)
+                {
+                    val = value.Clamp(0, 1); Invalidate();
+                }
             }
         }
 
@@ -51,26 +54,26 @@ namespace Crux.BaseControls
 
         //Texture2D Tex;
         Rectangle slider;
-        
+
         public event Action OnSlide;
         #endregion
 
         public Slider(Vector4 posform, Type type)
         {
             dtype = type;
-            AbsX = posform.X; AbsY = posform.Y; Width = posform.Z; Height = posform.W;
+            AbsoluteX = posform.X; AbsoluteY = posform.Y; Width = posform.Z; Height = posform.W;
         }
 
         public Slider(Vector2 pos, Vector2 size, Type type)
         {
             dtype = type;
-            AbsX = pos.X; AbsY = pos.Y; Width = size.X; Height = size.Y;
+            AbsoluteX = pos.X; AbsoluteY = pos.Y; Width = size.X; Height = size.Y;
         }
 
         public Slider(float x, float y, float width, float height, Type type)
         {
             dtype = type;
-            AbsX = x; AbsY = y; Width = width; Height = height;
+            AbsoluteX = x; AbsoluteY = y; Width = width; Height = height;
         }
         int w = 0, h = 0;
         void ChangeType(Type type)
@@ -126,6 +129,7 @@ namespace Crux.BaseControls
             {
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed)
                 {
+                    var v = val;
                     if (DispType == Type.Horizontal)
                     {
                         val = ((Core.MS.Position.ToVector2().X - w / 2 - (Bounds.X)) / (Width - w)).Clamp(0, 1);
@@ -134,7 +138,8 @@ namespace Crux.BaseControls
                     {
                         val = ((Core.MS.Position.ToVector2().Y - h / 2 - (Bounds.Y)) / (Height - h)).Clamp(0, 1);
                     }
-                    OnSlide?.Invoke();
+                    if (v != val)
+                        OnSlide?.Invoke();
                 }
             }
 
