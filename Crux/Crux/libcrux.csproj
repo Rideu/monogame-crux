@@ -114,6 +114,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Behaviour\BaseControls\DataGrid.cs" />
     <Compile Include="Behaviour\BaseControls\Forms.cs" />
     <Compile Include="Behaviour\Complex.cs" />
     <Compile Include="Behaviour\TextBuilder.cs" />

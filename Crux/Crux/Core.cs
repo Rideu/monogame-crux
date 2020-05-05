@@ -133,24 +133,24 @@ namespace Crux
             //TextBuilder.EnableDebug = true;
 
 
-            Form f = new Form(30, 100, 550, 550, new Color(74, 74, 74))
+            Form debugForm = new Form(30, 100, 550, 550, new Color(74, 74, 74))
             {
                 IsResizable = true,
                 IsVisible = true
-            }; 
+            };
 
             #region Sample text
-            if (true)
+            if (false)
             {
                 Textarea t;
 
-                f.AddNewControl(t = new Textarea(20, 80, 415, 280)
+                debugForm.AddNewControl(t = new Textarea(20, 80, 415, 280)
                 {
                     Text = @"   {scale(1,5);}«1917»
 
 «1917» (англ. 1917) - художественный {link():p;}фильм британского режиссёра{@p;} Сэма Мендеса по сценарию, написанному им совместно с Кристи Уилсон-Кэрнс. Премьера в США состоялась 25 декабря 2019 года. В Великобритании вышел в прокат 10 января 2020 года.
 
-    {scale(1,5);}Содержание
+    {scale(1,25);}Содержание
 
 1	Сюжет
 2	Актёрский состав
@@ -160,7 +160,7 @@ namespace Crux
 6	Примечания
 7	Ссылки
 
-    {scale(1,5);}Сюжет
+    {scale(1,25);}Сюжет
 
 Весной 1917 года британская армия планирует наступление на Линию Гинденбурга. Двое молодых солдат Блейк и Скофилд должны доставить на передовую приказ об отмене атаки в практически невыполнимый срок, иначе батальон из 1600 солдат попадёт в засаду. Для Блейка задание становится личным - в этом батальоне служит его брат.",
                 });
@@ -177,7 +177,7 @@ namespace Crux
                 t.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\test2")));
 
                 Slider s;
-                f.AddNewControl(s = new Slider(20, 60, 415, 10, Slider.Type.Horizontal));
+                debugForm.AddNewControl(s = new Slider(20, 60, 415, 10, Slider.Type.Horizontal));
                 s.OnSlide += delegate { t.FontSize = (0.75f + (s.Value * 10) * 0.05f); };
 
             }
@@ -187,7 +187,7 @@ namespace Crux
             if (false)
             {
                 Panel p, pp;
-                f.AddNewControl(p = new Panel(110, 80, 410, 210, Palette.DarkenGray));
+                debugForm.AddNewControl(p = new Panel(110, 80, 410, 210, Palette.DarkenGray));
                 var w = 100;
                 var h = 200;
                 //p.AddNewControl(new Button(10, 10, w, h, new Color(40, 40, 40)) { Text = "OK" });
@@ -211,27 +211,44 @@ namespace Crux
             }
             #endregion
 
-            //var cb = new Combobox(50, 50, 120, 20);
-            //f.AddNewControl(cb);
-            //for (int i = 0; i < 5; i++)
-            //{
-            //    cb.AddItem(new TestObject($"Item{i}"));
-            //} 
 
+            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = new Color(238, 195, 114), });
 
-            f.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = new Color(238, 195, 114) });
-            f.OnKeyUp += (s, e) =>
+            var dg = new DataGrid(20, 80, 515, 320);
+            debugForm.AddNewControl(dg);
+
+            dg.AddColumn();
+            dg.AddColumn();
+            dg.AddColumn();
+            dg.AddColumn();
+            dg.AddRow();
+            dg.AddRow();
+            dg.AddRow();
+            dg.AddRow();
+            dg.AddColumn();
+
+            var bRow = new Button(20, 40, 100, 30);
+            bRow.Text = "AddRow";
+            bRow.OnLeftClick += (s, e) => { dg.AddRow(); };
+
+            var bCol = new Button(140, 40, 100, 30);
+            bCol.Text = "AddCol";
+            bCol.OnLeftClick += (s, e) => { dg.AddColumn(); };
+
+            debugForm.AddNewControl(bRow, bCol);
+
+            debugForm.OnKeyUp += (s, e) =>
             {
                 var k = e.KeysHandled;
             };
-            f.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout2"), true));
+            debugForm.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout2"), true));
 
             //var c = new ControlBase() { RelativePosition = new Point(-20), Width = 20, Height = 50 };
             //c.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\test1"))); 
             //c.SetRelative(20, 20);
             //f.AddNewControl(c);
 
-            FormManager.AddForm("MainForm", f);
+            FormManager.AddForm("MainForm", debugForm);
 
             //Examples();
 

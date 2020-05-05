@@ -22,8 +22,8 @@ namespace Crux.BaseControls
         public override string Text { get => text; set { text = value; } }
 
         internal Slider ContentSlider;
-
-        private Texture2D Tex;
+          
+        public bool SliderVisible { get => ContentSlider.IsVisible; set => ContentSlider.IsVisible = value; }
 
         #endregion
 
@@ -48,7 +48,7 @@ namespace Crux.BaseControls
         }
         internal override void Initialize()
         {
-            Alias = "Panel"; 
+            Alias = "Panel";
             BorderColor = (BackColor = BackColor == default ? Palette.DarkenGray : BackColor) * 1.5f;
             OnMouseScroll += (ControlBase c, ControlArgs e) =>
             {

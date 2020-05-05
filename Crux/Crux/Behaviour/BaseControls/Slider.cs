@@ -119,7 +119,7 @@ namespace Crux.BaseControls
 
         public override void Update()
         {
-
+            if (!IsVisible) return;
             UpdateBounds();
             IsHovering = !true;
             if (Bounds.Contains(Core.MS.Position.ToVector2()))
@@ -167,6 +167,7 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
+            if (!IsVisible) return;
             var drawb = DrawingBounds;
             Batch.GraphicsDevice.ScissorRectangle = drawb;
             //Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X + X), (int)(Owner.Y + Y - 1)), new Point((int)Width, (int)Height + 2));

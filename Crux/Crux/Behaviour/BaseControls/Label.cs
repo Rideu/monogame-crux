@@ -69,7 +69,7 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
-            var drawb = DrawingBounds;
+            var drawb = Owner.DrawingBounds;
             Batch.GraphicsDevice.ScissorRectangle = drawb;
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
