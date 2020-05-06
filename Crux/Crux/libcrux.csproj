@@ -98,8 +98,7 @@
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <NoWarn>CS0108</NoWarn>
     <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>latest</LangVersion>
+    <PlatformTarget>AnyCPU</PlatformTarget> 
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>SecurityRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
