@@ -121,6 +121,17 @@ namespace Crux.BaseControls
             CalcContentBounds();
         }
 
+        public void RemoveControl(ControlBase c)
+        {
+            c.Owner = null;
+            Controls.Remove(c);
+            foreach (var ctr in Controls)
+            {
+                ctr.ID = Controls.IndexOf(ctr);
+            }
+            CalcContentBounds();
+        }
+
         /// <summary>
         /// Adds specified Controls list.
         /// </summary>
@@ -221,7 +232,7 @@ namespace Crux.BaseControls
 
         protected Rectangle singleHop => Bounds.Intersect(Owner.Bounds.InflateBy(-BorderSize));
 
-        internal protected Vector2 MappingOffset;
+        internal protected Vector2 ContentMappingOffset;
 
         internal protected Rectangle ContentBounds;
 
@@ -248,6 +259,7 @@ namespace Crux.BaseControls
             {
                 Bounds = Rectangle(AbsoluteX, AbsoluteY, value, Height);
                 OnResize?.Invoke(this, EventArgs.Empty);
+                Owner?.CalcContentBounds();
             }
         }
 
@@ -258,10 +270,15 @@ namespace Crux.BaseControls
             {
                 Bounds = Rectangle(AbsoluteX, AbsoluteY, Width, value);
                 OnResize?.Invoke(this, EventArgs.Empty);
+                Owner?.CalcContentBounds();
             }
         }
 
-        public virtual void SetRelative(int x, int y) => RelativePosition = new Vector2(x, y);
+        public virtual void SetRelative(int x, int y)
+        {
+            RelativePosition = new Vector2(x, y);
+            Owner?.CalcContentBounds();
+        }
 
         public virtual void UpdateBounds()
         {
@@ -307,8 +324,8 @@ namespace Crux.BaseControls
                         break;
                 }
 
-                AbsoluteX = Owner.AbsoluteX + (IsFixed ? 0 : Owner.MappingOffset.X) + rp.X;
-                AbsoluteY = Owner.AbsoluteY + (IsFixed ? 0 : Owner.MappingOffset.Y) + rp.Y;
+                AbsoluteX = Owner.AbsoluteX + (IsFixed ? 0 : Owner.ContentMappingOffset.X) + rp.X;
+                AbsoluteY = Owner.AbsoluteY + (IsFixed ? 0 : Owner.ContentMappingOffset.Y) + rp.Y;
             }
             else
             {
@@ -325,22 +342,16 @@ namespace Crux.BaseControls
         /// <summary>
         /// Used to calculate content clipping
         /// </summary>
-        void CalcContentBounds()
+        public virtual void CalcContentBounds()
         {
-            var x = Controls.Min(n => n.RelativePosition.X);
-            var y = Controls.Min(n => n.RelativePosition.Y);
-            var w = Controls.Max(n => n.RelativePosition.X + n.Bounds.Width);
-            var h = Controls.Max(n => n.RelativePosition.Y + n.Bounds.Height);
-            ContentBounds = Rectangle(x, y, w, h);
-
-#if DEBUG
-            if (this is Panel)
+            if (Controls.Count > 0)
             {
-                RelContentScale = Height / ContentBounds.Height;
-                if (RelContentScale < 1)
-                    ContentOverflow = ContentBounds.Height - (int)Height;
+                var x = Controls.Min(n => n.RelativePosition.X);
+                var y = Controls.Min(n => n.RelativePosition.Y);
+                var w = Controls.Max(n => n.RelativePosition.X + n.Bounds.Width);
+                var h = Controls.Max(n => n.RelativePosition.Y + n.Bounds.Height);
+                ContentBounds = Rectangle(x, y, w, h);
             }
-#endif
         }
 
         #endregion
@@ -387,7 +398,7 @@ namespace Crux.BaseControls
         {
 
 
-            IsClicked = !true;
+            IsClicked = false;
 
             #region Focusing
 
@@ -493,6 +504,7 @@ namespace Crux.BaseControls
         public virtual void InnerUpdate()
         {
             OnUpdate?.Invoke();
+
             EventProcessor();
         }
 
@@ -677,16 +689,20 @@ namespace Crux.BaseControls
             batch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, null);
             if (updCalled)
             {
-                batch.DrawString(dbgFont, GetDebugInfo(), new Vector2(10, 30), Color.White);
-                batch.DrawString(dbgFont, $"{(float)gt.ElapsedGameTime.TotalMilliseconds:0.000}", new Vector2(10), Color.White);
+                batch.DrawString(dbgFont, GetMetrics(), new Vector2(80, 1), Color.White);
+                batch.DrawString(dbgFont, $"{(float)gt.ElapsedGameTime.TotalMilliseconds:0.000}", new Vector2(10, 1), Color.White);
             }
             batch.End();
             updCalled = false;
         }
 
-        public static string GetDebugInfo()
+        public static string GetMetrics()
         {
-            return $"iT: {ControlBase.dbg_initsTotal} \nbU: {bu} eU: {eu} \nbUT: {ControlBase.dbg_boundsUpdatesTotal} eUT: {ControlBase.dbg_eventUpdatesTotal} \nfums: {fums} (m: {fums / tick:0.000}) - fdms: {fdms} (m: {fdms / tick:0.000})";
+            return $@"iT: {ControlBase.dbg_initsTotal}
+bU: {bu} eU: {eu} 
+bUT: {ControlBase.dbg_boundsUpdatesTotal} eUT: {ControlBase.dbg_eventUpdatesTotal} 
+fums: {fums} [m: {fums / tick:0.000}] 
+fdms: {fdms} [m: {fdms / tick:0.000}]";
         }
     }
 

@@ -189,8 +189,8 @@ namespace Crux.BaseControls
 
         public override void InnerUpdate()
         {
-            //InputMode = true; // InputMode && Control.MouseHoverOverG(Bounds);
-            base.EventProcessor();
+            base.InnerUpdate();
+            //InputMode = true; // InputMode && Control.MouseHoverOverG(Bounds); 
         }
 
         private void Translate()

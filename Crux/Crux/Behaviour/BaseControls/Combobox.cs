@@ -102,8 +102,8 @@ namespace Crux.BaseControls
         }
 
         public override void InnerUpdate()
-        {
-            base.EventProcessor();
+        { 
+            base.InnerUpdate(); 
             Container.InnerUpdate();
         }
 

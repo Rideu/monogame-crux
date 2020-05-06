@@ -162,7 +162,7 @@ namespace Crux.BaseControls
         public override void InnerUpdate()
         {
             slider = GetSlider();
-            base.EventProcessor();
+            base.InnerUpdate();
         }
 
         public override void Draw()

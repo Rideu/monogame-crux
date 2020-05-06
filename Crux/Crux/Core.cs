@@ -95,7 +95,7 @@ namespace Crux
 
             font1 = Content.Load<SpriteFont>("fonts\\Xolonium");
             font1.Glyphs[0].Width += 5; // Alters space size
-            font1.LineSpacing = 5;
+            //font1.LineSpacing = 5;
             font = font1;
             #endregion
 
@@ -121,14 +121,14 @@ namespace Crux
             font.DefaultCharacter = ' ';
 
             ControlBase.DefaultFont = font;
-            var nsf = new SpriteFont(font1.Texture,
-                font1.Glyphs.Select(n => n.BoundsInTexture).ToList(),
-                font1.Glyphs.Select(n => n.Cropping).ToList(),
-                font1.Characters.ToList(),
-                font1.LineSpacing,
-                font1.Spacing,
-                font1.Glyphs.Select(n => new Vector3(n.LeftSideBearing, n.Width, n.RightSideBearing)).ToList(),
-                '?');
+            //var nsf = new SpriteFont(font1.Texture,
+            //    font1.Glyphs.Select(n => n.BoundsInTexture).ToList(),
+            //    font1.Glyphs.Select(n => n.Cropping).ToList(),
+            //    font1.Characters.ToList(),
+            //    font1.LineSpacing,
+            //    font1.Spacing,
+            //    font1.Glyphs.Select(n => new Vector3(n.LeftSideBearing, n.Width, n.RightSideBearing)).ToList(),
+            //    '?');
             TextBuilder.Batch = spriteBatch;
             //TextBuilder.EnableDebug = true;
 
@@ -217,23 +217,34 @@ namespace Crux
             var dg = new DataGrid(20, 80, 515, 320);
             debugForm.AddNewControl(dg);
 
-            dg.AddColumn();
-            dg.AddColumn();
-            dg.AddColumn();
-            dg.AddColumn();
+            dg.AddColumn("Name");
+            dg.AddColumn("Kills");
+            dg.AddColumn("Deaths");
+            dg.AddColumn("K/D");
+            dg.AddColumn("Action");
             dg.AddRow();
             dg.AddRow();
             dg.AddRow();
             dg.AddRow();
-            dg.AddColumn();
 
             var bRow = new Button(20, 40, 100, 30);
             bRow.Text = "AddRow";
-            bRow.OnLeftClick += (s, e) => { dg.AddRow(); };
+            bRow.OnLeftClick += (s, e) => { 
+                dg.AddRow(); };
 
             var bCol = new Button(140, 40, 100, 30);
             bCol.Text = "AddCol";
             bCol.OnLeftClick += (s, e) => { dg.AddColumn(); };
+
+            debugForm.AddNewControl(bRow, bCol);
+
+            bRow = new Button(260, 40, 100, 30);
+            bRow.Text = "RemRow";
+            bRow.OnLeftClick += (s, e) => { dg.RemoveRow(dg.TotalRows - 1); };
+
+            bCol = new Button(380, 40, 100, 30);
+            bCol.Text = "RemCol";
+            bCol.OnLeftClick += (s, e) => { dg.RemoveColumn(dg.TotalColumns - 1); };
 
             debugForm.AddNewControl(bRow, bCol);
 

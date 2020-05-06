@@ -49,8 +49,10 @@ namespace Crux.BaseControls
         {
             base.Initialize();
             Alias = "DataGrid";
-            AddNewControl(TableContainer = new Panel(0, 20, Width - 8, Height - 20));
+            AddNewControl(TableContainer = new Panel(0, 20, Width - 9, Height - 20));
+            TableContainer.Alias = "TableContainer";
             TableContainer.SliderVisible = false;
+            //TableContainer.BorderSize = 0;
         }
 
 
@@ -62,8 +64,24 @@ namespace Crux.BaseControls
         }
 
         public override void InnerUpdate()
-        {
+        { 
             base.InnerUpdate();
+        }
+
+        public virtual Panel CreateCell()
+        {
+            var panel = new Panel(0, 1, 0, 0);
+            TableContainer.AddNewControl(panel);
+            panel.Alias = $"Cell{TotalRows}";
+            panel.SliderVisible = false;
+
+            var label = new Label();
+            panel.AddNewControl(label);
+            label.Text = panel.Alias;
+            label.TextSize = .8f;
+
+            return panel;
+
         }
 
         public virtual void AddRow()
@@ -78,10 +96,7 @@ namespace Crux.BaseControls
 
             for (int i = 0; i < TotalColumns; i++)
             {
-                var panel = new Panel();
-                TableContainer.AddNewControl(panel);
-                panel.SliderVisible = false;
-                row.Add(panel);
+                row.Add(CreateCell());
             }
 
             TotalRows++;
@@ -89,6 +104,22 @@ namespace Crux.BaseControls
             Arrange();
         }
 
+        public virtual void RemoveRow(int rowindex)
+        {
+            var row = Table[rowindex];
+            for (int i = 0; i < TotalColumns; i++)
+            {
+                var c = row[0];
+                TableContainer.RemoveControl(c);
+                Table[rowindex].Remove(c);
+            }
+
+            Table.RemoveAt(rowindex);
+
+            TotalRows--;
+
+            Arrange();
+        }
         public virtual void AddColumn(string header = "")
         {
             var text = string.IsNullOrWhiteSpace(header) ? $"{char.ConvertFromUtf32(65 + TotalColumns)}" : header;
@@ -103,10 +134,7 @@ namespace Crux.BaseControls
 
             for (int i = 0; i < TotalRows; i++)
             {
-                var panel = new Panel();
-                TableContainer.AddNewControl(panel);
-                panel.SliderVisible = false;
-                Table[i].Add(panel);
+                Table[i].Add(CreateCell());
             }
 
             //panel.RelativePosition = new Vector2(TableContainer.Width / (TotalColumns + 1), 0);
@@ -119,28 +147,57 @@ namespace Crux.BaseControls
 
         }
 
+        public int FixedHeight = 40;
+
+        public virtual void RemoveColumn(int colindex)
+        {
+            Controls.Remove(colHeaders[colindex]);
+            colHeaders.RemoveAt(colindex);
+            for (int i = 0; i < TotalRows; i++)
+            {
+                var row = Table[i];
+                var c = row[colindex];
+                row.Remove(c);
+                TableContainer.RemoveControl(c);
+            }
+
+            TotalColumns--;
+
+            Arrange();
+        }
+
         void Arrange()
         {
-            var colwidth = (int)TableContainer.Width / TotalColumns;//- bordersize?;
-            var rowheight = TableContainer.Height / TotalRows;//- bordersize?;
+            var colwidth = TableContainer.Width / TotalColumns;//- bordersize?;
+            var floatdiff = (colwidth - (int)colwidth) * TotalColumns;
+            colwidth = (int)colwidth;
+            var rowheight = FixedHeight == -1 ? TableContainer.Height / TotalRows : FixedHeight;//- bordersize?;
 
             for (int c = 0; c < TotalColumns; c++)
             {
 
                 var cwidx = colwidth * c;
-                colHeaders[c].RelativePosition = new Vector2(cwidx + colwidth / 2, 0);
+                var label = colHeaders[c];
+                label.RelativePosition = new Vector2(cwidx + colwidth / 2 - font.MeasureString(label.Text).X / 2, 0);
             }
 
             for (int r = 0; r < TotalRows; r++)
             {
+
+                var rowcolor = r % 2 == 0 ? new Color(.15f, .15f, .13f, 1) : new Color(.17f, .17f, .15f, 1);
                 for (int c = 0; c < TotalColumns; c++)
                 {
 
-                    var current_panel = Table[r][c];
+                    var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .9f);
 
-                    current_panel.RelativePosition = new Vector2(colwidth * c, rowheight * r);
-                    current_panel.Width = colwidth;
-                    current_panel.Height = rowheight;
+                    var current_cell = Table[r][c];
+
+                    current_cell.BackColor = rowcolcolor;
+                    current_cell.BorderSize = 0;
+
+                    current_cell.RelativePosition = new Vector2(colwidth * c, rowheight * r);
+                    current_cell.Width = colwidth + (c == TotalColumns - 1 ? floatdiff : 0);
+                    current_cell.Height = rowheight;
                 }
             }
         }

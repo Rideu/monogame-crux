@@ -99,8 +99,7 @@ namespace Crux.BaseControls
 
         public override void InnerUpdate()
         {
-            UpdateBounds();
-            base.EventProcessor();
+            base.InnerUpdate();  
         }
 
         public Texture2D Image { get; set; }

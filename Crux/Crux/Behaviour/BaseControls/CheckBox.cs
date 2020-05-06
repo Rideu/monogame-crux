@@ -71,7 +71,6 @@ namespace Crux.BaseControls
 
         public override void Update()
         {
-            UpdateBounds();
 
             IsHovering = !true;
             if (Bounds.Contains(Core.MS.Position.ToVector2()))
@@ -85,8 +84,8 @@ namespace Crux.BaseControls
         }
 
         public override void InnerUpdate()
-        {
-            base.EventProcessor();
+        { 
+            base.InnerUpdate(); 
         }
 
         public override void Draw()

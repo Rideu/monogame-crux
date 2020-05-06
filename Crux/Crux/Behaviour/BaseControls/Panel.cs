@@ -22,7 +22,7 @@ namespace Crux.BaseControls
         public override string Text { get => text; set { text = value; } }
 
         internal Slider ContentSlider;
-          
+
         public bool SliderVisible { get => ContentSlider.IsVisible; set => ContentSlider.IsVisible = value; }
 
         #endregion
@@ -66,9 +66,22 @@ namespace Crux.BaseControls
 
                 if (RelContentScale > 1) return;
                 ScrollValue = ContentSlider.Value;
-                MappingOffset.Y = -ContentOverflow * ContentSlider.Value;
+                ContentMappingOffset.Y = -ContentOverflow * ContentSlider.Value;
             };
             base.Initialize();
+        }
+
+        public override void CalcContentBounds()
+        {
+            base.CalcContentBounds();
+
+            RelContentScale = Height / ContentBounds.Height;
+            if (RelContentScale < 1)
+            {
+                ContentOverflow = ContentBounds.Height - (int)Height;
+                ContentBounds.InflateBy(0, 0, 0, ContentOverflow);
+            }
+
         }
 
         public override void UpdateBounds()
@@ -134,25 +147,30 @@ namespace Crux.BaseControls
 
         public override void InnerUpdate()
         {
-            UpdateBounds();
+            base.InnerUpdate();
+
+            if (ContentBounds.Height - Height == ContentMappingOffset.Y)
+            {
+                SlideSpeed *= ContentMappingOffset.Y = 0;
+            }
 
             if (RelContentScale < 1 && Controls.Count > 0)
             {
-                if (MappingOffset.Y > 0)
+                if (ContentMappingOffset.Y > 0)
                 {
-                    MappingOffset.Y = 0;
+                    ContentMappingOffset.Y = 0;
 
                 }
 
-                if (MappingOffset.Y < -ContentOverflow)
+                if (ContentMappingOffset.Y < -ContentOverflow)
                 {
-                    MappingOffset.Y = -ContentOverflow;
+                    ContentMappingOffset.Y = -ContentOverflow;
                 }
 
 
-                ContentSlider.Value = MappingOffset.Y / (-ContentOverflow);
+                ContentSlider.Value = ContentMappingOffset.Y / (-ContentOverflow);
 
-                MappingOffset += SlideSpeed;
+                ContentMappingOffset += SlideSpeed;
                 if (SlideSpeed.Length() > .1f)
                     SlideSpeed *= 0.86f;
                 else SlideSpeed *= 0;
@@ -160,7 +178,6 @@ namespace Crux.BaseControls
 
             foreach (var c in Controls)
             {
-                c.UpdateBounds();
                 c.InnerUpdate();
             }
 
@@ -169,19 +186,20 @@ namespace Crux.BaseControls
                 ContentSlider.UpdateBounds();
                 ContentSlider.InnerUpdate();
             }
-
-            base.EventProcessor();
+            if (!Alias.Contains("Cell"))
+                UpdateBounds();
         }
 
         public override void Draw()
         {
-            Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
+            var drawb = Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
             DrawBorders();
 
 
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
-                Controls[i].Draw();
+                if (drawb.Intersects(Controls[i].DrawingBounds))
+                    Controls[i].Draw();
 
                 if (false) // Drawing bounds debug
                 {

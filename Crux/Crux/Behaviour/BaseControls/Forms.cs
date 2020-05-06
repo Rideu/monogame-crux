@@ -533,7 +533,7 @@ namespace Crux.BaseControls
 
         public override void InnerUpdate()
         {
-            base.EventProcessor();
+            base.InnerUpdate();
             if (SideControl != null)
             {
                 if (!(Control.MouseHoverOverG(SideControl.Bounds.Union(SideControl.Owner.Bounds))) && Control.LeftClick())
@@ -667,7 +667,10 @@ namespace Crux.BaseControls
 
     public static partial class DebugDevice
     {
+        /// <summary> Last recorded time dedicated to fully update the GUI, in ticks </summary>
         internal static float fums;
+
+        /// <summary> Last recorded time dedicated to fully draw the GUI, in ticks </summary>
         internal static float fdms;
 
     }

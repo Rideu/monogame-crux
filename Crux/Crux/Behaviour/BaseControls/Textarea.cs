@@ -159,7 +159,7 @@ namespace Crux.BaseControls
                     textposspeed *= 0.86f;
                 else textposspeed *= 0;
             }
-            base.EventProcessor();
+            base.InnerUpdate();
         }
 
         Vector2 ContentBounds;

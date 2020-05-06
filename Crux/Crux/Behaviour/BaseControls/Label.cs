@@ -62,9 +62,7 @@ namespace Crux.BaseControls
 
         public override void InnerUpdate()
         {
-            //Bounds = Rectangle(X, Y, Width, Height);
-            UpdateBounds();
-            base.EventProcessor();
+            base.InnerUpdate();
         }
 
         public override void Draw()
