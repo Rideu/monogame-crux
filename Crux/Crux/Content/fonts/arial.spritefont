@@ -8,7 +8,7 @@ with.
 <XnaContent xmlns:Graphics="Microsoft.Xna.Framework.Content.Pipeline.Graphics">
   <Asset Type="Graphics:FontDescription">
     <FontName>Arial</FontName> <!-- Euphemia, Dotum -->
-    <Size>9</Size>
+    <Size>11</Size>
     <Spacing>1</Spacing>
     <UseKerning>false</UseKerning>
     <Style>Regular</Style><!-- "Regular", "Bold", "Italic" -->
