@@ -98,7 +98,7 @@
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <NoWarn>CS0108</NoWarn>
     <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget> 
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>SecurityRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -139,7 +139,6 @@
     <Compile Include="Behaviour\ToolSet.Designer.cs">
       <DependentUpon>ToolSet.cs</DependentUpon>
     </Compile>
-    <Compile Include="Behaviour\Triplex.cs" />
     <Compile Include="Behaviour\BaseControls\ControlBase.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="Examples.cs" />
