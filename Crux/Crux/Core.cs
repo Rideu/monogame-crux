@@ -91,12 +91,12 @@ namespace Crux
 
             font = Content.Load<SpriteFont>("fonts\\arial");
             font.Glyphs[0].Width += 5; // Alters space size
-            font.LineSpacing = 5;
+            //font.LineSpacing = 5;
 
-            font1 = Content.Load<SpriteFont>("fonts\\Xolonium");
-            font1.Glyphs[0].Width += 5; // Alters space size
+            //font1 = Content.Load<SpriteFont>("fonts\\Xolonium");
+            //font1.Glyphs[0].Width += 5; // Alters space size
             //font1.LineSpacing = 5;
-            font = font1;
+            //font = font1;
             #endregion
 
             #region Sounds
