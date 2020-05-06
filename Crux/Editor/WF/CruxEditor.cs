@@ -64,7 +64,7 @@ namespace Editor
 
             BuildingForm.CreateLayout(new ControlLayout(hud_formbase));
 
-            ControlBase.DefaultFont = font = Content.Load<SpriteFont>("fonts\\xolonium");
+            ControlBase.DefaultFont = font = Content.Load<SpriteFont>("fonts\\arial");
             font.Glyphs[0].Width = 3; // Alters space size
             font.LineSpacing = 5;
             font.DefaultCharacter = ' ';
