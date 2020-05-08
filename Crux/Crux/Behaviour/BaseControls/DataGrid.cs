@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using static Crux.Simplex;
+using System.ComponentModel.Design;
 
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
@@ -49,7 +51,7 @@ namespace Crux.BaseControls
         {
             base.Initialize();
             Alias = "DataGrid";
-            AddNewControl(TableContainer = new Panel(0, 20, Width - 9, Height - 20));
+            AddNewControl(TableContainer = new Panel(0, 20, Width - 8, Height - 20));
             TableContainer.Alias = "TableContainer";
             TableContainer.SliderVisible = false;
             //TableContainer.BorderSize = 0;
@@ -64,27 +66,30 @@ namespace Crux.BaseControls
         }
 
         public override void InnerUpdate()
-        { 
+        {
             base.InnerUpdate();
         }
 
-        public virtual Panel CreateCell()
+        protected virtual Panel CreateCell(object value = null)
         {
             var panel = new Panel(0, 1, 0, 0);
             TableContainer.AddNewControl(panel);
             panel.Alias = $"Cell{TotalRows}";
             panel.SliderVisible = false;
+            panel.IsScrollable = false;
 
             var label = new Label();
             panel.AddNewControl(label);
-            label.Text = panel.Alias;
-            label.TextSize = .8f;
+            label.Text = value?.ToString() ?? panel.Alias;
+            label.TextSize = 1f;
 
             return panel;
 
         }
 
-        public virtual void AddRow()
+        #region Rows
+
+        public virtual void AddRow(params object[] data)
         {
 
             //var p = new Panel(0, 20, TableContainer.Width - 9, (TableContainer.Height - 20) / 2);
@@ -96,7 +101,8 @@ namespace Crux.BaseControls
 
             for (int i = 0; i < TotalColumns; i++)
             {
-                row.Add(CreateCell());
+                var value = i < data.Length ? data[i] : null;
+                row.Add(CreateCell(value));
             }
 
             TotalRows++;
@@ -120,7 +126,12 @@ namespace Crux.BaseControls
 
             Arrange();
         }
-        public virtual void AddColumn(string header = "")
+
+        #endregion
+
+        #region Columns
+
+        protected virtual void addColumn(string header = "")
         {
             var text = string.IsNullOrWhiteSpace(header) ? $"{char.ConvertFromUtf32(65 + TotalColumns)}" : header;
             var wd = font.MeasureString(text);
@@ -131,23 +142,28 @@ namespace Crux.BaseControls
             AddNewControl(l);
             colHeaders.Add(l);
 
-
             for (int i = 0; i < TotalRows; i++)
             {
                 Table[i].Add(CreateCell());
             }
-
-            //panel.RelativePosition = new Vector2(TableContainer.Width / (TotalColumns + 1), 0);
-
             TotalColumns++;
-
-            Arrange();
-
-
-
         }
 
-        public int FixedHeight = 40;
+        public virtual void AddColumns(params string[] headers)
+        {
+            foreach (var n in headers)
+            {
+                addColumn(n);
+            }
+            Arrange();
+        }
+
+        public virtual void AddColumn(string header = "")
+        {
+            addColumn(header);
+
+            Arrange();
+        }
 
         public virtual void RemoveColumn(int colindex)
         {
@@ -166,40 +182,52 @@ namespace Crux.BaseControls
             Arrange();
         }
 
+        #endregion
+
+        public int fixise = 40, fixise_rmb = 40;
+        public int FixedHeight { get { return fixise; } set { fixise_rmb = (fixise = value) > 0 ? value : fixise_rmb; } }
+
+        public bool hf;
+        public bool IsHeightFixed { get { return hf; } set { FixedHeight = (hf = value) ? fixise_rmb : -1; Arrange(); } }
+
         void Arrange()
         {
-            var colwidth = TableContainer.Width / TotalColumns;//- bordersize?;
-            var floatdiff = (colwidth - (int)colwidth) * TotalColumns;
-            colwidth = (int)colwidth;
-            var rowheight = FixedHeight == -1 ? TableContainer.Height / TotalRows : FixedHeight;//- bordersize?;
-
-            for (int c = 0; c < TotalColumns; c++)
             {
 
-                var cwidx = colwidth * c;
-                var label = colHeaders[c];
-                label.RelativePosition = new Vector2(cwidx + colwidth / 2 - font.MeasureString(label.Text).X / 2, 0);
-            }
+                var colwidth = TableContainer.Width / TotalColumns;//- bordersize?;
+                var floatdiff = (colwidth - (int)colwidth) * TotalColumns;
+                colwidth = (int)colwidth;
+                var rowheight = FixedHeight == -1 ? TableContainer.Height / TotalRows : FixedHeight;//- bordersize?;
 
-            for (int r = 0; r < TotalRows; r++)
-            {
-
-                var rowcolor = r % 2 == 0 ? new Color(.15f, .15f, .13f, 1) : new Color(.17f, .17f, .15f, 1);
                 for (int c = 0; c < TotalColumns; c++)
                 {
 
-                    var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .9f);
+                    var cwidx = colwidth * c;
+                    var label = colHeaders[c];
+                    label.RelativePosition = new Vector2(cwidx + colwidth / 2 - font.MeasureString(label.Text).X / 2, 0);
+                }
 
-                    var current_cell = Table[r][c];
+                for (int r = 0; r < TotalRows; r++)
+                {
 
-                    current_cell.BackColor = rowcolcolor;
-                    current_cell.BorderSize = 0;
+                    var rowcolor = r % 2 == 0 ? new Color(.15f, .15f, .13f, 1) : new Color(.17f, .17f, .15f, 1);
+                    for (int c = 0; c < TotalColumns; c++)
+                    {
 
-                    current_cell.RelativePosition = new Vector2(colwidth * c, rowheight * r);
-                    current_cell.Width = colwidth + (c == TotalColumns - 1 ? floatdiff : 0);
-                    current_cell.Height = rowheight;
+                        var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .95f);
+
+                        var current_cell = Table[r][c];
+
+                        current_cell.BackColor = rowcolcolor;
+                        current_cell.BorderSize = 0;
+
+                        current_cell.RelativePosition = new Vector2(colwidth * c, rowheight * r);
+                        current_cell.Width = colwidth + (c == TotalColumns - 1 ? floatdiff : 0);
+                        current_cell.Height = rowheight;
+                    }
                 }
             }
+
         }
 
 

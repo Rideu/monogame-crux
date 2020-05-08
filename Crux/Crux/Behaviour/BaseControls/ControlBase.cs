@@ -17,6 +17,27 @@ using static Crux.Core;
 
 namespace Crux.BaseControls
 {
+    public struct ControlLiner
+    {
+        public Vector2 RelativePos;
+
+        public int MarginX, MarginY;
+
+        public int Width, Height;
+
+        public Vector4 GetParams()
+        {
+            var v = new Vector4(RelativePos, Width, Height);
+            RelativePos += new Vector2(MarginX + Width, MarginY + Height);
+
+            return v;
+        }
+
+        public void ResetTo(Vector2 relativepos)
+        {
+            RelativePos = relativepos;
+        }
+    }
     /// <summary>
     /// Base interface that describes updatable and drawable Controls.
     /// </summary>
@@ -29,14 +50,21 @@ namespace Crux.BaseControls
     /// <summary>
     /// Base event class for any control.
     /// </summary>
-    public class ControlArgs : EventArgs
+    public struct ControlArgs
     {
-        public static ControlArgs GetState => new ControlArgs();
+        public static ControlArgs GetState => new ControlArgs(0);
 
-        public bool LeftClick { get; private set; } = Control.LeftClick();
-        public bool RightClick { get; private set; } = Control.RightClick();
-        public List<Keys> KeysHandled { get; } = Control.GetPressedKeys().ToList();
-        public float WheelValue { get; private set; } = Control.WheelVal;
+        private ControlArgs(int i)
+        {
+            LeftClick = Control.LeftClick();
+            RightClick = Control.RightClick();
+            KeysHandled = Control.GetPressedKeys();
+            WheelValue = Control.WheelVal;
+        }
+        public bool LeftClick { get; private set; }
+        public bool RightClick { get; private set; }
+        public Keys[] KeysHandled { get; }
+        public float WheelValue { get; private set; }
     }
 
     /// <summary>
@@ -372,26 +400,26 @@ namespace Crux.BaseControls
 
         #region Logic
 
-        public event Action OnControlUpdate { add => OnUpdate += value; remove => OnUpdate -= value; }
-        public event Action OnUpdate;
-        public event Action<ControlBase, ControlArgs> OnMouseEnter; internal bool OMEOccured;
-        public event Action<ControlBase, ControlArgs> OnMouseLeave; internal bool OMLOccured = true;
-        public event Action<ControlBase, ControlArgs> OnMouseScroll;
+        public event EventHandler OnControlUpdate { add => OnUpdate += value; remove => OnUpdate -= value; }
+        public event EventHandler OnUpdate;
+        public event EventHandler<ControlArgs> OnMouseEnter; internal bool OMEOccured;
+        public event EventHandler<ControlArgs> OnMouseLeave; internal bool OMLOccured = true;
+        public event EventHandler<ControlArgs> OnMouseScroll;
 
         internal bool F_Focus;
         public event EventHandler OnFocus;
         public event EventHandler OnLeave;
         public event EventHandler OnResize;
         public event EventHandler OnFocusChanged;
-        public event EventHandler OnLeftClick;
-        public event EventHandler OnRightClick;
+        public event EventHandler<ControlArgs> OnLeftClick;
+        public event EventHandler<ControlArgs> OnRightClick;
 
         /// <summary>
         /// Describes update-per-frame logic.
         /// </summary>
         public virtual void Update()
         {
-            OnUpdate?.Invoke();
+            OnUpdate?.Invoke(this, EventArgs.Empty);
         }
 
         public virtual void EventProcessor()
@@ -413,7 +441,7 @@ namespace Crux.BaseControls
                     Invalidate();
                     OnLeave?.Invoke(this, EventArgs.Empty);
                 }
-                OnFocusChanged?.Invoke(this, new ControlArgs { });
+                OnFocusChanged?.Invoke(this, EventArgs.Empty); //??
             }
 
             #endregion
@@ -482,14 +510,14 @@ namespace Crux.BaseControls
             if (IsHovering && Control.LeftClick() && !EnterHold)
             {
                 IsClicked = true;
-                OnLeftClick?.Invoke(this, EventArgs.Empty);
+                OnLeftClick?.Invoke(this, ControlArgs.GetState);
                 //IsHovering = !true;
             }
 
             if (IsHovering && Control.RightClick())
             {
                 IsClicked = true;
-                OnRightClick?.Invoke(this, EventArgs.Empty);
+                OnRightClick?.Invoke(this, ControlArgs.GetState);
             }
             if (EnterHold && !Control.LeftButtonPressed)
             {
@@ -503,7 +531,7 @@ namespace Crux.BaseControls
 
         public virtual void InnerUpdate()
         {
-            OnUpdate?.Invoke();
+            OnUpdate?.Invoke(this, EventArgs.Empty);
 
             EventProcessor();
         }

@@ -16,6 +16,7 @@ using Crux.BaseControls;
 
 using static System.Math;
 using static Crux.Simplex;
+using System.Diagnostics;
 
 namespace Crux
 {
@@ -82,7 +83,7 @@ namespace Crux
 
         // Sounds
         public static SoundEffect keyPress;
-
+         
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -217,36 +218,46 @@ namespace Crux
             var dg = new DataGrid(20, 80, 515, 320);
             debugForm.AddNewControl(dg);
 
-            dg.AddColumn("Name");
-            dg.AddColumn("Kills");
-            dg.AddColumn("Deaths");
-            dg.AddColumn("K/D");
-            dg.AddColumn("Action");
-            dg.AddRow();
-            dg.AddRow();
-            dg.AddRow();
-            dg.AddRow();
+            dg.AddColumns("Name", "Kills", "Deaths", "K/D", "Action");
+            dg.AddRow("Yes", 8, 5, 8f / 5, "Ban");
+            dg.AddRow("exdee", 6, 4, 6f / 4, "Ban");
+            dg.AddRow("Baiter", 5, 5, 5f / 5, "Ban");
+            dg.AddRow("Aynell", 9, 6, 9f / 6, "Ban");
 
-            var bRow = new Button(20, 40, 100, 30);
-            bRow.Text = "AddRow";
-            bRow.OnLeftClick += (s, e) => { 
-                dg.AddRow(); };
+            dg.IsHeightFixed = false;
 
-            var bCol = new Button(140, 40, 100, 30);
-            bCol.Text = "AddCol";
-            bCol.OnLeftClick += (s, e) => { dg.AddColumn(); };
+            {
 
-            debugForm.AddNewControl(bRow, bCol);
+                ControlLiner liner = new ControlLiner { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
 
-            bRow = new Button(260, 40, 100, 30);
-            bRow.Text = "RemRow";
-            bRow.OnLeftClick += (s, e) => { dg.RemoveRow(dg.TotalRows - 1); };
+                var bRow = new Button(liner.GetParams());
+                bRow.Text = "+Row";
+                bRow.OnLeftClick += (s, e) =>
+                {
+                    for (int i = e.KeysHandled.Contains(Keys.LeftShift) ? -9 : 0; i < 1; i++)
+                        dg.AddRow();
+                };
 
-            bCol = new Button(380, 40, 100, 30);
-            bCol.Text = "RemCol";
-            bCol.OnLeftClick += (s, e) => { dg.RemoveColumn(dg.TotalColumns - 1); };
+                var bCol = new Button(liner.GetParams());
+                bCol.Text = "+Col";
+                bCol.OnLeftClick += (s, e) => { dg.AddColumn(); };
 
-            debugForm.AddNewControl(bRow, bCol);
+                debugForm.AddNewControl(bRow, bCol);
+
+                bRow = new Button(liner.GetParams());
+                bRow.Text = "-Row";
+                bRow.OnLeftClick += (s, e) => { dg.RemoveRow(dg.TotalRows - 1); };
+
+                bCol = new Button(liner.GetParams());
+                bCol.Text = "-Col";
+                bCol.OnLeftClick += (s, e) => { dg.RemoveColumn(dg.TotalColumns - 1); };
+
+                var bFH = new Button(liner.GetParams());
+                bFH.Text = "+-FH";
+                bFH.OnLeftClick += (s, e) => { dg.IsHeightFixed = !dg.IsHeightFixed; };
+
+                debugForm.AddNewControl(bRow, bCol, bFH);
+            }
 
             debugForm.OnKeyUp += (s, e) =>
             {

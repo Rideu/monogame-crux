@@ -24,6 +24,7 @@ namespace Crux.BaseControls
         internal Slider ContentSlider;
 
         public bool SliderVisible { get => ContentSlider.IsVisible; set => ContentSlider.IsVisible = value; }
+        public bool IsScrollable { get; set; } = true;
 
         #endregion
 
@@ -50,9 +51,10 @@ namespace Crux.BaseControls
         {
             Alias = "Panel";
             BorderColor = (BackColor = BackColor == default ? Palette.DarkenGray : BackColor) * 1.5f;
-            OnMouseScroll += (ControlBase c, ControlArgs e) =>
+            OnMouseScroll += (s, e) =>
             {
-                ScrollValue = (SlideSpeed.Y += Control.WheelVal / 50) * 0.025f;
+                if (IsScrollable)
+                    ScrollValue = (SlideSpeed.Y += Control.WheelVal / 50) * 0.025f;
             };
             ContentSlider = new Slider(Bounds.Width - 8 - BorderSize, BorderSize, 8, Bounds.Height - BorderSize * 2, Slider.Type.Vertical)
             {
@@ -64,7 +66,7 @@ namespace Crux.BaseControls
             ContentSlider.OnSlide += () =>
             {
 
-                if (RelContentScale > 1) return;
+                if (RelContentScale > 1 || !IsScrollable) return;
                 ScrollValue = ContentSlider.Value;
                 ContentMappingOffset.Y = -ContentOverflow * ContentSlider.Value;
             };

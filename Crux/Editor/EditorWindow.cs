@@ -41,6 +41,8 @@ namespace Editor
 
             InitializeComponent();
 
+
+
             //cruxEditor2.
         }
 
