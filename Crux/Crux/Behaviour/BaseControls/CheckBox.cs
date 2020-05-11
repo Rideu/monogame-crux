@@ -90,11 +90,11 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
-            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.AbsoluteX + AbsoluteX), (int)(Owner.AbsoluteY + AbsoluteY)), new Point((int)(Width + font.MeasureString(text).X + 3), (int)Height));
+            Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.AbsoluteX + AbsoluteX), (int)(Owner.AbsoluteY + AbsoluteY)), new Point((int)(Width + defaultFont.MeasureString(text).X + 3), (int)Height));
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, Batch.GraphicsDevice.RasterizerState);
             {
                 Batch.Draw(Tex, new Vector2(Owner.AbsoluteX + AbsoluteX, Owner.AbsoluteY + AbsoluteY), Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
-                Batch.DrawString(font, text, new Vector2(Owner.AbsoluteX + AbsoluteX + Width + 3, Owner.AbsoluteY + AbsoluteY - 2), Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
+                Batch.DrawString(defaultFont, text, new Vector2(Owner.AbsoluteX + AbsoluteX + Width + 3, Owner.AbsoluteY + AbsoluteY - 2), Owner.IsActive && Owner.IsFadable ? Color.White : new Color(255, 255, 255, 100));
             }
             Batch.End();
         }

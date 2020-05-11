@@ -71,7 +71,7 @@ namespace Crux
             //hud_form_bottomseam,
             //hud_form_bottomright);
 
-            Textarea lb;
+            TextArea lb;
 
             Button b1, b2, b3, b4, b5, b6, b7, b8, b9, b0,
                 bex, bdiv, bmul, bsub, bsum,
@@ -80,7 +80,7 @@ namespace Crux
             var buttonx = 50;
             var buttony = 40;
             f.AddNewControl(
-                lb = new Textarea(buttonx + 10, buttony + 10, 140, 30) { Font = font1 },
+                lb = new TextArea(buttonx + 10, buttony + 10, 140, 30) { Font = font1 },
                 er = new Button(buttonx + 160, buttony + 10, 40, 30) { Text = "<=" },
                 b1 = new Button(buttonx + 10, buttony + 50, 40, 40) { Text = "1" },
                 b2 = new Button(buttonx + 60, buttony + 50, 40, 40) { Text = "2" },

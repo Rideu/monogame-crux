@@ -10,7 +10,7 @@ using static Crux.Simplex;
 
 namespace Crux.BaseControls
 {
-    public class Textarea : ControlBase
+    public class TextArea : ControlBase
     {
         #region Fields        
         private ControlBase OwnerField;
@@ -19,19 +19,14 @@ namespace Crux.BaseControls
         private int ID;
         public override int GetID { get { return ID; } }
 
-        SpriteFont font = ControlBase.font;
+        SpriteFont font = ControlBase.defaultFont;
         public SpriteFont Font
         {
             set
             {
-                if (text != null && !string.IsNullOrEmpty(text.Text))
-                {
-                    text.Font = value;
-                    if (text.Font != value)
-                        text.UpdateText(text.Text);
-                }
+                text.Font = value;
             }
-            get => font;
+            get => GetTextBuilder.Font;
         }
 
         //public override float Width { get => base.Width; set { base.Width = value; text.UpdateText(); } }
@@ -69,7 +64,7 @@ namespace Crux.BaseControls
 
         #endregion
 
-        public Textarea()
+        public TextArea()
         {
             AbsoluteX = 10; AbsoluteY = 40; Width = 400; Height = 200;
 
@@ -78,16 +73,16 @@ namespace Crux.BaseControls
 
         }
 
-        public Textarea(Vector4 posform) : this(posform.X, posform.Y, posform.Z, posform.W) { }
+        public TextArea(Vector4 posform) : this(posform.X, posform.Y, posform.Z, posform.W) { }
 
-        public Textarea(Vector2 pos, Vector2 size) : this(pos.X, pos.Y, size.X, size.Y) { }
+        public TextArea(Vector2 pos, Vector2 size) : this(pos.X, pos.Y, size.X, size.Y) { }
 
-        public Textarea(float x, float y, float width, float height, Color? col = default)
+        public TextArea(float x, float y, float width, float height, Color? col = default)
         {
             BackColor = col.HasValue ? col.Value : Palette.DarkenGray;
             AbsoluteX = x; AbsoluteY = y; Width = width; Height = height;
             var scroll = new Rectangle(0, 0, 5, (int)Height);
-            text = new TextBuilder(Font, "", new Vector2((padding.X), padding.Y), new Vector2(Width - scroll.Width - padding.Width, Height), Color.White, true, this);
+            text = new TextBuilder(DefaultFont, "", new Vector2((padding.X), padding.Y), new Vector2(Width - scroll.Width - padding.Width, Height), Color.White, true, this);
 
         }
 
@@ -143,6 +138,8 @@ namespace Crux.BaseControls
             base.Update();
         }
 
+        Vector2 ContentBounds;
+        public Vector2 TextSize => ContentBounds;
         public override void InnerUpdate()
         {
             ContentBounds = text.GetTotalSize;
@@ -162,27 +159,7 @@ namespace Crux.BaseControls
             base.InnerUpdate();
         }
 
-        Vector2 ContentBounds;
-        public Vector2 TextSize => ContentBounds;
-        private void Wrap()
-        {
-            string wrapped = "", sumtext = "";
-            string[] Words = base.text.Split(' ');
-            for (int i = 0; i < Words.Length; i++)
-            {
-                var c = font.MeasureString(sumtext + Words[i]).X;
-                if (font.MeasureString(sumtext + Words[i]).X >= Width)
-                {
-                    wrapped += sumtext.Trim() + "\n";
-                    sumtext = "";
-                }
-                sumtext += Words[i] + "     ";
-            }
-            wrapped += sumtext.Trim();
-            base.text = wrapped;
-            ContentBounds = font.MeasureString(base.text);
-        }
-
+         
         public bool RenderBack { get; set; } = true;
 
         public override void Draw()

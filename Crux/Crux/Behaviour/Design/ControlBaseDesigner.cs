@@ -302,7 +302,7 @@ namespace Crux
         }
     }
 
-    public partial class TextAreaDesigner<T> : ControlBaseDesigner<T> where T : Textarea, new()
+    public partial class TextAreaDesigner<T> : ControlBaseDesigner<T> where T : TextArea, new()
     {
         public TextAreaDesigner() : base() { }
         public TextAreaDesigner(T c) : base(c) { }

@@ -73,7 +73,7 @@ namespace Crux.BaseControls
             {
                 if (drawBackground)
                     Batch.DrawFill(Bounds, BackColor);
-                Batch.DrawString(font, tc, new Vector2(AbsoluteX + 0, AbsoluteY), ForeColor, 0, TextSize);
+                Batch.DrawString(defaultFont, tc, new Vector2(AbsoluteX + 0, AbsoluteY), ForeColor, 0, TextSize);
             }
             Batch.End();
 

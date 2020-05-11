@@ -13,7 +13,7 @@ namespace Crux.BaseControls
         public override int GetID { get; }
 
         string tc = "Combox";
-        public override string Text { get => tc; set { tc = value; Width = font.MeasureString(tc).X; UpdateBounds(); } }
+        public override string Text { get => tc; set { tc = value; Width = defaultFont.MeasureString(tc).X; UpdateBounds(); } }
         public float TextSize { get; set; } = 1f;
 
         public event EventHandler OnLeftClick;
@@ -116,7 +116,7 @@ namespace Crux.BaseControls
             {
                 Batch.DrawFill(Bounds, BorderColor);
                 Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor);
-                Batch.DrawString(font, tc, new Vector2(AbsoluteX + BorderSize, AbsoluteY + BorderSize), ForeColor * forecl_mult, 0, TextSize);
+                Batch.DrawString(defaultFont, tc, new Vector2(AbsoluteX + BorderSize, AbsoluteY + BorderSize), ForeColor * forecl_mult, 0, TextSize);
             }
             Batch.End();
 

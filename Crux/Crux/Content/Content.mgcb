@@ -20,6 +20,13 @@
 /processorParam:TextureFormat=NoChange
 /build:fonts/arial.spritefont
 
+#begin fonts/Xolonium.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=DxtCompressed
+/build:fonts/Xolonium.spritefont
+
 #begin images/control_layout2.png
 /importer:TextureImporter
 /processor:TextureProcessor

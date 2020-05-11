@@ -70,6 +70,13 @@ namespace Crux.BaseControls
                 ScrollValue = ContentSlider.Value;
                 ContentMappingOffset.Y = -ContentOverflow * ContentSlider.Value;
             };
+
+            this.OnResize += (s, e) =>
+            {
+                ContentSlider.SetRelative(Bounds.Width - 8 - BorderSize, BorderSize);
+                ContentSlider.Width = 8;
+                ContentSlider.Height = Bounds.Height - BorderSize * 2;
+            };
             base.Initialize();
         }
 
@@ -88,10 +95,9 @@ namespace Crux.BaseControls
 
         public override void UpdateBounds()
         {
-            ContentSlider.SetRelative(Bounds.Width - 8 - BorderSize, BorderSize);
-            ContentSlider.Width = 8;
-            ContentSlider.Height = Bounds.Height - BorderSize * 2;
-
+            //if (!IsFixed && ContentSlider.IsVisible)
+            //{
+            //}
             base.UpdateBounds();
         }
 
@@ -183,7 +189,7 @@ namespace Crux.BaseControls
                 c.InnerUpdate();
             }
 
-            //if (ContentSlider.IsVisible)
+            if (ContentSlider.IsVisible)
             {
                 ContentSlider.UpdateBounds();
                 ContentSlider.InnerUpdate();
@@ -197,6 +203,19 @@ namespace Crux.BaseControls
             var drawb = Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
             DrawBorders();
 
+            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+            {
+                if (!hasLayout)
+                {
+                    Batch.DrawFill(Bounds, BackColor * .8f); // Primary
+                    Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
+                }
+                else
+                {
+                    DrawLayout(null);
+                }
+            }
+            Batch.End();
 
             for (int i = Controls.Count - 1; i >= 0; i--)
             {

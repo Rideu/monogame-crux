@@ -603,7 +603,7 @@ namespace Crux.BaseControls
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             if (DrawBorder)
             {
-                Batch.DrawFill(Bounds, BorderColor);
+                Batch.DrawFill(Bounds, BorderColor * (BackColor.A / 255f));
                 Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor);
             }
             else
@@ -675,8 +675,8 @@ namespace Crux.BaseControls
 
         #region Static utilities
 
-        public static SpriteFont DefaultFont { set => font = value; }
-        protected static SpriteFont font;
+        public static SpriteFont DefaultFont { set => defaultFont = value; get => defaultFont; }
+        protected static SpriteFont defaultFont;
 
         public static SpriteBatch Batch { get; set; } = Core.spriteBatch;
 
@@ -699,7 +699,7 @@ namespace Crux.BaseControls
     {
         static bool updCalled;
         static int bu, eu, tick;
-        static SpriteFont dbgFont = Core.font;
+        static SpriteFont dbgFont => ControlBase.DefaultFont;
         public static void Update()
         {
             tick++;
@@ -727,10 +727,10 @@ namespace Crux.BaseControls
         public static string GetMetrics()
         {
             return $@"iT: {ControlBase.dbg_initsTotal}
-bU: {bu} eU: {eu} 
+bU: {bu} eU: {eu} tick: {tick}
 bUT: {ControlBase.dbg_boundsUpdatesTotal} eUT: {ControlBase.dbg_eventUpdatesTotal} 
-fums: {fums} [m: {fums / tick:0.000}] 
-fdms: {fdms} [m: {fdms / tick:0.000}]";
+fums: {fums} [t: {fut:0}] 
+fdms: {fdms} [t: {fdt:0}]";
         }
     }
 

@@ -79,25 +79,26 @@ namespace Crux
             hud_form_bottomright;
 
         // Fonts
-        public static SpriteFont font, font1;
+        public static SpriteFont font0, font1;
 
         // Sounds
         public static SoundEffect keyPress;
-         
+
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             #region Fonts
 
-            font = Content.Load<SpriteFont>("fonts\\arial");
-            font.Glyphs[0].Width += 5; // Alters space size
+            font0 = Content.Load<SpriteFont>("fonts\\arial");
+            font0.Glyphs[0].Width += 5; // Alters space size
             //font.LineSpacing = 5;
+            font0.DefaultCharacter = ' ';
 
-            //font1 = Content.Load<SpriteFont>("fonts\\Xolonium");
-            //font1.Glyphs[0].Width += 5; // Alters space size
+            font1 = Content.Load<SpriteFont>("fonts\\Xolonium");
+            font1.Glyphs[0].Width += 5; // Alters space size
             //font1.LineSpacing = 5;
-            //font = font1;
+
             #endregion
 
             #region Sounds
@@ -119,17 +120,9 @@ namespace Crux
 
             #region Debug
 
-            font.DefaultCharacter = ' ';
+            font1.DefaultCharacter = ' ';
 
-            ControlBase.DefaultFont = font;
-            //var nsf = new SpriteFont(font1.Texture,
-            //    font1.Glyphs.Select(n => n.BoundsInTexture).ToList(),
-            //    font1.Glyphs.Select(n => n.Cropping).ToList(),
-            //    font1.Characters.ToList(),
-            //    font1.LineSpacing,
-            //    font1.Spacing,
-            //    font1.Glyphs.Select(n => new Vector3(n.LeftSideBearing, n.Width, n.RightSideBearing)).ToList(),
-            //    '?');
+            ControlBase.DefaultFont = font1;
             TextBuilder.Batch = spriteBatch;
             //TextBuilder.EnableDebug = true;
 
@@ -140,18 +133,27 @@ namespace Crux
                 IsVisible = true
             };
 
-            #region Sample text
-            if (false)
-            {
-                Textarea t;
+            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = new Color(238, 195, 114), });
 
-                debugForm.AddNewControl(t = new Textarea(20, 80, 415, 280)
+            #region TextArea
+            if (true)
+            {
+                TextArea t = new TextArea(20, 80, 415, 280);
+
+                t.Font = font0;
+                var tb = t.GetTextBuilder;
                 {
-                    Text = @"   {scale(1,5);}«1917»
+                    tb.FontSize = .6f;
+                    tb.LineSpacing = -25;
+                }
+
+                debugForm.AddNewControl(t);
+                t.Text = @"   {scale(1,0);}«1917»
 
 «1917» (англ. 1917) - художественный {link():p;}фильм британского режиссёра{@p;} Сэма Мендеса по сценарию, написанному им совместно с Кристи Уилсон-Кэрнс. Премьера в США состоялась 25 декабря 2019 года. В Великобритании вышел в прокат 10 января 2020 года.
 
-    {scale(1,25);}Содержание
+
+    {scale(1,0);}Содержание
 
 1	Сюжет
 2	Актёрский состав
@@ -161,11 +163,12 @@ namespace Crux
 6	Примечания
 7	Ссылки
 
-    {scale(1,25);}Сюжет
 
-Весной 1917 года британская армия планирует наступление на Линию Гинденбурга. Двое молодых солдат Блейк и Скофилд должны доставить на передовую приказ об отмене атаки в практически невыполнимый срок, иначе батальон из 1600 солдат попадёт в засаду. Для Блейка задание становится личным - в этом батальоне служит его брат.",
-                });
-                t.Font = font;
+    {scale(1,0);}Сюжет
+
+Весной 1917 года британская армия планирует наступление на Линию Гинденбурга. Двое молодых солдат Блейк и Скофилд должны доставить на передовую приказ об отмене атаки в практически невыполнимый срок, иначе батальон из 1600 солдат попадёт в засаду. Для Блейка задание становится личным - в этом батальоне служит его брат.";
+
+                //font.LineSpacing = 5;
 
                 TextSeeker ts = new TextSeeker();
 
@@ -194,14 +197,14 @@ namespace Crux
                 //p.AddNewControl(new Button(10, 10, w, h, new Color(40, 40, 40)) { Text = "OK" });
                 for (int r = 0; r < (int)p.Height / (h + 0); r++)
                 {
-                    //for (int i = 0; i < 2/*(int)p.Width / (w + 20)*/; i++)
-                    //{
-                    //    p.AddNewControl(pp = new Panel(10 + (w + 10) * i, 10 + 10 * r + r * h, w, h, new Color(80, 80, 80))
-                    //    {
-                    //        IsFixed = true,
-                    //    });
+                    for (int i = 0; i < 2/*(int)p.Width / (w + 20)*/; i++)
+                    {
+                        p.AddNewControl(pp = new Panel(10 + (w + 10) * i, 10 + 10 * r + r * h, w, h, new Color(80, 80, 80))
+                        {
+                            IsFixed = true,
+                        });
 
-                    //}
+                    }
                 }
 
                 p.AddNewControl(new Textbox(120, 10, 120, 50) { KeyPressedSound = keyPress });
@@ -212,21 +215,30 @@ namespace Crux
             }
             #endregion
 
+            #region DataGrid
 
-            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = new Color(238, 195, 114), });
-
-            var dg = new DataGrid(20, 80, 515, 320);
-            debugForm.AddNewControl(dg);
-
-            dg.AddColumns("Name", "Kills", "Deaths", "K/D", "Action");
-            dg.AddRow("Yes", 8, 5, 8f / 5, "Ban");
-            dg.AddRow("exdee", 6, 4, 6f / 4, "Ban");
-            dg.AddRow("Baiter", 5, 5, 5f / 5, "Ban");
-            dg.AddRow("Aynell", 9, 6, 9f / 6, "Ban");
-
-            dg.IsHeightFixed = false;
-
+            if (false)
             {
+                var dg = new DataGrid(20, 80, 515, 320);
+                debugForm.AddNewControl(dg);
+
+                //dg.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true));
+                dg.BorderSize = 0;
+
+                dg.ColumnsSizing(3, 1, 1, 1, 1, 1f);
+                dg.AddColumns("Name", "DEF", "PRC", "FST", "BUCK$", "Action");
+
+                var bBuyDif = new Color(10, 10, 10, 10);
+                var bBuyWidth = 62;
+                var bBuyHeight = 40;
+
+                dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, 300 + "$", new Button(2, 2, bBuyWidth, bBuyHeight, bBuyDif) { Text = "Buy" });
+                dg.AddRow("Leather Armor", 8, 5, 8f / 5, 300 + "$", new Button(2, 2, bBuyWidth, bBuyHeight, bBuyDif) { Text = "Buy" });
+                dg.AddRow("Fist Glove", 8, 5, 8f / 5, 300 + "$", new Button(2, 2, bBuyWidth, bBuyHeight, bBuyDif) { Text = "Buy" });
+                dg.AddRow("Latex Cover", 8, 5, 8f / 5, 300 + "$", new Button(2, 2, bBuyWidth, bBuyHeight, bBuyDif) { Text = "Buy" });
+
+                dg.IsHeightFixed = false;
+
 
                 ControlLiner liner = new ControlLiner { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
 
@@ -235,7 +247,7 @@ namespace Crux
                 bRow.OnLeftClick += (s, e) =>
                 {
                     for (int i = e.KeysHandled.Contains(Keys.LeftShift) ? -9 : 0; i < 1; i++)
-                        dg.AddRow();
+                        dg.AddRow("Yes", 8, 5, 8f / 5, 300 + "$", new Button(2, 2, bBuyWidth, bBuyHeight, bBuyDif) { Text = "Buy" });
                 };
 
                 var bCol = new Button(liner.GetParams());
@@ -259,6 +271,8 @@ namespace Crux
                 debugForm.AddNewControl(bRow, bCol, bFH);
             }
 
+            #endregion
+
             debugForm.OnKeyUp += (s, e) =>
             {
                 var k = e.KeysHandled;
@@ -272,7 +286,7 @@ namespace Crux
 
             FormManager.AddForm("MainForm", debugForm);
 
-            //Examples();
+            Examples();
 
             Simplex.Init(GraphicsDevice);
             #endregion
@@ -323,7 +337,7 @@ namespace Crux
 
                 foreach (var w in ws)
                 {
-                    var sz = font.MeasureString(w);
+                    var sz = font0.MeasureString(w);
                     csz += sz;
                 }
 
@@ -335,13 +349,13 @@ namespace Crux
                 {
                     var s = ws[i];
                     var l = reg.Location.ToVector2();
-                    var sz = font.MeasureString(s);
+                    var sz = font0.MeasureString(s);
 
 
 
                     l.X += cur.X + (intr) * i + (intr / ws.Length * i);
 
-                    spriteBatch.DrawString(font, s, l.Floor(), Color.White);
+                    spriteBatch.DrawString(font0, s, l.Floor(), Color.White);
 
                     cur += sz;
                 }

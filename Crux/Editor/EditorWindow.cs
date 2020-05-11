@@ -81,8 +81,8 @@ namespace Editor
 
         private void buttonTextarea_Click(object sender, EventArgs e) =>
             CreateNew(
-                new TextAreaDesigner<Textarea>(
-                    new Textarea(10, 40, 200, 200)));
+                new TextAreaDesigner<TextArea>(
+                    new TextArea(10, 40, 200, 200)));
 
 
         public bool MouseDown;

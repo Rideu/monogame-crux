@@ -28,16 +28,23 @@ namespace Crux
     public class TextBuilder
     {
         SpriteFont f;
-        public SpriteFont Font { set => f = value; get => f; }
+        public SpriteFont Font { get => f ?? ControlBase.DefaultFont; set { f = value; UpdateText(); } }
 
         string t;
-        public string Text { get => t; set => t = value; }
+        /// <summary> Gets the text including formatting markup. </summary>
+        public string Text { get => t; set { t = value; UpdateText(); } }
 
         string ct;
+        /// <summary> Gets the text without formatting markup. </summary>
         public string CleanText { get => ct; }
 
         int len;
+        /// <summary> Gets the number of characters of the text </summary>
         public int Length => len;
+
+        int linespace = 0;
+        /// <summary> Space between lines of text, in pixels. 0 by default </summary>
+        public int LineSpacing { get => linespace; set { linespace = value; UpdateText(); } }
 
         Vector2 sp;
         public Vector2 ScrollPosition { get => sp; set => sp = value; }
@@ -49,6 +56,7 @@ namespace Crux
         public Vector2 Position { get => p; set => p = value; }
 
         Vector2 origin;
+        /// <summary> Top-left (relative) offset off its owner's location </summary>
         public Vector2 TextOrigin
         {
             get => origin;
@@ -62,21 +70,28 @@ namespace Crux
         public Color Color => col;
 
         Vector2 areasize;
+        /// <summary> Gets size either of it's owner or bounds</summary>
         public Vector2 GetInitialSize => areasize;
 
         Vector2 textscale;
+        /// <summary> Gets resulting text scale calculated after formatting applied</summary>
         public Vector2 GetTotalSize => textscale;
-        Textarea owner;
+
+        TextArea owner;
+
         bool applyFormatting;
-        float fontscale = 1f; public float FontSize { get => fontscale; set { fontscale = value; UpdateText(); } }
-        bool multiline = true; public bool Multiline { get => multiline; set { multiline = value; UpdateText(); } }
+        float fontscale = 1f; 
+        public float FontSize { get => fontscale; set { fontscale = value; UpdateText(); } }
+
+        bool multiline = true; 
+        public bool Multiline { get => multiline; set { multiline = value; UpdateText(); } }
 
 
 
         public static bool EnableDebug { get; set; }
 
 
-        public TextBuilder(SpriteFont font, string text, Vector2 pos, Vector2 size, Color color = default, bool applyformat = true, Textarea label = null)
+        public TextBuilder(SpriteFont font, string text, Vector2 pos, Vector2 size, Color color = default, bool applyformat = true, TextArea label = null)
         {
             //gc = "";
             applyFormatting = applyformat;
@@ -138,8 +153,8 @@ namespace Crux
                     if ((areasize.X > 0 ? (_root.Contains("^n") || lineoverflow > areasize.X - 5 - (pad.Right + pad.Left)) : false) && !string.IsNullOrWhiteSpace(_wordstring))
                     {
                         _root = _wordstring.Replace("^n", "");
-                        currentPoint.X = 0;
-                        currentPoint.Y += _wordscale.Y + f.LineSpacing + pad.Top;
+                        currentPoint.X = pad.Left;
+                        currentPoint.Y += _wordscale.Y + f.LineSpacing + LineSpacing + pad.Top;
                         _line_index += 1;
                         lineoverflow = _wordscale.X;
                     }
@@ -531,7 +546,7 @@ namespace Crux
                                     return (Rectangle(p, n.bounds.Size.ToVector2()).Contains(Control.MousePos));
 
                                 });
-                                
+
                                 s.group.Each(n => n.color = new Color(38, 138,175));
 
                                 if(ints && Control.LeftClick())

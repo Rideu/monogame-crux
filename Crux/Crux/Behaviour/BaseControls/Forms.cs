@@ -44,7 +44,7 @@ namespace Crux.BaseControls
             form.IsVisible = !true;
             form.IsIndepend = true;
 
-            var cl = new Textarea(0, 0, form.Width, 50);
+            var cl = new TextArea(0, 0, form.Width, 50);
             form.AddNewControl(cl);
 
             var cb = new Button(0, form.Height - 20, form.Width, 20)
@@ -71,9 +71,9 @@ namespace Crux.BaseControls
 
         public static void Show(string message)
         {
-            var tsize = font.MeasureString(message);
+            var tsize = ControlBase.DefaultFont.MeasureString(message);
             crtw = Math.Max((int)tsize.X + 20, crtw);
-            var l = form.GetControl(1) as Textarea;
+            var l = form.GetControl(1) as TextArea;
             l.Text = message;
             form.IsActive = form.IsVisible = true;
         }
@@ -132,12 +132,13 @@ namespace Crux.BaseControls
             }
             if (ActiveForm != null)
             {
-                if (ActiveForm.IsHovering && Control.LeftButtonPressed)
+                if (ActiveForm.IsHovering && Control.LeftClick())
                     ActiveForm.BringToFront();
                 //GlobalForms.Move(GlobalForms.IndexOf(ActiveForm), 0);
             }
             fusw.Stop();
-            DebugDevice.fums = fusw.ElapsedTicks;
+            DebugDevice.fut = fusw.ElapsedTicks;
+            DebugDevice.fums = fusw.ElapsedMilliseconds;
         }
 
         internal static Stopwatch fdsw = new Stopwatch();
@@ -150,7 +151,8 @@ namespace Crux.BaseControls
                 GlobalForms.ElementAt(i).Draw();
             }
             fdsw.Stop();
-            DebugDevice.fdms = fdsw.ElapsedTicks;
+            DebugDevice.fdt = fdsw.ElapsedTicks;
+            DebugDevice.fdms = fusw.ElapsedMilliseconds;
 
         }
 
@@ -668,10 +670,15 @@ namespace Crux.BaseControls
     public static partial class DebugDevice
     {
         /// <summary> Last recorded time dedicated to fully update the GUI, in ticks </summary>
-        internal static float fums;
+        internal static float fut;
 
         /// <summary> Last recorded time dedicated to fully draw the GUI, in ticks </summary>
-        internal static float fdms;
+        internal static float fdt;
 
+        /// <summary> Last recorded time dedicated to fully update the GUI, in ms </summary>
+        internal static float fums;
+
+        /// <summary> Last recorded time dedicated to fully draw the GUI, in ms </summary>
+        internal static float fdms;
     }
 }

@@ -15,7 +15,7 @@ namespace Crux.BaseControls
         #region Fields
         public override ControlBase Owner { get { return OwnerField; } set { OwnerField = value; } }
         private ControlBase OwnerField;
-         
+
         //PERF: wrap; precalculate text position in getter, then alter it's drawing code
         public override string Text { get => text; set { text = value; } }
         public float TextScale { get; set; } = 1f;
@@ -99,7 +99,7 @@ namespace Crux.BaseControls
 
         public override void InnerUpdate()
         {
-            base.InnerUpdate();  
+            base.InnerUpdate();
         }
 
         public Texture2D Image { get; set; }
@@ -117,11 +117,11 @@ namespace Crux.BaseControls
                     if (DrawBorder)
                     {
                         Batch.DrawFill(Bounds, BorderColor); // Primary
-                        Batch.DrawFill(Bounds.InflateBy(-BorderSize), new Color(BackColor * f, 1f)); // Primary
+                        Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor * f); // Primary
                     }
                     else
                     {
-                        Batch.DrawFill(Bounds, new Color(BackColor * f, 1f)); // Primary
+                        Batch.DrawFill(Bounds, BackColor * f); // Primary
                     }
                 }
                 else
@@ -137,14 +137,14 @@ namespace Crux.BaseControls
             Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-1);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                var mea = font.MeasureString(Text);
+                var mea = defaultFont.MeasureString(Text);
                 // Overflow control proto 
                 // {
                 // var of = Width / mea.X;
                 // var am = of > 1 ? Text : Text.Substring(0, (int)(Text.Length*of));
                 // mea = Game1.font1.MeasureString(am);
                 // }
-                Batch.DrawString(font, Text, Bounds.Location.ToVector2() + (new Vector2(Width, Height) / 2 - mea / 2 * TextScale).ToPoint().ToVector2(), Color.White, 0f, new Vector2(), TextScale, SpriteEffects.None, 1f);
+                Batch.DrawString(defaultFont, Text, Bounds.Location.ToVector2() + (new Vector2(Width, Height) / 2 - mea / 2 * TextScale).ToPoint().ToVector2(), Color.White, 0f, new Vector2(), TextScale, SpriteEffects.None, 1f);
             }
             Batch.End();
         }

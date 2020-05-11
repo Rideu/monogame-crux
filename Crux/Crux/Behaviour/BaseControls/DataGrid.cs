@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using static Crux.Simplex;
 using System.ComponentModel.Design;
+using System.Linq;
 
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
@@ -54,6 +55,7 @@ namespace Crux.BaseControls
             AddNewControl(TableContainer = new Panel(0, 20, Width - 8, Height - 20));
             TableContainer.Alias = "TableContainer";
             TableContainer.SliderVisible = false;
+            TableContainer.BackColor = Color.Transparent;
             //TableContainer.BorderSize = 0;
         }
 
@@ -77,11 +79,20 @@ namespace Crux.BaseControls
             panel.Alias = $"Cell{TotalRows}";
             panel.SliderVisible = false;
             panel.IsScrollable = false;
+            if (Layout != null) 
+                panel.CreateLayout(Layout);
 
-            var label = new Label();
-            panel.AddNewControl(label);
-            label.Text = value?.ToString() ?? panel.Alias;
-            label.TextSize = 1f;
+            if (value is ControlBase)
+            {
+                panel.AddNewControl(value as ControlBase);
+            }
+            else
+            {
+                var label = new Label();
+                panel.AddNewControl(label);
+                label.Text = value?.ToString() ?? panel.Alias;
+                label.TextSize = 1f;
+            }
 
             return panel;
 
@@ -134,13 +145,14 @@ namespace Crux.BaseControls
         protected virtual void addColumn(string header = "")
         {
             var text = string.IsNullOrWhiteSpace(header) ? $"{char.ConvertFromUtf32(65 + TotalColumns)}" : header;
-            var wd = font.MeasureString(text);
+            var wd = defaultFont.MeasureString(text);
             var l = new Label()
             {
                 Text = text
             };
             AddNewControl(l);
             colHeaders.Add(l);
+            colwidths.Add(1f);
 
             for (int i = 0; i < TotalRows; i++)
             {
@@ -158,6 +170,21 @@ namespace Crux.BaseControls
             Arrange();
         }
 
+        List<float> colwidths = new List<float>();
+        public virtual void ColumnsSizing(params float[] widths)
+        {
+            var accum = widths.Sum();
+            colwidths.Clear();
+
+            var ratio = widths.Length / accum;
+            for (int i = 0; i < widths.Length; i++)
+            {
+                colwidths.Add(((widths[i]) * ratio));
+            }
+
+            //colwidths = widths.ToList();
+        }
+
         public virtual void AddColumn(string header = "")
         {
             addColumn(header);
@@ -167,8 +194,10 @@ namespace Crux.BaseControls
 
         public virtual void RemoveColumn(int colindex)
         {
-            Controls.Remove(colHeaders[colindex]);
+            RemoveControl(colHeaders[colindex]);
             colHeaders.RemoveAt(colindex);
+            colwidths.RemoveAt(colindex);
+
             for (int i = 0; i < TotalRows; i++)
             {
                 var row = Table[i];
@@ -176,7 +205,6 @@ namespace Crux.BaseControls
                 row.Remove(c);
                 TableContainer.RemoveControl(c);
             }
-
             TotalColumns--;
 
             Arrange();
@@ -184,46 +212,62 @@ namespace Crux.BaseControls
 
         #endregion
 
-        public int fixise = 40, fixise_rmb = 40;
-        public int FixedHeight { get { return fixise; } set { fixise_rmb = (fixise = value) > 0 ? value : fixise_rmb; } }
+        public int fixwidthsize = 40, fixwidthsize_rmb = 40;
+        public int FixedHeight { get { return fixwidthsize; } set { fixwidthsize_rmb = (fixwidthsize = value) > 0 ? value : fixwidthsize_rmb; } }
 
         public bool hf;
-        public bool IsHeightFixed { get { return hf; } set { FixedHeight = (hf = value) ? fixise_rmb : -1; Arrange(); } }
+        public bool IsHeightFixed { get { return hf; } set { FixedHeight = (hf = value) ? fixwidthsize_rmb : -1; Arrange(); } }
+
+
+        //public int fixise = 40, fixise_rmb = 40;
+        //public int FixedHeight { get { return fixise; } set { fixise_rmb = (fixise = value) > 0 ? value : fixise_rmb; } }
+
+        public bool wf;
+        public bool IsWidthFixed { get { return wf; } set { wf = value; Arrange(); } }
 
         void Arrange()
         {
             {
 
-                var colwidth = TableContainer.Width / TotalColumns;//- bordersize?;
+                //var colwidth = -1;//- bordersize*2?;
+                var colwidth = TableContainer.Width / TotalColumns;//- bordersize*2?;
                 var floatdiff = (colwidth - (int)colwidth) * TotalColumns;
                 colwidth = (int)colwidth;
-                var rowheight = FixedHeight == -1 ? TableContainer.Height / TotalRows : FixedHeight;//- bordersize?;
+                var rowheight = FixedHeight == -1 ? TableContainer.Height / TotalRows : FixedHeight;//- bordersize*2?;
+
+                var acm = 0f;
 
                 for (int c = 0; c < TotalColumns; c++)
                 {
-
-                    var cwidx = colwidth * c;
+                    var cwidth = colwidths[c] * colwidth;
                     var label = colHeaders[c];
-                    label.RelativePosition = new Vector2(cwidx + colwidth / 2 - font.MeasureString(label.Text).X / 2, 0);
+
+                    label.RelativePosition = new Vector2(acm + cwidth / 2 - defaultFont.MeasureString(label.Text).X / 2, 0);
+
+                    acm += cwidth;
                 }
+
+                acm = 0f;
 
                 for (int r = 0; r < TotalRows; r++)
                 {
-
+                    acm = 0f;
                     var rowcolor = r % 2 == 0 ? new Color(.15f, .15f, .13f, 1) : new Color(.17f, .17f, .15f, 1);
+
                     for (int c = 0; c < TotalColumns; c++)
                     {
-
+                        var cwidth = colwidths[c] * colwidth;
                         var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .95f);
-
                         var current_cell = Table[r][c];
 
-                        current_cell.BackColor = rowcolcolor;
+                        //current_cell.BackColor = rowcolcolor;
                         current_cell.BorderSize = 0;
 
-                        current_cell.RelativePosition = new Vector2(colwidth * c, rowheight * r);
-                        current_cell.Width = colwidth + (c == TotalColumns - 1 ? floatdiff : 0);
+                        current_cell.RelativePosition = new Vector2(acm, rowheight * r);
+                        current_cell.Width = cwidth + (c == TotalColumns - 1 ? floatdiff : 0);
                         current_cell.Height = rowheight;
+
+                        acm += cwidth;
                     }
                 }
             }

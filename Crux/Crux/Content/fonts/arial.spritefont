@@ -8,14 +8,14 @@ with.
 <XnaContent xmlns:Graphics="Microsoft.Xna.Framework.Content.Pipeline.Graphics">
   <Asset Type="Graphics:FontDescription">
     <FontName>Arial</FontName> <!-- Euphemia, Dotum -->
-    <Size>11</Size>
+    <Size>20</Size>
     <Spacing>1</Spacing>
-    <UseKerning>false</UseKerning>
-    <Style>Regular</Style><!-- "Regular", "Bold", "Italic" -->
+    <UseKerning>true</UseKerning>
+    <Style>Bold</Style><!-- "Regular", "Bold", "Italic" -->
     <CharacterRegions>
       <CharacterRegion>
         <Start>&#32;</Start>
-        <End>&#200;</End>
+        <End>&#1200;</End>
       </CharacterRegion>
     </CharacterRegions>
   </Asset>
