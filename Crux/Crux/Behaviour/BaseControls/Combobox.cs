@@ -75,29 +75,7 @@ namespace Crux.BaseControls
         public override void Update()
         {
             UpdateBounds();
-
-            IsClicked = !true;
-            IsHovering = Bounds.Contains(Core.MS.Position.ToVector2());
-            IsHolding = IsHovering && Control.LeftButtonPressed;
-
-            if (IsHovering && Control.LeftClick() && !EnterHold)
-            {
-                IsClicked = true;
-                OnLeftClick?.Invoke(this, EventArgs.Empty);
-                IsHovering = !true;
-                originForm.SideControl = originForm.SideControl == Container ? null : Container;
-            }
-
-            if (IsHovering && Control.RightClick())
-            {
-                IsClicked = true;
-                OnRightClick?.Invoke(this, EventArgs.Empty);
-            }
-
-            if (EnterHold && !Control.LeftButtonPressed)
-            {
-                EnterHold = false;
-            }
+             
             base.Update();
         }
 

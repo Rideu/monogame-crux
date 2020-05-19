@@ -17,6 +17,7 @@ using Crux.BaseControls;
 using static System.Math;
 using static Crux.Simplex;
 using System.Diagnostics;
+using System.IO;
 
 namespace Crux
 {
@@ -34,7 +35,7 @@ namespace Crux
         public static ToolSet ts;
         public Core()
         {
-            graphics = new GraphicsDeviceManager(this);
+            graphics = new GraphicsDeviceManager(this) { PreferMultiSampling = true };
             graphics.PreferredBackBufferWidth = 720;
             graphics.PreferredBackBufferHeight = 720;
             graphics.GraphicsProfile = GraphicsProfile.HiDef;
@@ -56,6 +57,9 @@ namespace Crux
 
 
         }
+
+        static Random r = new Random(1234);
+        public static float Rand() => (float)r.NextDouble();
 
         #region Colorpicker
         public static Form colorPicker;
@@ -88,16 +92,17 @@ namespace Crux
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+
             #region Fonts
 
             font0 = Content.Load<SpriteFont>("fonts\\arial");
             font0.Glyphs[0].Width += 5; // Alters space size
-            //font.LineSpacing = 5;
+                                        //font.LineSpacing = 5;
             font0.DefaultCharacter = ' ';
 
             font1 = Content.Load<SpriteFont>("fonts\\Xolonium");
             font1.Glyphs[0].Width += 5; // Alters space size
-            //font1.LineSpacing = 5;
+                                        //font1.LineSpacing = 5;
 
             #endregion
 
@@ -127,7 +132,7 @@ namespace Crux
             //TextBuilder.EnableDebug = true;
 
 
-            Form debugForm = new Form(30, 100, 550, 550, new Color(74, 74, 74))
+            Form debugForm = new Form(30, 140, 550, 550, new Color(74, 74, 74))
             {
                 IsResizable = true,
                 IsVisible = true
@@ -136,7 +141,7 @@ namespace Crux
             debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = new Color(238, 195, 114), });
 
             #region TextArea
-            if (true)
+            if (false)
             {
                 TextArea t = new TextArea(20, 80, 415, 280);
 
@@ -207,7 +212,7 @@ namespace Crux
                     }
                 }
 
-                p.AddNewControl(new Textbox(120, 10, 120, 50) { KeyPressedSound = keyPress });
+                p.AddNewControl(new TextBox(120, 10, 120, 50) { KeyPressedSound = keyPress });
                 p.AddNewControl(new Button(10, 10, 70, 320)
                 {
                     Text = "Continue"
@@ -217,10 +222,17 @@ namespace Crux
 
             #region DataGrid
 
-            if (false)
+            if (true)
             {
-                var dg = new DataGrid(20, 80, 515, 320);
+                var dg = new DataGrid(20, 120, 515, 320);
                 debugForm.AddNewControl(dg);
+
+                var tbox = new TextBox(20, 80, 100, 22);
+                debugForm.AddNewControl(tbox);
+                tbox.OnMouseLeave += (s, e) => { if (tbox.Text.Length == 0) tbox.Text = "Search..."; };
+                tbox.OnMouseEnter += (s, e) => { if (tbox.Text == "Search...") tbox.Text = ""; };
+                //tbox.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
+                tbox.Text = "Search...";
 
                 //dg.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true));
                 dg.BorderSize = 0;
@@ -259,6 +271,8 @@ namespace Crux
                 bRow = new Button(liner.GetParams());
                 bRow.Text = "-Row";
                 bRow.OnLeftClick += (s, e) => { dg.RemoveRow(dg.TotalRows - 1); };
+                bRow.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
+                bRow.OnDisactivated += (s, e) => { (s as ControlBase).BorderColor = Color.Gray; };
 
                 bCol = new Button(liner.GetParams());
                 bCol.Text = "-Col";
@@ -273,19 +287,76 @@ namespace Crux
 
             #endregion
 
+            #region SoundGen
+
+            if (false)
+            {
+
+                DynamicSoundEffectInstance dynaSound = new DynamicSoundEffectInstance(41000, AudioChannels.Mono);
+
+
+                var cl = new ControlLiner { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
+
+                var bPlay = new Button(cl.GetParams()) { Text = "Play" };
+
+                var scl = new ControlLiner { RelativePos = new Vector2(30, 80), Height = 260, Width = 20, MarginX = 10, MarginY = -260 };
+                var sSineScale = new Slider(scl.GetParams(), Slider.Type.Vertical);
+                var sSineScaleScale = new Slider(scl.GetParams(), Slider.Type.Vertical);
+                var sFadeScale = new Slider(scl.GetParams(), Slider.Type.Vertical);
+
+
+                debugForm.AddNewControl(bPlay, sSineScale, sSineScaleScale, sFadeScale);
+
+                var appStart = DateTime.Now;
+
+                byte[] b = new byte[96 * 50];
+                EventHandler<EventArgs> bufApply = (s, e) =>
+                {
+                    var dtStart = DateTime.Now;
+                    for (int i = 0; i < b.Length; i++)
+                    {
+                        var t = (DateTime.Now - dtStart).Milliseconds / 100;
+                        var at = (DateTime.Now - appStart).TotalMilliseconds / 100;
+                        var x = i;
+                        int value =
+                        (int)
+                            (
+                                (
+                                    Cos(x / ((sSineScale.Value - sSineScaleScale.Value / 100)) / 10) /** Cos(t)*/ /*+ Rand() * 2*/
+                                    *
+                                    x % (64 * sFadeScale.Value + 1 + (Cos(at) + 1)) * Cos((t) % 4)
+                                    +
+                                    Sin(x / ((sSineScale.Value + sSineScaleScale.Value / 100 * Cos(at / 10))))
+                                )
+                                * 30 * Cos(t / 10) /*/ ((x/10 + 1) * .005f * sFadeScale.Value)*/
+                            )
+                        .Clamp(0, 255);
+                        //int b = 1;
+                        b[i] = (byte)value;
+                    }
+                    dynaSound.SubmitBuffer(b);
+                };
+
+                bufApply(null, null);
+
+                dynaSound.Play();
+
+                dynaSound.BufferNeeded += bufApply;
+
+            }
+            #endregion
+
+
+            #region debugForm Setup
+
             debugForm.OnKeyUp += (s, e) =>
             {
                 var k = e.KeysHandled;
             };
             debugForm.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout2"), true));
-
-            //var c = new ControlBase() { RelativePosition = new Point(-20), Width = 20, Height = 50 };
-            //c.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\test1"))); 
-            //c.SetRelative(20, 20);
-            //f.AddNewControl(c);
-
             FormManager.AddForm("MainForm", debugForm);
 
+            #endregion
             Examples();
 
             Simplex.Init(GraphicsDevice);
@@ -294,7 +365,6 @@ namespace Crux
 
         #region Service Globals
 
-        public static MouseState MS = new MouseState();
 
         #endregion
 
@@ -322,10 +392,43 @@ namespace Crux
 
         Rectangle reg = new Rectangle(10, 220, 290, 40);
 
+
+        static BlendState bs = new BlendState()
+        {
+            ColorSourceBlend = Blend.One,
+            AlphaSourceBlend = Blend.One,
+
+            ColorDestinationBlend = Blend.One,
+            AlphaDestinationBlend = Blend.One,
+        };
+
+        static SamplerState ss = new SamplerState
+        {
+            AddressU = TextureAddressMode.Wrap,
+            BorderColor = Color.Red,
+            ComparisonFunction = CompareFunction.Greater,
+            Filter = TextureFilter.Anisotropic,
+            FilterMode = TextureFilterMode.Default,
+            MaxAnisotropy = 16,
+            MaxMipLevel = 2,
+            MipMapLevelOfDetailBias = -10.004f
+
+        };
+
+        static RasterizerState rs = new RasterizerState
+        {
+            FillMode = FillMode.Solid,
+            SlopeScaleDepthBias = 44.04f,
+            MultiSampleAntiAlias = true
+        };
+
+
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(new Color(10, 10, 10));
-            spriteBatch.Begin(SpriteSortMode.Deferred);
+            SpriteEffect se = new SpriteEffect(GraphicsDevice) { };
+
+            spriteBatch.Begin(SpriteSortMode.Deferred, bs, ss, rasterizerState: rs);
             {
                 spriteBatch.DrawFill(reg, Color.White * 0.2f);
 
@@ -355,7 +458,7 @@ namespace Crux
 
                     l.X += cur.X + (intr) * i + (intr / ws.Length * i);
 
-                    spriteBatch.DrawString(font0, s, l.Floor(), Color.White);
+                    spriteBatch.DrawString(font0, s, l.Floor(), Color.White, 0, 1.0f);
 
                     cur += sz;
                 }

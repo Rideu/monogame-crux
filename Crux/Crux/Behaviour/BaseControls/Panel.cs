@@ -133,7 +133,7 @@ namespace Crux.BaseControls
                     foreach (ControlBase n in Controls)
                     {
                         n.IsActive = n.IsHovering = !true;
-                        if (n.Bounds.Contains(Core.MS.Position) && !picked)
+                        if (n.Bounds.Contains(Control.MousePos) && !picked)
                         {
                             ActiveControl = n;
                             ActiveControl.IsActive = picked = true;

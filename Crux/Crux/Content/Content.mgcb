@@ -24,7 +24,7 @@
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
-/processorParam:TextureFormat=DxtCompressed
+/processorParam:TextureFormat=NoChange
 /build:fonts/Xolonium.spritefont
 
 #begin images/control_layout2.png

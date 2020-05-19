@@ -98,44 +98,57 @@ namespace Crux.BaseControls
 
         internal static Stopwatch fusw = new Stopwatch();
 
+        internal static ControlBase ActiveControl => ControlBase.ActiveControl;
+
         public static Form
+            HoveredForm,
             ActiveForm,
             PrevForm = null; // ???
         public static void Update()
         {
-            Core.MS = Mouse.GetState();
             Control.Update();
 
             //MessageBox.Update();
             //if (ActiveForm == null ? true : !ActiveForm.Bounds.Contains(Control.MousePos))
-            ActiveForm = null;
+
+            var ispveh = HoveredForm != null && HoveredForm.Bounds.Contains(Control.MousePos) && Control.LeftButtonPressed;
+
+            //if (HoveredForm != null && !HoveredForm.EnterHold)
+            HoveredForm = null;
 
             // TODO: holding control
             fusw.Restart();
 
+
             foreach (var f in GlobalForms)
             {
                 if (!f.IsVisible) continue;
+
                 f.IsActive = false;
+
                 if (f.IsResized)
                 {
-                    ActiveForm = f;
-                    ActiveForm.IsActive = true;
+                    HoveredForm = f;
+                    HoveredForm.IsActive = true;
                 }
                 else
-                if (f.Bounds.Contains(Control.MousePos) && ActiveForm == null)
+                if (HoveredForm == null && f.Bounds.Contains(Control.MousePos))
                 {
-                    ActiveForm = PrevForm = f;
-                    ActiveForm.IsActive = true;
+                    PrevForm = HoveredForm;
+                    HoveredForm = f;
+                    HoveredForm.IsActive = true;
                 }
                 f.Update();
             }
-            if (ActiveForm != null)
+            if (HoveredForm != null && Control.LeftClick())
             {
-                if (ActiveForm.IsHovering && Control.LeftClick())
-                    ActiveForm.BringToFront();
+                if (HoveredForm.IsHovering)
+                    HoveredForm.BringToFront();
                 //GlobalForms.Move(GlobalForms.IndexOf(ActiveForm), 0);
             }
+
+            ControlBase.InternalEventProcessor();
+
             fusw.Stop();
             DebugDevice.fut = fusw.ElapsedTicks;
             DebugDevice.fums = fusw.ElapsedMilliseconds;
@@ -178,6 +191,8 @@ namespace Crux.BaseControls
             FormManager.Init();
         }
 
+        #region Fields
+
         public override string Text { get => text; set { text = value; } }
         public bool IgnoreControl { get; set; } = !true;
         public bool IsUpdatableOnPause;
@@ -199,6 +214,7 @@ namespace Crux.BaseControls
         public event ControlEventHandler OnMouseLeftClicked;
         public event ControlEventHandler OnKeyUp;
 
+        #endregion
 
         #region Constructors
 
@@ -263,11 +279,6 @@ namespace Crux.BaseControls
             BorderColor = Color.LightGray;
             Batch.GraphicsDevice.ScissorRectangle = Bounds;
 
-            OnMouseEnter += delegate
-            {
-                if (Control.LeftButtonPressed)
-                    EnterHold = true;
-            };
 
             OnMouseLeave += delegate
             {
@@ -285,7 +296,7 @@ namespace Crux.BaseControls
         /// <param name="id"></param>
         public void DeleteControl(int id) => Controls.RemoveAt(id - 1);
 
-        public ControlBase ActiveControl, SideControl;
+        public ControlBase FormActiveControl, SideControl;
 
         public override void Invalidate()
         {
@@ -489,38 +500,42 @@ namespace Crux.BaseControls
                 //    IsHovering = false;
                 //}
 
-                if (Bounds.Contains(Control.MousePos) && !EnterHold)
-                {
-                    IsHovering = !IgnoreControl ? true : false;
-                }
-                else IsHovering = false;
+                //if (Bounds.Contains(Control.MousePos) && !EnterHold)
+                //{
+                //    IsHovering = !IgnoreControl ? true : false;
+                //}
+                //else IsHovering = false;
+
 
 
                 if ((IsActive/* && !MessageBox.IsOpened*/) || IsIndepend)
                 {
 
                     var picked = false;
+
+                    //if(ActiveControl.Bounds.Contains(Control.MousePos))
+
                     foreach (ControlBase n in Controls)
                     {
 
-                        n.IsActive = n.IsHovering = !true;
-                        if (!(n is Label) && n.Bounds.Contains(Core.MS.Position) && !picked)
+                        n.IsActive = n.IsHovering = false;
+                        if (!(n is Label) && n.Bounds.Contains(Control.MousePos) && !picked)
                         {
-                            ActiveControl = n;
-                            ActiveControl.IsActive = picked = true;
+                            FormActiveControl = n;
+                            FormActiveControl.IsActive = picked = true;
 
                         }
                     }
                     if (!picked)
-                        ActiveControl = null;
+                        FormActiveControl = null;
 
                     if (SideControl == null)
-                        ActiveControl?.Update();
+                        FormActiveControl?.Update();
 
                     // Events block
                     {
 
-                        if (ActiveControl == null && Control.LeftClick())
+                        if (FormActiveControl == null && Control.LeftClick())
                             OnMouseLeftClicked?.Invoke(this, ControlArgs.GetState);
 
 
@@ -538,15 +553,15 @@ namespace Crux.BaseControls
             base.InnerUpdate();
             if (SideControl != null)
             {
-                if (!(Control.MouseHoverOverG(SideControl.Bounds.Union(SideControl.Owner.Bounds))) && Control.LeftClick())
+                if (!(SideControl.Bounds.Union(SideControl.Owner.Bounds).Contains(Control.MousePos)) && Control.LeftClick())
                 {
                     SideControl = null;
                 }
             }
-            if (!Control.LeftButtonPressed)
-            {
-                EnterHold = false;
-            }
+            //if (!Control.LeftButtonPressed)
+            //{
+            //    EnterHold = false;
+            //}
             if (!Batch.GraphicsDevice.Viewport.Bounds.Contains(Control.MousePos))
             {
                 TBH = RBH = LBH = BBH =

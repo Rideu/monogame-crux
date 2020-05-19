@@ -31,8 +31,7 @@ namespace Crux
             NMW = Mouse.GetState().ScrollWheelValue;
             WheelVal = NMW - OMW;
         }
-
-        public static bool MouseHoverOverG(Rectangle zone) => (zone.Contains(Core.MS.Position));
+         
 
         public static bool MouseHoverOverTex(Texture2D tex, Vector2 offset) => (Simplex.OffsettedTexture(tex, offset).Contains(Mouse.GetState().Position.ToVector2()));
 

@@ -73,7 +73,7 @@ namespace Crux.BaseControls
         {
 
             IsHovering = !true;
-            if (Bounds.Contains(Core.MS.Position.ToVector2()))
+            if (Bounds.Contains(Control.MousePos))
                 IsHovering = true;
 
             if (IsHovering && Control.LeftClick())

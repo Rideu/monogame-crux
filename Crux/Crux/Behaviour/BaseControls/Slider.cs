@@ -122,7 +122,7 @@ namespace Crux.BaseControls
             if (!IsVisible) return;
             UpdateBounds();
             IsHovering = !true;
-            if (Bounds.Contains(Core.MS.Position.ToVector2()))
+            if (Bounds.Contains(Control.MousePos))
                 IsHovering = true;
 
             if (IsHovering)
@@ -132,11 +132,11 @@ namespace Crux.BaseControls
                     var v = val;
                     if (DispType == Type.Horizontal)
                     {
-                        val = ((Core.MS.Position.ToVector2().X - w / 2 - (Bounds.X)) / (Width - w)).Clamp(0, 1);
+                        val = ((Control.MousePos.X - w / 2 - (Bounds.X)) / (Width - w)).Clamp(0, 1);
                     }
                     else
                     {
-                        val = ((Core.MS.Position.ToVector2().Y - h / 2 - (Bounds.Y)) / (Height - h)).Clamp(0, 1);
+                        val = ((Control.MousePos.Y - h / 2 - (Bounds.Y)) / (Height - h)).Clamp(0, 1);
                     }
                     if (v != val)
                         OnSlide?.Invoke();

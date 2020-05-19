@@ -74,6 +74,7 @@ namespace Crux.BaseControls
     public class ControlBase : IControl, IDisposable
     {
 
+        internal static ControlBase ActiveControl;
 
         #region Displaying
 
@@ -234,7 +235,9 @@ namespace Crux.BaseControls
 
         public bool IsFixed { get; set; } = false;
 
-        public bool EnterHold { get; set; }
+        public bool EnterHold { get; private set; }
+
+        public bool BlockFocus { get; private set; }
 
         public bool IsHovering { get; set; }
 
@@ -400,17 +403,23 @@ namespace Crux.BaseControls
 
         #region Logic
 
-        public event EventHandler OnControlUpdate { add => OnUpdate += value; remove => OnUpdate -= value; }
         public event EventHandler OnUpdate;
+        public event EventHandler OnControlUpdate { add => OnUpdate += value; remove => OnUpdate -= value; }
+
         public event EventHandler<ControlArgs> OnMouseEnter; internal bool OMEOccured;
         public event EventHandler<ControlArgs> OnMouseLeave; internal bool OMLOccured = true;
         public event EventHandler<ControlArgs> OnMouseScroll;
 
         internal bool F_Focus;
-        public event EventHandler OnFocus;
-        public event EventHandler OnLeave;
-        public event EventHandler OnResize;
+        public event EventHandler OnFocusEnter;
+        public event EventHandler OnFocusLeave;
         public event EventHandler OnFocusChanged;
+
+        public event EventHandler OnActivated;
+        public event EventHandler OnDisactivated;
+
+        public event EventHandler OnResize;
+
         public event EventHandler<ControlArgs> OnLeftClick;
         public event EventHandler<ControlArgs> OnRightClick;
 
@@ -427,49 +436,6 @@ namespace Crux.BaseControls
 
 
             IsClicked = false;
-
-            #region Focusing
-
-            if (F_Focus != IsActive)
-            {
-                if (F_Focus == false && IsActive == true)
-                {
-                    OnFocus?.Invoke(this, EventArgs.Empty);
-                }
-                else
-                {
-                    Invalidate();
-                    OnLeave?.Invoke(this, EventArgs.Empty);
-                }
-                OnFocusChanged?.Invoke(this, EventArgs.Empty); //??
-            }
-
-            #endregion
-
-            #region Mouse Activity
-
-            //if (!IsActive) OMEOccured = false;
-            //if (IsActive && !OMEOccured)
-            //{
-            //    OnMouseEnter?.Invoke(this, ControlArgs.GetState);
-            //    EnterHold = Control.LeftButtonPressed;
-            //    OMEOccured = true;
-            //}
-
-            //if (IsActive)
-            //{
-            //    if (Control.WheelVal != 0)
-            //    {
-            //        OnMouseScroll?.Invoke(this, ControlArgs.GetState);
-            //    }
-            //}
-
-            //if (IsActive) OMLOccured = false;
-            //if (!IsActive && !OMLOccured)
-            //{
-            //    OnMouseLeave?.Invoke(this, ControlArgs.GetState);
-            //    EnterHold = !(OMLOccured = true);
-            //}
 
 
             if (IsActive)
@@ -500,12 +466,84 @@ namespace Crux.BaseControls
                     Owner.EnterHold = EnterHold;
                 }
             }
-            F_Focus = IsActive;
+
+            #region Focusing
+
+            if (F_Focus != IsActive)
+            {
+                if (!EnterHold && !BlockFocus)
+                {
+                    if (F_Focus == false && IsActive == true)
+                    {
+                        OnFocusEnter?.Invoke(this, EventArgs.Empty);
+                    }
+                    else if (F_Focus == true && IsActive == false)
+                    {
+                        Invalidate();
+                        OnFocusLeave?.Invoke(this, EventArgs.Empty);
+                    }
+                    //OnFocusChanged?.Invoke(this, EventArgs.Empty); //??
+                }
+            }
+
             #endregion
+
+            #region Mouse Activity
+
+            //if (!IsActive) OMEOccured = false;
+            //if (IsActive && !OMEOccured)
+            //{
+            //    OnMouseEnter?.Invoke(this, ControlArgs.GetState);
+            //    EnterHold = Control.LeftButtonPressed;
+            //    OMEOccured = true;
+            //}
+
+            //if (IsActive)
+            //{
+            //    if (Control.WheelVal != 0)
+            //    {
+            //        OnMouseScroll?.Invoke(this, ControlArgs.GetState);
+            //    }
+            //}
+
+            //if (IsActive) OMLOccured = false;
+            //if (!IsActive && !OMLOccured)
+            //{
+            //    OnMouseLeave?.Invoke(this, ControlArgs.GetState);
+            //    EnterHold = !(OMLOccured = true);
+            //}
+
+            #endregion
+
             #region Holding Activity
 
-            IsHovering = Bounds.Contains(Core.MS.Position.ToVector2()) && Owner.IsActive;
+            IsHovering = Bounds.Contains(Control.MousePos) && Owner.IsActive;
             IsHolding = IsHovering && Control.LeftButtonPressed;
+            BlockFocus = false;
+            //if (BlockFocus = IsHovering && !Control.LeftButtonPressed && EnterHold)
+            //{
+            //    //if(EnterHold)
+            //    //{ 
+            //    //    if (F_Focus == false && IsActive == true)
+            //    //    {
+            //    //        OnFocusEnter?.Invoke(this, EventArgs.Empty);
+            //    //    }
+            //    //    else if (F_Focus == true && IsActive == false)
+            //    //    {
+            //    //        Invalidate();
+            //    //        OnFocusLeave?.Invoke(this, EventArgs.Empty);
+            //    //    }
+            //    //}
+            //    //IsClicked = false;
+            //    //OnLeftClick?.Invoke(this, ControlArgs.GetState);
+            //    //IsHovering = !true;
+            //}
+
+            if (IsHolding && !(this is Form) && ActiveControl != this)
+            {
+                ActiveControl = this;
+                OnActivated?.Invoke(this, EventArgs.Empty);
+            }
 
             if (IsHovering && Control.LeftClick() && !EnterHold)
             {
@@ -526,7 +564,36 @@ namespace Crux.BaseControls
 
             #endregion
 
+            F_Focus = IsActive;
             dbg_eventUpdates++;
+        }
+
+        protected void OnControlDisactivated()
+        {
+            OnDisactivated?.Invoke(this, EventArgs.Empty);
+        }
+        internal static void InternalEventProcessor()
+        {
+            if (ActiveControl != null)
+            {
+                if (!ActiveControl.IsHovering && Control.LeftButtonPressed)
+                {
+                    ActiveControl.OnControlDisactivated();
+                    ActiveControl = null;
+                }
+                else
+                {
+                    ActiveControl.Update();
+                }
+                //if (ActiveControl.IsActive)
+                //{
+
+                //}
+                //else
+                //{
+                //    ActiveControl = null;
+                //}
+            }
         }
 
         public virtual void InnerUpdate()
@@ -702,6 +769,7 @@ namespace Crux.BaseControls
         static SpriteFont dbgFont => ControlBase.DefaultFont;
         public static void Update()
         {
+#if DEBUG
             tick++;
             ControlBase.dbg_boundsUpdatesTotal += ControlBase.dbg_boundsUpdates;
             ControlBase.dbg_eventUpdatesTotal += ControlBase.dbg_eventUpdates;
@@ -710,17 +778,62 @@ namespace Crux.BaseControls
             eu = ControlBase.dbg_eventUpdates;
             ControlBase.dbg_eventUpdates = 0;
             updCalled = true;
+#endif
         }
+
+
+        static BlendState bs = new BlendState()
+        {
+            ColorSourceBlend = Blend.One,
+            AlphaSourceBlend = Blend.One,
+
+            ColorDestinationBlend = Blend.One,
+            AlphaDestinationBlend = Blend.One,
+
+
+        };
+        static SamplerState ss = new SamplerState
+        {
+            AddressU = TextureAddressMode.Wrap,
+            BorderColor = Color.Red,
+            ComparisonFunction = CompareFunction.Greater,
+            Filter = TextureFilter.Anisotropic,
+            FilterMode = TextureFilterMode.Default,
+            MaxAnisotropy = 16,
+            MaxMipLevel = 2,
+            MipMapLevelOfDetailBias = -10.004f
+
+        };
+
+        static RasterizerState rs = new RasterizerState
+        {
+            FillMode = FillMode.Solid,
+            SlopeScaleDepthBias = 44.04f,
+            MultiSampleAntiAlias = true
+        };
 
         public static void Draw(SpriteBatch batch, GameTime gt)
         {
-            batch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, null);
+#if DEBUG
+
+            batch.Begin(SpriteSortMode.Deferred, bs, ss, null, rs, null, null);
             if (updCalled)
             {
                 batch.DrawString(dbgFont, GetMetrics(), new Vector2(80, 1), Color.White);
                 batch.DrawString(dbgFont, $"{(float)gt.ElapsedGameTime.TotalMilliseconds:0.000}", new Vector2(10, 1), Color.White);
             }
             batch.End();
+
+
+#else
+
+            batch.Begin(SpriteSortMode.Deferred); 
+            { 
+                batch.DrawString(dbgFont, $"REL", new Vector2(80, 1), Color.White);
+            }
+            batch.End();
+
+#endif
             updCalled = false;
         }
 

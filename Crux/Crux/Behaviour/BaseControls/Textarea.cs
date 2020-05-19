@@ -122,7 +122,7 @@ namespace Crux.BaseControls
         {
             UpdateBounds();
             IsHovering = !true;
-            if ((Bounds.Contains(Core.MS.Position.ToVector2())))
+            if ((Bounds.Contains(Control.MousePos)))
             {
                 IsHovering = true;
                 text.ScrollPosition = new Vector2(AbsoluteX, AbsoluteY + 1) + textpos;

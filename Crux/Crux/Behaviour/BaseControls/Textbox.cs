@@ -14,7 +14,7 @@ using static Crux.Core;
 
 namespace Crux.BaseControls
 {
-    public class Textbox : ControlBase // Unused
+    public class TextBox : ControlBase // Unused
     {
         #region Fields
         private ControlBase OwnerField;
@@ -24,8 +24,19 @@ namespace Crux.BaseControls
         public override int GetID { get { return ID; } }
 
         public override string Text { get { return text.Text; } set { text.UpdateText(value); } }
-        SpriteFont font = Core.font1;
-        public SpriteFont Font { get => font; set => font = value; }
+
+        public SpriteFont Font
+        {
+            set
+            {
+                text.Font = value;
+                fontStdHeight = value.MeasureString(" ").Y;
+            }
+            get => text.Font;
+        }
+
+        float fontStdHeight = 0;
+
         new TextBuilder text;
         bool InputMode;
 
@@ -34,33 +45,44 @@ namespace Crux.BaseControls
 
         #endregion
 
-        public Textbox(Vector4 posform)
+        public TextBox(Vector4 posform)
         {
             AbsoluteX = posform.X; AbsoluteY = posform.Y; Width = posform.Z; Height = posform.W;
         }
 
-        public Textbox(Vector2 pos, Vector2 size)
+        public TextBox(Vector2 pos, Vector2 size)
         {
             AbsoluteX = pos.X; AbsoluteY = pos.Y; Width = size.X; Height = size.Y;
         }
 
-        public Textbox(float x, float y, float width, float height)
+        public TextBox(float x, float y, float width, float height)
         {
             AbsoluteX = x; AbsoluteY = y; Width = width; Height = height;
         }
 
         internal override void Initialize()
-        { 
-            Bounds = new Rectangle((int)(Owner.AbsoluteX + AbsoluteX), (int)(Owner.AbsoluteY + AbsoluteY), (int)Width, (int)Height);
-            OnMouseLeave += delegate { Invalidate(); };
+        {
 
-            text = new TextBuilder(Font, "[Null text]", new Vector2(0 /*+ (padding.X - scroll.Width)*/, 0), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, true/*, this*/);
+            BackColor = BackColor == default ? Owner.BackColor : BackColor;
+            //ID = Owner.GetControlsCount + 1;
+            //Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
+            BorderColor = BackColor * 1.5f;
+            OnLeftClick += (s, e) =>
+            {
+                InputMode = true;
+                t.Reset(false);
+                t.Start();
+            };
+            //OnMouseLeave += (s, e) => { Invalidate(); };
+
+            text = new TextBuilder(DefaultFont, "[Null text]", new Vector2(0 /*+ (padding.X - scroll.Width)*/, 0), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, true/*, this*/);
+            fontStdHeight = DefaultFont.MeasureString(" ").Y;
 
             t = new Timer(1000);
-            t.OnFinish += delegate { t.Reset(false); t.Start(); };
+            t.OnFinish += () => { t.Reset(false); t.Start(); };
 
             rlt = new Timer(50);
-            rlt.OnFinish += delegate
+            rlt.OnFinish += () =>
             {
                 if (Control.IsKeyDown(Keys.Left))
                 {
@@ -85,7 +107,7 @@ namespace Crux.BaseControls
             };
 
             delay = new Timer(500);
-            delay.OnFinish += delegate
+            delay.OnFinish += () =>
             {
                 if (Control.IsKeyDown(Keys.Left) || Control.IsKeyDown(Keys.Right))
                 {
@@ -93,7 +115,7 @@ namespace Crux.BaseControls
                 }
             };
 
-            PrimaryWindow.TextInput += delegate (object sender, TextInputEventArgs e) // PERF: move to static constructor and apply input only for active control
+            PrimaryWindow.TextInput += (sender, e) => // PERF: move to static constructor and apply input only for active control
             {
                 if (this.InputMode)
                 {
@@ -139,11 +161,16 @@ namespace Crux.BaseControls
         {
             //TODO: debug comment
             //InputMode = InputMode && Control.MouseHoverOverG(Bounds);
-            t.Stop();
-            foreach (var c in Controls)
-            {
-                c.Update();
-            }
+
+            //if (!InputMode)
+            //{
+            //    t.Reset(false);
+            //    t.Stop();
+            //    foreach (var c in Controls)
+            //    {
+            //        c.Update();
+            //    }
+            //}
         }
 
         public override void Update()
@@ -190,6 +217,7 @@ namespace Crux.BaseControls
         public override void InnerUpdate()
         {
             base.InnerUpdate();
+            if (ActiveControl != this) InputMode = false;
             //InputMode = true; // InputMode && Control.MouseHoverOverG(Bounds); 
         }
 
@@ -208,31 +236,32 @@ namespace Crux.BaseControls
         }
         public override void Draw()
         {
+            base.Draw();
             var drawb = Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
-            Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
-            {
-                Batch.DrawFill(Bounds, BorderColor);
-                Batch.DrawFill(Bounds.InflateBy(-2), BackColor * (InputMode ? 0.4f : 1f)); // Primary
-            }
-            Batch.End();
+            //Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
+            //{
+            //    Batch.DrawFill(Bounds, BorderColor);
+            //    Batch.DrawFill(Bounds.InflateBy(-2), BackColor * (InputMode ? 0.4f : 1f)); // Primary
+            //}
+            //Batch.End();
             //Batch.GraphicsDevice.ScissorRectangle = Batch.GraphicsDevice.ScissorRectangle.InflateBy(-1);
             Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-BorderSize);
-            Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState: rasterizer*/);
+            Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
                 Vector2 cs = new Vector2();
                 Vector2 tsc = new Vector2();
                 //Vector2 ts = font.MeasureString(text.Text);
                 //if (InputMode)
-                if(!string.IsNullOrEmpty(text.Text))
+                if (!string.IsNullOrEmpty(text.Text))
                 {
                     var sub = text.Text.Substring(0, caretpos);
-                    tsc = font.MeasureString(sub);
+                    tsc = Font.MeasureString(sub);
                     cs = tsc;
                     var b = caretpos == text.Text.Length;
                 }
 
                 var offset = (cs.X > Width / 2 ? Width / 2 - cs.X /*+ (ts.X - cs.X < Width / 2? ts.X - cs.X : 0)*/ /*(caretpos == text.Text.Length ? Width / 2  : 0)*/ : 0);
-                Batch.DrawFill(Bounds, Color.Red * 0.5f);
+
                 Line cline = new Line(
                     (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, BorderSize + Bounds.Y)).ToPoint().ToVector2(),
                     (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, -BorderSize + Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
@@ -250,8 +279,10 @@ namespace Crux.BaseControls
                 //text.Render(Batch, tr);
 
                 //Batch.Begin(SpriteSortMode.Deferred);
+
+                // Draw caret
                 if (InputMode)
-                    Batch.DrawFill(Rectangle(new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, BorderSize + Bounds.Y), new Vector2(1, Bounds.Height)), new Color(255, 255, 255, 255) * ease(t));
+                    Batch.DrawFill(Rectangle(new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, BorderSize + Bounds.Y), new Vector2(1, fontStdHeight)), new Color(255, 255, 255, 255) * ease(t));
 
                 //Batch.End();
                 //if (InputMode)

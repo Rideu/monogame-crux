@@ -80,10 +80,10 @@ namespace Crux
         TextArea owner;
 
         bool applyFormatting;
-        float fontscale = 1f; 
+        float fontscale = 1f;
         public float FontSize { get => fontscale; set { fontscale = value; UpdateText(); } }
 
-        bool multiline = true; 
+        bool multiline = true;
         public bool Multiline { get => multiline; set { multiline = value; UpdateText(); } }
 
 
@@ -101,7 +101,8 @@ namespace Crux
             col = color;
             owner = label;
             Text = text;
-            owner.OnResize += Owner_OnResize;
+            if (owner != null)
+                owner.OnResize += Owner_OnResize;
             //UpdateText(text);
         }
 
@@ -416,7 +417,7 @@ namespace Crux
             public void upd(Vector2 scrollpos)
             {
                 {
-                    cur = Control.MouseHoverOverG(new Rectangle(bounds.Location + scrollpos.ToPoint(), bounds.Size)) && fc && !sne(hov.ct) ? hov : def;
+                    cur = (new Rectangle(bounds.Location + scrollpos.ToPoint(), bounds.Size)).Contains(Control.MousePos) && fc && !sne(hov.ct) ? hov : def;
                     onUpdate?.Invoke(this, bounds.Location.ToVector2() + scrollpos, scrollpos);
                     //cur.aplog(this, cur.val);
                 }

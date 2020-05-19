@@ -22,19 +22,24 @@ using Microsoft.Xna.Framework.Audio;
 
 using sRectangle = Microsoft.Xna.Framework.Rectangle;
 using static Crux.Core;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace Crux
 {
 
     public static class Simplex
     {
+        public const float fPI = (float)PI;
+        public const float fPI2 = (float)PI * 2;
+
         internal static Texture2D pixel;
         internal static Texture2D px;
         internal static Texture2D rpx;
-        public const float fPI = (float)PI;
         public delegate void VoidFunc();
         static GraphicsDevice gd;
 
+        static float[] sineTable = new float[90];
         public static void Init(GraphicsDevice graphicsDevice)
         {
             pixel = new Texture2D(gd = graphicsDevice, 1, 1);
@@ -59,6 +64,11 @@ namespace Crux
             };
             rpx = new Texture2D(graphicsDevice, 5, 5);
             rpx.SetData(tc);
+
+            for (int i = 0; i < 90; i++)
+            {
+                sineTable[i] = (float)Math.Sin(fPI / 180 * i);
+            }
         }
 
         public static void DrawLine(this SpriteBatch sb, Vector2 start, Vector2 end, Texture2D tex, Color col) => D_L(sb, new Line(start, end), tex, col);
@@ -553,6 +563,97 @@ namespace Crux
             c.Move(c.IndexOf(item), c.Count - 1);
         }
 
+        const float cos_pi = fPI * 3 / 2;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Cos(float x)
+        {
+
+            x = ((((x - cos_pi) - -fPI) % fPI2) + fPI2) % fPI2 + -fPI;
+            //x = Wrap(x, -fPI, fPI);
+
+            float sin = 0;
+            if (x < 0)
+            {
+                sin = sin_r1_ac * x + sin_r2_ac * x * x;
+
+                if (sin < 0)
+                    sin = sin_ac * (sin * -sin - sin) + sin;
+                else
+                    sin = sin_ac * (sin * sin - sin) + sin;
+            }
+            else
+            {
+                sin = sin_r1_ac * x - sin_r2_ac * x * x;
+
+                if (sin < 0)
+                    sin = sin_ac * (sin * -sin - sin) + sin;
+                else
+                    sin = sin_ac * (sin * sin - sin) + sin;
+            }
+            return sin;
+        }
+
+        const float sin_ac = .225f;
+        const float sin_r1_ac = 1.27323954f;
+        const float sin_r2_ac = .405284735f;
+
+        /// <summary>
+        /// Originator: https://gamedev.stackexchange.com/questions/4779/is-there-a-faster-sine-function
+        /// </summary> 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Sin(float x)
+        {
+            x = (((x - -fPI) % fPI2) + fPI2) % fPI2 + -fPI;
+            //x = Wrap(x, -fPI, fPI);
+
+            float sin = 0;
+            if (x < 0)
+            {
+                sin = sin_r1_ac * x + sin_r2_ac * x * x;
+
+                if (sin < 0)
+                    sin = sin_ac * (sin * -sin - sin) + sin;
+                else
+                    sin = sin_ac * (sin * sin - sin) + sin;
+            }
+            else
+            {
+                sin = sin_r1_ac * x - sin_r2_ac * x * x;
+
+                if (sin < 0)
+                    sin = sin_ac * (sin * -sin - sin) + sin;
+                else
+                    sin = sin_ac * (sin * sin - sin) + sin;
+            }
+            return sin;
+            //return -(B * x + C * x * ((x < 0) ? -x : x));
+        }
+
+
+        /// <summary>
+        /// Originator: https://stackoverflow.com/questions/5142349/declare-a-const-array/5142378
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Wrap(float x, float x_min, float x_max)
+        {
+            var dv = x_max - x_min;
+            return (((x - x_min) % dv) + dv) % dv + x_min;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Wrap2(float x, float min, float max)
+        {
+            if ((x > min) && (x <= max))
+                return x;
+            var max2 = max * 2;
+            x %= max * 2;
+            if (x <= -min)
+                return x + max2;
+            if (x > max)
+                return x - max2;
+            return x;
+        }
         public static Match Match(this string s, string pattern) => Regex.Match(s, pattern);
         public static string Regplace(this string s, string pattern, string with) => Regex.Replace(s, pattern, with);
         #endregion

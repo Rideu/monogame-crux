@@ -55,11 +55,9 @@
             this.buttonLabel = new System.Windows.Forms.Button();
             this.buttonPanel = new System.Windows.Forms.Button();
             this.cruxEditor = new Editor.CruxEditor();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.toolStripMenu.SuspendLayout();
             this.toolStripDesign.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fastColoredTextBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // propertyGrid1
@@ -382,19 +380,10 @@
             this.cruxEditor.MouseMove += new System.Windows.Forms.MouseEventHandler(this.cruxEditor2_MouseMove);
             this.cruxEditor.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cruxEditor2_MouseUp);
             // 
-            // dataGridView1
-            // 
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(286, 410);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(240, 150);
-            this.dataGridView1.TabIndex = 12;
-            // 
             // EditorWindow
             // 
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
             this.ClientSize = new System.Drawing.Size(832, 1002);
-            this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.buttonTextarea);
             this.Controls.Add(this.cruxEditor);
             this.Controls.Add(this.statusStrip1);
@@ -419,7 +408,6 @@
             this.toolStripDesign.ResumeLayout(false);
             this.toolStripDesign.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fastColoredTextBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -452,6 +440,5 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemExit;
         private System.Windows.Forms.Button buttonTextarea;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
-        private System.Windows.Forms.DataGridView dataGridView1;
     }
 }

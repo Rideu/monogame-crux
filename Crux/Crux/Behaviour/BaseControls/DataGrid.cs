@@ -260,7 +260,7 @@ namespace Crux.BaseControls
                         var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .95f);
                         var current_cell = Table[r][c];
 
-                        //current_cell.BackColor = rowcolcolor;
+                        current_cell.BackColor = rowcolcolor;
                         current_cell.BorderSize = 0;
 
                         current_cell.RelativePosition = new Vector2(acm, rowheight * r);
