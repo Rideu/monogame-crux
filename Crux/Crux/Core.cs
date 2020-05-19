@@ -229,8 +229,8 @@ namespace Crux
 
                 var tbox = new TextBox(20, 80, 100, 22);
                 debugForm.AddNewControl(tbox);
-                tbox.OnMouseLeave += (s, e) => { if (tbox.Text.Length == 0) tbox.Text = "Search..."; };
-                tbox.OnMouseEnter += (s, e) => { if (tbox.Text == "Search...") tbox.Text = ""; };
+                tbox.OnDeactivated += (s, e) => { if (tbox.Text.Length == 0) tbox.Text = "Search..."; };
+                tbox.OnActivated += (s, e) => { if (tbox.Text == "Search...") tbox.Text = ""; };
                 //tbox.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
                 tbox.Text = "Search...";
 
@@ -272,7 +272,7 @@ namespace Crux
                 bRow.Text = "-Row";
                 bRow.OnLeftClick += (s, e) => { dg.RemoveRow(dg.TotalRows - 1); };
                 bRow.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
-                bRow.OnDisactivated += (s, e) => { (s as ControlBase).BorderColor = Color.Gray; };
+                bRow.OnDeactivated += (s, e) => { (s as ControlBase).BorderColor = Color.Gray; };
 
                 bCol = new Button(liner.GetParams());
                 bCol.Text = "-Col";

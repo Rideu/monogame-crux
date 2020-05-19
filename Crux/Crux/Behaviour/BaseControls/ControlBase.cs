@@ -416,7 +416,7 @@ namespace Crux.BaseControls
         public event EventHandler OnFocusChanged;
 
         public event EventHandler OnActivated;
-        public event EventHandler OnDisactivated;
+        public event EventHandler OnDeactivated;
 
         public event EventHandler OnResize;
 
@@ -570,7 +570,7 @@ namespace Crux.BaseControls
 
         protected void OnControlDisactivated()
         {
-            OnDisactivated?.Invoke(this, EventArgs.Empty);
+            OnDeactivated?.Invoke(this, EventArgs.Empty);
         }
         internal static void InternalEventProcessor()
         {

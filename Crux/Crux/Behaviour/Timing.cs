@@ -15,8 +15,7 @@ namespace Crux
     public struct Timer
     {
         public float Period;
-
-        public bool Switch;
+         
 
         /// <summary>
         /// Returns passed percent of time.
@@ -33,7 +32,7 @@ namespace Crux
         public Timer(float periodmillis)
         {
             Period = periodmillis;
-            Switch = Run = !true;
+            Run = false;
             Elapse = 0f;
             OnFinish = new Action(() => { });
             //Timing.Timers.Add(this);
@@ -49,10 +48,9 @@ namespace Crux
             Run = !true;
         }
 
-        public void Reset(bool resetswitch)
+        public void Reset()
         {
             Elapse = 0;
-            Switch = !resetswitch;
         }
 
         internal void Update(float elapse)
@@ -62,7 +60,6 @@ namespace Crux
                 Elapse += elapse;
                 if (Elapse >= Period)
                 {
-                    Switch = true;
                     Elapse = Period;
                     Run = !true;
                     OnFinish?.Invoke();
@@ -70,10 +67,6 @@ namespace Crux
             }
         }
 
-        public static implicit operator bool(Timer t)
-        {
-            return t.Switch;
-        }
 
         public static implicit operator float(Timer t)
         {
@@ -92,6 +85,6 @@ namespace Crux
                 n.Update((float)gt.ElapsedGameTime.TotalMilliseconds);
             }
         }
-        
+
     }
 }

@@ -16,12 +16,7 @@ namespace Crux.BaseControls
 {
     public class TextBox : ControlBase // Unused
     {
-        #region Fields
-        private ControlBase OwnerField;
-        public override ControlBase Owner { get { return OwnerField; } set { OwnerField = value; } }
-
-        private int ID;
-        public override int GetID { get { return ID; } }
+        #region Fields  
 
         public override string Text { get { return text.Text; } set { text.UpdateText(value); } }
 
@@ -70,16 +65,20 @@ namespace Crux.BaseControls
             OnLeftClick += (s, e) =>
             {
                 InputMode = true;
-                t.Reset(false);
-                t.Start();
+                //t.Reset(false);
+                //t.Start();
             };
             //OnMouseLeave += (s, e) => { Invalidate(); };
 
-            text = new TextBuilder(DefaultFont, "[Null text]", new Vector2(0 /*+ (padding.X - scroll.Width)*/, 0), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, true/*, this*/);
+            text = new TextBuilder(DefaultFont, "", new Vector2(0 /*+ (padding.X - scroll.Width)*/, 0), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, true/*, this*/);
             fontStdHeight = DefaultFont.MeasureString(" ").Y;
 
             t = new Timer(1000);
-            t.OnFinish += () => { t.Reset(false); t.Start(); };
+            t.OnFinish += () =>
+            {
+                t.Reset();
+                t.Start();
+            };
 
             rlt = new Timer(50);
             rlt.OnFinish += () =>
@@ -95,13 +94,13 @@ namespace Crux.BaseControls
                 }
                 if (Control.IsKeyDown(Keys.Left) && Control.IsKeyDown(Keys.Right))
                 {
-                    rlt.Reset(false);
+                    rlt.Reset();
                     rlt.Stop();
-                    delay.Reset(false);
+                    delay.Reset();
                     delay.Stop();
                     return;
                 }
-                rlt.Reset(false);
+                rlt.Reset();
 
                 rlt.Start();
             };
@@ -175,7 +174,6 @@ namespace Crux.BaseControls
 
         public override void Update()
         {
-            UpdateBounds();
 
             //IsHovering = !true;
             //if (Bounds.Contains(Core.MS.Position.ToVector2()))
@@ -183,33 +181,34 @@ namespace Crux.BaseControls
             if (IsActive && Control.LeftClick())
             {
                 InputMode = true;
-                t.Reset(false);
+                t.Reset();
                 t.Start();
             }
             if (InputMode)
             {
                 if (Control.PressedDownKey(Keys.Left))
                 {
-                    rlt.Reset(false); rlt.Stop();
-                    delay.Reset(false); delay.Stop();
+                    rlt.Reset(); rlt.Stop();
+                    delay.Reset(); delay.Stop();
                     caretpos -= caretpos > 0 ? 1 : 0;
                     delay.Start();
                 }
                 else
                 if (Control.PressedDownKey(Keys.Right))
                 {
-                    rlt.Reset(false); rlt.Stop();
-                    delay.Reset(false); delay.Stop();
+                    rlt.Reset(); rlt.Stop();
+                    delay.Reset(); delay.Stop();
                     caretpos += caretpos < text.Text.Length ? 1 : 0;
                     delay.Start();
                 }
                 //if (Control.IsKeyUp(Keys.Right) || Control.IsKeyUp(Keys.Left))
                 //{
                 //    delay.Reset(false); delay.Stop();
-                //}
-                t.Update((float)gt.ElapsedGameTime.TotalMilliseconds);
-                rlt.Update((float)gt.ElapsedGameTime.TotalMilliseconds);
-                delay.Update((float)gt.ElapsedGameTime.TotalMilliseconds);
+                //} 
+                var el = (float)gt.ElapsedGameTime.TotalMilliseconds;
+                t.Update(el);
+                rlt.Update(el);
+                delay.Update(el);
             }
             base.Update();
         }
@@ -230,7 +229,7 @@ namespace Crux.BaseControls
 
         //Vector2 AbsolutePosition => new Vector2(Owner.X + X, Owner.Y + Y);
 
-        float ease(float t)
+        static float ease(float t)
         {
             return -t * (t - 1) * 4;
         }
