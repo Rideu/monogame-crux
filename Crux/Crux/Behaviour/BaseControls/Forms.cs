@@ -529,8 +529,8 @@ namespace Crux.BaseControls
                     if (!picked)
                         FormActiveControl = null;
 
-                    //if (SideControl == null)
-                        //FormActiveControl?.Update();
+                    if (SideControl == null && ActiveControl != FormActiveControl)
+                        FormActiveControl?.Update();
 
                     // Events block
                     {
