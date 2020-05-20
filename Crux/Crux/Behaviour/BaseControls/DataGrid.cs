@@ -252,7 +252,7 @@ namespace Crux.BaseControls
                 for (int r = 0; r < TotalRows; r++)
                 {
                     acm = 0f;
-                    var rowcolor = r % 2 == 0 ? new Color(.15f, .15f, .13f, 1) : new Color(.17f, .17f, .15f, 1);
+                    var rowcolor = r % 2 == 0 ? new Color(.15f, .15f, .15f, 1) : new Color(.13f, .13f, .13f, 1);
 
                     for (int c = 0; c < TotalColumns; c++)
                     {

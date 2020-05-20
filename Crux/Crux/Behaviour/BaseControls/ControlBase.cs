@@ -17,8 +17,10 @@ using static Crux.Core;
 
 namespace Crux.BaseControls
 {
-    public struct ControlLiner
+    public struct ControlTemplate
     {
+        public Color BackColor;
+
         public Vector2 RelativePos;
 
         public int MarginX, MarginY;
@@ -29,6 +31,12 @@ namespace Crux.BaseControls
         {
             var v = new Vector4(RelativePos, Width, Height);
             RelativePos += new Vector2(MarginX + Width, MarginY + Height);
+
+            return v;
+        }
+        public Vector4 GetCurrent()
+        {
+            var v = new Vector4(RelativePos, Width, Height);
 
             return v;
         }
@@ -73,8 +81,36 @@ namespace Crux.BaseControls
     [DebuggerDisplay("Name: {Name}")]
     public class ControlBase : IControl, IDisposable
     {
+        #region Static
 
         internal static ControlBase ActiveControl;
+
+        internal static void InternalEventProcessor()
+        {
+            if (ActiveControl != null)
+            {
+                if (!ActiveControl.Bounds.Contains(Control.MousePos) && Control.LeftButtonPressed)
+                {
+                    ActiveControl.OnControlDisactivated();
+                    ActiveControl = null;
+                }
+                else
+                {
+                    ActiveControl.Update();
+                }
+                //if (ActiveControl.IsActive)
+                //{
+
+                //}
+                //else
+                //{
+                //    ActiveControl = null;
+                //}
+            }
+        }
+
+
+        #endregion
 
         #region Displaying
 
@@ -539,8 +575,9 @@ namespace Crux.BaseControls
             //    //IsHovering = !true;
             //}
 
-            if (IsHolding && !(this is Form) && ActiveControl != this)
+            if (IsActive && IsHolding && !(this is Form) && ActiveControl != this)
             {
+                ActiveControl?.OnControlDisactivated();
                 ActiveControl = this;
                 OnActivated?.Invoke(this, EventArgs.Empty);
             }
@@ -572,34 +609,10 @@ namespace Crux.BaseControls
         {
             OnDeactivated?.Invoke(this, EventArgs.Empty);
         }
-        internal static void InternalEventProcessor()
-        {
-            if (ActiveControl != null)
-            {
-                if (!ActiveControl.IsHovering && Control.LeftButtonPressed)
-                {
-                    ActiveControl.OnControlDisactivated();
-                    ActiveControl = null;
-                }
-                else
-                {
-                    ActiveControl.Update();
-                }
-                //if (ActiveControl.IsActive)
-                //{
-
-                //}
-                //else
-                //{
-                //    ActiveControl = null;
-                //}
-            }
-        }
 
         public virtual void InnerUpdate()
         {
             OnUpdate?.Invoke(this, EventArgs.Empty);
-
             EventProcessor();
         }
 

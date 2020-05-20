@@ -227,7 +227,7 @@ namespace Crux
                 var dg = new DataGrid(20, 120, 515, 320);
                 debugForm.AddNewControl(dg);
 
-                var tbox = new TextBox(20, 80, 100, 22);
+                var tbox = new TextBox(10, 120, 100, 22);
                 debugForm.AddNewControl(tbox);
                 tbox.OnDeactivated += (s, e) => { if (tbox.Text.Length == 0) tbox.Text = "Search..."; };
                 tbox.OnActivated += (s, e) => { if (tbox.Text == "Search...") tbox.Text = ""; };
@@ -240,26 +240,23 @@ namespace Crux
                 dg.ColumnsSizing(3, 1, 1, 1, 1, 1f);
                 dg.AddColumns("Name", "DEF", "PRC", "FST", "BUCK$", "Action");
 
-                var bBuyDif = new Color(10, 10, 10, 10);
-                var bBuyWidth = 62;
-                var bBuyHeight = 40;
+                ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 35, Width = 60, BackColor = new Color(50, 50, 50, 250) };
 
-                dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, 300 + "$", new Button(2, 2, bBuyWidth, bBuyHeight, bBuyDif) { Text = "Buy" });
-                dg.AddRow("Leather Armor", 8, 5, 8f / 5, 300 + "$", new Button(2, 2, bBuyWidth, bBuyHeight, bBuyDif) { Text = "Buy" });
-                dg.AddRow("Fist Glove", 8, 5, 8f / 5, 300 + "$", new Button(2, 2, bBuyWidth, bBuyHeight, bBuyDif) { Text = "Buy" });
-                dg.AddRow("Latex Cover", 8, 5, 8f / 5, 300 + "$", new Button(2, 2, bBuyWidth, bBuyHeight, bBuyDif) { Text = "Buy" });
+                dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, Color.Gold + "" + 300 + "$", new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
+                dg.AddRow("Leather Armor", 8, 5, 8f / 5, 300 + "$", new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
+                dg.AddRow("Fist Glove", 8, 5, 8f / 5, 300 + "$", new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
+                dg.AddRow("Latex Cover", 8, 5, 8f / 5, 300 + "$", new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
 
                 dg.IsHeightFixed = false;
 
-
-                ControlLiner liner = new ControlLiner { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
+                ControlTemplate liner = new ControlTemplate { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
 
                 var bRow = new Button(liner.GetParams());
                 bRow.Text = "+Row";
                 bRow.OnLeftClick += (s, e) =>
                 {
                     for (int i = e.KeysHandled.Contains(Keys.LeftShift) ? -9 : 0; i < 1; i++)
-                        dg.AddRow("Yes", 8, 5, 8f / 5, 300 + "$", new Button(2, 2, bBuyWidth, bBuyHeight, bBuyDif) { Text = "Buy" });
+                        dg.AddRow("Yes", 8, 5, 8f / 5, 300 + "$", new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
                 };
 
                 var bCol = new Button(liner.GetParams());
@@ -272,7 +269,10 @@ namespace Crux
                 bRow.Text = "-Row";
                 bRow.OnLeftClick += (s, e) => { dg.RemoveRow(dg.TotalRows - 1); };
                 bRow.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
-                bRow.OnDeactivated += (s, e) => { (s as ControlBase).BorderColor = Color.Gray; };
+                bRow.OnDeactivated += (s, e) =>
+                {
+                    (s as ControlBase).BorderColor = Color.Gray;
+                };
 
                 bCol = new Button(liner.GetParams());
                 bCol.Text = "-Col";
@@ -295,11 +295,11 @@ namespace Crux
                 DynamicSoundEffectInstance dynaSound = new DynamicSoundEffectInstance(41000, AudioChannels.Mono);
 
 
-                var cl = new ControlLiner { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
+                var cl = new ControlTemplate { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
 
                 var bPlay = new Button(cl.GetParams()) { Text = "Play" };
 
-                var scl = new ControlLiner { RelativePos = new Vector2(30, 80), Height = 260, Width = 20, MarginX = 10, MarginY = -260 };
+                var scl = new ControlTemplate { RelativePos = new Vector2(30, 80), Height = 260, Width = 20, MarginX = 10, MarginY = -260 };
                 var sSineScale = new Slider(scl.GetParams(), Slider.Type.Vertical);
                 var sSineScaleScale = new Slider(scl.GetParams(), Slider.Type.Vertical);
                 var sFadeScale = new Slider(scl.GetParams(), Slider.Type.Vertical);
