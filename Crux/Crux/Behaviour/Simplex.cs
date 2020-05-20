@@ -654,7 +654,8 @@ namespace Crux
                 return x - max2;
             return x;
         }
-        public static Match Match(this string s, string pattern) => Regex.Match(s, pattern);
+        public static Match RegMatch(this string s, string pattern) => Regex.Match(s, pattern);
+        public static MatchCollection RegMatches(this string s, string pattern) => Regex.Matches(s, pattern);
         public static string Regplace(this string s, string pattern, string with) => Regex.Replace(s, pattern, with);
         #endregion
 

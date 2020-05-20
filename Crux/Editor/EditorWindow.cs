@@ -28,13 +28,13 @@ namespace Editor
 
             type_registry = Assembly.GetAssembly(typeof(ControlBaseDesigner)).GetTypes()
             .Where(n => n.Namespace == "Crux.BaseControls" && n.IsClass).Select(n => n.Name)
-            .Aggregate((a, b) => a += (b.Match(@"(`1|<>)").Success ? "" : b + "|"));
+            .Aggregate((a, b) => a += (b.RegMatch(@"(`1|<>)").Success ? "" : b + "|"));
             type_registry += "FormManager";
             type_registry = "(?<!\")\\b(" + type_registry + ")\\b(?!\")";
 
 
             struct_registry = Assembly.GetAssembly(typeof(Microsoft.Xna.Framework.Color)).GetTypes().OrderBy(n => n.Name)
-            .Where(n => !n.IsClass).Select(n => n.Name).SkipWhile(n => (n.Match(@"(`1|<|>|Static)").Success))
+            .Where(n => !n.IsClass).Select(n => n.Name).SkipWhile(n => (n.RegMatch(@"(`1|<|>|Static)").Success))
             .Aggregate((a, b) => a += b + "|").TrimEnd('|');
             //struct_registry += "FormManager";
             struct_registry = "(?<!\")\\b(" + struct_registry + ")\\b(?!\")";

@@ -84,7 +84,7 @@ namespace Editor
             if (BuildingForm != c.target)
                 BuildingForm.AddNewControl(c.target);
             var tn = c.TypeName.ToLower();
-            c.Name = tn + (BuildingControls.Where(n => n.Name.Match(tn).Success).Count() + 1);
+            c.Name = tn + (BuildingControls.Where(n => n.Name.RegMatch(tn).Success).Count() + 1);
             selectedControl = c;
             BuildingControls.Push(c);
             UpdateListing();
@@ -125,7 +125,7 @@ namespace Editor
                 if (BuildingForm != dt.TargetObject)
                     BuildingForm.AddNewControl(c);
                 var tn = dt.TypeName.ToLower();
-                dt.Name = tn + (BuildingControls.Where(n => n.Name.Match(tn).Success).Count() + 1);
+                dt.Name = tn + (BuildingControls.Where(n => n.Name.RegMatch(tn).Success).Count() + 1);
                 c.SetRelative(selectedControl.X + 10, selectedControl.Y + 10);
                 selectedControl = dt;
                 BuildingControls.Push(dt);

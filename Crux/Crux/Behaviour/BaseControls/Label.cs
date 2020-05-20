@@ -13,14 +13,27 @@ namespace Crux.BaseControls
 
         string tc;
         public bool IsFixedWidth { get; set; }
+        public bool ParseColor { get; set; } = true;
+
+        public Color ForeColor = Color.White;
         public override string Text
         {
             get => tc;
             set
             {
+                if (ParseColor)
+                {
+                    var m = value.RegMatches(@"(\{)?((?<=((R|G|B|A):){1,1})\d{1,3})");
+                    if (m.Count == 4)
+                    {
+                        var color = new Color(byte.Parse(m[0].Value), byte.Parse(m[1].Value), byte.Parse(m[2].Value), byte.Parse(m[3].Value));
+                        ForeColor = color;
+                    }
+                    value = value.Regplace(@"{.+}", "");
+                }
                 tc = value;
                 //if (!IsFixedWidth)
-                    //Width = font.MeasureString(tc).X;
+                //Width = font.MeasureString(tc).X;
             }
         } // TODO: 
         public float TextSize { get; set; } = 1f;
@@ -40,7 +53,7 @@ namespace Crux.BaseControls
 
         public Label(float x, float y, float width, float height, Color? col = default)
         {
-             ForeColor = col.HasValue ? col.Value : Color.White;
+            ForeColor = col.HasValue ? col.Value : Color.White;
             AbsoluteX = x; AbsoluteY = y; Width = width; Height = height;
         }
 
@@ -49,7 +62,6 @@ namespace Crux.BaseControls
             Bounds = Rectangle(AbsoluteX, AbsoluteY, Width = Width - Owner.BorderSize - BorderSize, Height = Height - Owner.BorderSize - BorderSize);
             base.Initialize();
         }
-        public Color ForeColor = Color.White;
 
         public override void Invalidate()
         {
