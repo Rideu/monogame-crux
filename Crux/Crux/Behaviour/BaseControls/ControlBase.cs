@@ -575,7 +575,7 @@ namespace Crux.BaseControls
             //    //IsHovering = !true;
             //}
 
-            if (IsActive && IsHolding && !(this is Form) && ActiveControl != this)
+            if (IsActive && IsHolding && !(this is Form) && ActiveControl != this && !EnterHold)
             {
                 ActiveControl?.OnControlDisactivated();
                 ActiveControl = this;
