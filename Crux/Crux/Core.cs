@@ -149,7 +149,7 @@ namespace Crux
 
             FormManager.AddForm("MainForm", debugForm);
 
-            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = new Color(238, 195, 114), });
+            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = Palette.Neonic, });
             #endregion
 
             #region TextArea
@@ -238,11 +238,11 @@ namespace Crux
             {
                 var clayout = new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true);
 
-                var dg = new DataGrid(20, 120, 515, 320);
+                var dg = new DataGrid(30, 120, 515, 320);
                 debugForm.AddNewControl(dg);
 
-                var tbox = new TextBox(20,85, 200, 22);
-                debugForm.AddNewControl(tbox);
+                var tbox = new TextBox(30,85, 200, 22);
+                debugForm.AddNewControl(tbox); 
                 tbox.OnDeactivated += (s, e) => { if (tbox.Text.Length == 0) tbox.Text = "Search..."; };
                 tbox.OnActivated += (s, e) => { if (tbox.Text == "Search...") tbox.Text = ""; };
                 //tbox.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
@@ -266,7 +266,7 @@ namespace Crux
 
                 dg.IsHeightFixed = false;
 
-                ControlTemplate liner = new ControlTemplate { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
+                ControlTemplate liner = new ControlTemplate { RelativePos = new Vector2(30, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
 
                 var bRow = new Button(liner.GetParams());
                 bRow.Text = "+Row";

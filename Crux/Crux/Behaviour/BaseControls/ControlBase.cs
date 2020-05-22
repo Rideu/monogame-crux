@@ -616,12 +616,12 @@ namespace Crux.BaseControls
                 Bounds.Height - Layout.BottomBorder.Height - Layout.TopBorder.Height)
             : Bounds;
 
-        protected virtual void DrawLayout(Color? d)
+        protected virtual void DrawLayout(float backmul = 1)
         {
 
             if (hasLayout)
             {
-                var diffuse = d.HasValue ? d.Value : Color.White;
+                var diffuse = Color.White * backmul;
                 var fw = Bounds.Width;
                 var fh = Bounds.Height;
 
@@ -629,7 +629,7 @@ namespace Crux.BaseControls
                 var bottom = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
                 var fa = FillingArea;
                 //Batch.GraphicsDevice.ScissorRectangle = fa;
-                Batch.DrawFill(fa, BackColor);
+                Batch.DrawFill(fa, BackColor * backmul);
 
                 //OnDraw?.Invoke();
                 Batch.Draw(Layout.TopLeft, Bounds.Location.ToVector2(), diffuse);
@@ -667,7 +667,7 @@ namespace Crux.BaseControls
                 if (hasLayout)
                 {
 
-                    DrawLayout(null);
+                    DrawLayout();
                 }
                 else
                 if (DrawBorder)

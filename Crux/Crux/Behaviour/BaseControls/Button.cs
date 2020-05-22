@@ -15,7 +15,7 @@ namespace Crux.BaseControls
         #region Fields
         public override ControlBase Owner { get { return OwnerField; } set { OwnerField = value; } }
         private ControlBase OwnerField;
-         
+
         public float TextScale { get; set; } = 1f;
 
 
@@ -70,7 +70,7 @@ namespace Crux.BaseControls
 
         public override void Update()
         {
-             
+
             base.Update();
         }
 
@@ -83,8 +83,7 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
-            Rectangle drawb;
-            Batch.GraphicsDevice.ScissorRectangle = drawb = DrawingBounds;
+            Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 var f = IsHovering && !EnterHold ? IsHolding ? 0.3f : 0.6f : 1f;
@@ -103,7 +102,7 @@ namespace Crux.BaseControls
                 }
                 else
                 {
-                    DrawLayout(Color.White.MulRGB(f));
+                    DrawLayout(f);
                 }
 
                 if (Image != null)
@@ -111,7 +110,7 @@ namespace Crux.BaseControls
             }
             Batch.End();
 
-            Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-1);
+            Batch.GraphicsDevice.ScissorRectangle = drawingBounds.InflateBy(-1);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 var mea = defaultFont.MeasureString(Text);

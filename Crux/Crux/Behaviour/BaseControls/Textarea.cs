@@ -177,7 +177,7 @@ namespace Crux.BaseControls
                     }
                     else
                     {
-                        DrawLayout(null);
+                        DrawLayout( );
                     }
                 }
                 Batch.End();

@@ -821,9 +821,9 @@ namespace Crux
         }
 
         public static Color LightenGray => new Color(125, 125, 125, 255);
-
         public static Color DarkenGray => new Color(65, 65, 65, 255);
-        public static Color NanoBlue => new Color(86, 156, 214, 255);
+        public static Color NanoBlue => new Color(86, 156, 214, 255); 
+        public static Color Neonic => new Color(54, 234, 202);
     }
 
 

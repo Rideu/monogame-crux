@@ -39,26 +39,29 @@ namespace Crux
                 IsResizable = true,
             };
 
+            var fl = new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true);
+            var cl = new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true);
+
             colorPicker.AddNewControl(h_val = new Slider(20, 50, 300, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
             colorPicker.AddNewControl(s_val = new Slider(20, 70, 300, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
             colorPicker.AddNewControl(v_val = new Slider(20, 90, 300, 10, Slider.Type.Horizontal) { Filler = Slider.FillStyle.Slider });
 
-            h_val.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true));
-            s_val.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true));
-            v_val.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true));
+            h_val.CreateLayout(fl);
+            s_val.CreateLayout(fl);
+            v_val.CreateLayout(fl);
 
             h_val.OnSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
             s_val.OnSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
             v_val.OnSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
 
-            colorPicker.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout2")));
+            colorPicker.CreateLayout(fl);
 
 
             FormManager.AddForm("colorPicker", colorPicker);
             #endregion
 
             #region Calc
-            var f = new Form(640, 100, 310, 320, new Color(40, 40, 40))
+            var f = new Form(640, 100, 220, 260, new Color(40, 40, 40))
             {
                 IsVisible = true
             };
@@ -77,8 +80,8 @@ namespace Crux
                 bex, bdiv, bmul, bsub, bsum,
                 er;
 
-            var buttonx = 50;
-            var buttony = 40;
+            var buttonx = 5;
+            var buttony = 5;
             f.AddNewControl(
                 lb = new TextArea(buttonx + 10, buttony + 10, 140, 30) { Font = font1 },
                 er = new Button(buttonx + 160, buttony + 10, 40, 30) { Text = "<=" },
@@ -143,7 +146,11 @@ namespace Crux
                 lb.Text = lb.Text.Length == 1 ? "0" : lb.Text.Substring(0, lb.Text.Length - 1);
             };
 
-            f.ApplyLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout2"), true));
+            foreach (var c in f.Controls)
+            {
+                c.CreateLayout(cl);
+            }
+            f.CreateLayout(fl);
 
             FormManager.AddForm("CalcForm", f);
             #endregion

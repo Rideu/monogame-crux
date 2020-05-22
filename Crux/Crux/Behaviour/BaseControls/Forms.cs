@@ -595,7 +595,7 @@ namespace Crux.BaseControls
                 {
                     var fa = FillingArea;
 
-                    Batch.DrawFill(fa, BackColor);
+                    //Batch.DrawFill(fa, BackColor);
 
                     // Border
                     //Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f)); // Primary
@@ -614,7 +614,7 @@ namespace Crux.BaseControls
                 Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState:rasterizer*/);
                 if (hasLayout)
                 {
-                    DrawLayout(null);
+                    DrawLayout( );
                 }
                 Batch.End();
 
