@@ -120,7 +120,7 @@ namespace Crux.BaseControls
                 // var am = of > 1 ? Text : Text.Substring(0, (int)(Text.Length*of));
                 // mea = Game1.font1.MeasureString(am);
                 // }
-                Batch.DrawString(defaultFont, Text, Bounds.Location.ToVector2() + (new Vector2(Width, Height) / 2 - mea / 2 * TextScale).ToPoint().ToVector2(), Color.White, 0f, new Vector2(), TextScale, SpriteEffects.None, 1f);
+                Batch.DrawString(defaultFont, Text, Bounds.Location.ToVector2() + (new Vector2(Width, Height) / 2 - mea / 2 * TextScale).ToPoint().ToVector2(), ForeColor, 0f, new Vector2(), TextScale, SpriteEffects.None, 1f);
             }
             Batch.End();
         }

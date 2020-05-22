@@ -92,6 +92,7 @@ namespace Crux.BaseControls
             {
                 var label = new Label();
                 panel.AddNewControl(label);
+                label.ForeColor = ForeColor;
                 label.Text = value?.ToString() ?? panel.Alias;
                 label.TextSize = 1f;
             }
@@ -152,7 +153,8 @@ namespace Crux.BaseControls
             var wd = defaultFont.MeasureString(text);
             var l = new Label()
             {
-                Text = text
+                Text = text,
+                ForeColor = Palette.Neonic
             };
             AddNewControl(l);
             colHeaders.Add(l);
@@ -256,7 +258,7 @@ namespace Crux.BaseControls
             for (int r = 0; r < TotalRows; r++)
             {
                 acm = 0f;
-                var rowcolor = r % 2 == 0 ? new Color(.15f, .15f, .15f, 1) : new Color(.13f, .13f, .13f, 1);
+                var rowcolor = r % 2 == 0 ? BackColor: BackColor;
 
                 for (int c = 0; c < TotalColumns; c++)
                 {
@@ -266,7 +268,7 @@ namespace Crux.BaseControls
 
 
 
-                    current_cell.BackColor = rowcolcolor;
+                    //current_cell.BackColor = rowcolcolor;
                     current_cell.BorderSize = 0;
 
                     current_cell.RelativePosition = new Vector2(acm, rowheight * r);
@@ -290,9 +292,7 @@ namespace Crux.BaseControls
         public override void Draw()
         {
             base.Draw();
-
-            TableContainer.Draw();
-
+              
             ContentSlider.Draw();
         }
     }

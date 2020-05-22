@@ -149,8 +149,8 @@ namespace Crux.BaseControls
         #endregion
 
         protected string text = "";
-        public virtual string Text { get; set; }
-
+        public virtual string Text { get => text; set => text = value; } 
+        public virtual Color ForeColor { get; set; } = Color.White;
         public float ScrollValue { get; set; }
 
         protected Alignment anchor = Alignment.TopLeft;

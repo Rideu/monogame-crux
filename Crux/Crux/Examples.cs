@@ -83,23 +83,23 @@ namespace Crux
             var buttonx = 5;
             var buttony = 5;
             f.AddNewControl(
-                lb = new TextArea(buttonx + 10, buttony + 10, 140, 30) { Font = font1 },
-                er = new Button(buttonx + 160, buttony + 10, 40, 30) { Text = "<=" },
-                b1 = new Button(buttonx + 10, buttony + 50, 40, 40) { Text = "1" },
-                b2 = new Button(buttonx + 60, buttony + 50, 40, 40) { Text = "2" },
-                b3 = new Button(buttonx + 110, buttony + 50, 40, 40) { Text = "3" },
-                b4 = new Button(buttonx + 10, buttony + 100, 40, 40) { Text = "4" },
-                b5 = new Button(buttonx + 60, buttony + 100, 40, 40) { Text = "5" },
-                b6 = new Button(buttonx + 110, buttony + 100, 40, 40) { Text = "6" },
-                b7 = new Button(buttonx + 10, buttony + 150, 40, 40) { Text = "7" },
-                b8 = new Button(buttonx + 60, buttony + 150, 40, 40) { Text = "8" },
-                b9 = new Button(buttonx + 110, buttony + 150, 40, 40) { Text = "9" },
-                b0 = new Button(buttonx + 10, buttony + 200, 90, 40) { Text = "0" },
-                bex = new Button(buttonx + 110, buttony + 200, 40, 40) { Text = "=" },
-                bdiv = new Button(buttonx + 160, buttony + 50, 40, 40) { Text = "/" },
-                bmul = new Button(buttonx + 160, buttony + 100, 40, 40) { Text = "*" },
-                bsub = new Button(buttonx + 160, buttony + 150, 40, 40) { Text = "-" },
-                bsum = new Button(buttonx + 160, buttony + 200, 40, 40) { Text = "+" }
+                lb = new TextArea(buttonx + 10, buttony + 10, 140, 30) { Font = font1, ForeColor = Palette.Neonic },
+                er = new Button(buttonx + 160, buttony + 10, 40, 30) { Text = "<=", ForeColor = Palette.Neonic },
+                b1 = new Button(buttonx + 10, buttony + 50, 40, 40) { Text = "1", ForeColor = Palette.Neonic},
+                b2 = new Button(buttonx + 60, buttony + 50, 40, 40) { Text = "2", ForeColor = Palette.Neonic },
+                b3 = new Button(buttonx + 110, buttony + 50, 40, 40) { Text = "3", ForeColor = Palette.Neonic },
+                b4 = new Button(buttonx + 10, buttony + 100, 40, 40) { Text = "4", ForeColor = Palette.Neonic },
+                b5 = new Button(buttonx + 60, buttony + 100, 40, 40) { Text = "5", ForeColor = Palette.Neonic },
+                b6 = new Button(buttonx + 110, buttony + 100, 40, 40) { Text = "6", ForeColor = Palette.Neonic },
+                b7 = new Button(buttonx + 10, buttony + 150, 40, 40) { Text = "7", ForeColor = Palette.Neonic },
+                b8 = new Button(buttonx + 60, buttony + 150, 40, 40) { Text = "8", ForeColor = Palette.Neonic },
+                b9 = new Button(buttonx + 110, buttony + 150, 40, 40) { Text = "9", ForeColor = Palette.Neonic },
+                b0 = new Button(buttonx + 10, buttony + 200, 90, 40) { Text = "0", ForeColor = Palette.Neonic },
+                bex = new Button(buttonx + 110, buttony + 200, 40, 40) { Text = "=", ForeColor = Palette.Neonic },
+                bdiv = new Button(buttonx + 160, buttony + 50, 40, 40) { Text = "/", ForeColor = Palette.Neonic },
+                bmul = new Button(buttonx + 160, buttony + 100, 40, 40) { Text = "*", ForeColor = Palette.Neonic },
+                bsub = new Button(buttonx + 160, buttony + 150, 40, 40) { Text = "-", ForeColor = Palette.Neonic },
+                bsum = new Button(buttonx + 160, buttony + 200, 40, 40) { Text = "+", ForeColor = Palette.Neonic }
                 );
 
             lb.Padding = new Microsoft.Xna.Framework.Rectangle(4, 4, 4, 4);

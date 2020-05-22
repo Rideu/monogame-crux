@@ -15,7 +15,6 @@ namespace Crux.BaseControls
         public bool IsFixedWidth { get; set; }
         public bool ParseColor { get; set; } = true;
 
-        public Color ForeColor = Color.White;
         public override string Text
         {
             get => tc;

@@ -18,21 +18,21 @@ namespace Crux.BaseControls
     {
         #region Fields  
 
-        public override string Text { get { return text.Text; } set { text.UpdateText(value); } }
-
+        //public override string Text { get { return text ; } set { text.UpdateText(value); } }
+        SpriteFont textFont = DefaultFont;
         public SpriteFont Font
         {
             set
             {
-                text.Font = value;
+                textFont = value;
                 fontStdHeight = value.MeasureString(" ").Y;
             }
-            get => text.Font;
+            get => textFont;
         }
 
         float fontStdHeight = 0;
 
-        new TextBuilder text;
+        //TextBuilder text;
         bool InputMode;
 
         public SoundEffect KeyPressedSound { get => keypressSound; set => keypressSound = value; }
@@ -91,7 +91,7 @@ namespace Crux.BaseControls
                 else
                 if (Control.IsKeyDown(Keys.Right))
                 {
-                    caretpos += caretpos < text.Text.Length ? 1 : 0;
+                    caretpos += caretpos < text.Length ? 1 : 0;
                 }
                 if (Control.IsKeyDown(Keys.Left) && Control.IsKeyDown(Keys.Right))
                 {
@@ -119,7 +119,7 @@ namespace Crux.BaseControls
             {
                 if (this.InputMode)
                 {
-                    var t = text.Text;
+                    var t = text;
                     if (e.Character == 8) // Backspace
                     {
                         if (t.Length > 0)
@@ -150,7 +150,7 @@ namespace Crux.BaseControls
                         keypressSound?.Play();
                         //caretpos += caretpos + 1 == t.Length ? 0 : 1;
                     }
-                    text.UpdateText(t);
+                    text = t;
                     //caretpos = text.CleanText.Length == 0 ? 0 : caretpos;
                 }
             };
@@ -199,7 +199,7 @@ namespace Crux.BaseControls
                 {
                     rlt.Reset(); rlt.Stop();
                     delay.Reset(); delay.Stop();
-                    caretpos += caretpos < text.Text.Length ? 1 : 0;
+                    caretpos += caretpos < text.Length ? 1 : 0;
                     delay.Start();
                 }
                 //if (Control.IsKeyUp(Keys.Right) || Control.IsKeyUp(Keys.Left))
@@ -252,12 +252,12 @@ namespace Crux.BaseControls
                 Vector2 tsc = new Vector2();
                 //Vector2 ts = font.MeasureString(text.Text);
                 //if (InputMode)
-                if (!string.IsNullOrEmpty(text.Text))
+                if (!string.IsNullOrEmpty(text))
                 {
-                    var sub = text.Text.Substring(0, caretpos);
+                    var sub = text.Substring(0, caretpos);
                     tsc = Font.MeasureString(sub);
                     cs = tsc;
-                    var b = caretpos == text.Text.Length;
+                    var b = caretpos == text.Length;
                 }
 
                 var offset = (cs.X > Width / 2 ? Width / 2 - cs.X /*+ (ts.X - cs.X < Width / 2? ts.X - cs.X : 0)*/ /*(caretpos == text.Text.Length ? Width / 2  : 0)*/ : 0);
@@ -265,7 +265,7 @@ namespace Crux.BaseControls
                 Line cline = new Line(
                     (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, BorderSize + Bounds.Y)).ToPoint().ToVector2(),
                     (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, -BorderSize + Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
-                text.Render(new Vector2(AbsoluteX + BorderSize + offset, 2 + AbsoluteY));
+                Batch.DrawString(textFont, text, new Vector2(AbsoluteX + BorderSize + offset, 2 + AbsoluteY), ForeColor);
 
 
                 //text.Render(Batch, new Vector2(Owner.X, Owner.Y + 1)/* + textpos*/);

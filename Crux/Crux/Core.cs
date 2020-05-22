@@ -240,13 +240,15 @@ namespace Crux
 
                 var dg = new DataGrid(30, 120, 515, 320);
                 debugForm.AddNewControl(dg);
+                dg.ForeColor = Palette.Neonic;
 
-                var tbox = new TextBox(30,85, 200, 22);
-                debugForm.AddNewControl(tbox); 
+                var tbox = new TextBox(30, 85, 200, 22);
+                debugForm.AddNewControl(tbox);
                 tbox.OnDeactivated += (s, e) => { if (tbox.Text.Length == 0) tbox.Text = "Search..."; };
                 tbox.OnActivated += (s, e) => { if (tbox.Text == "Search...") tbox.Text = ""; };
                 //tbox.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
                 tbox.Text = "Search...";
+                tbox.ForeColor = Palette.Neonic;
                 tbox.CreateLayout(clayout);
 
                 dg.CreateLayout(clayout);
@@ -255,14 +257,14 @@ namespace Crux
                 dg.ColumnsSizing(3, 1, 1, 1, 1, 1f);
                 dg.AddColumns("Name", "DEF", "PRC", "FST", "BUCK$", "Action");
 
-                ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 35, Width = 60, BackColor = new Color(50, 50, 50, 250) };
+                ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 35, Width = 61, BackColor = new Color(50, 50, 50, 250) };
 
                 var cost = $"{Color.Gold}{300}$";
 
-                dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
-                dg.AddRow("Leather Armor", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
-                dg.AddRow("Fist Glove", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
-                dg.AddRow("Latex Cover", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
+                dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = Palette.Neonic });
+                dg.AddRow("Leather Armor", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = Palette.Neonic });
+                dg.AddRow("Fist Glove", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = Palette.Neonic });
+                dg.AddRow("Latex Cover", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = Palette.Neonic });
 
                 dg.IsHeightFixed = false;
 
@@ -276,11 +278,13 @@ namespace Crux
                         dg.AddRow("Yes", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
                 };
                 bRow.CreateLayout(clayout);
+                bRow.ForeColor = Palette.Neonic;
 
                 var bCol = new Button(liner.GetParams());
                 bCol.Text = "+Col";
                 bCol.OnLeftClick += (s, e) => { dg.AddColumn(); };
                 bCol.CreateLayout(clayout);
+                bCol.ForeColor = Palette.Neonic;
 
                 debugForm.AddNewControl(bRow, bCol);
 
@@ -293,16 +297,19 @@ namespace Crux
                 {
                     (s as ControlBase).BorderColor = Color.Gray;
                 };
+                bRow.ForeColor = Palette.Neonic;
 
                 bCol = new Button(liner.GetParams());
                 bCol.Text = "-Col";
                 bCol.OnLeftClick += (s, e) => { dg.RemoveColumn(dg.TotalColumns - 1); };
                 bCol.CreateLayout(clayout);
+                bCol.ForeColor = Palette.Neonic;
 
                 var bFH = new Button(liner.GetParams());
                 bFH.Text = "+-FH";
                 bFH.OnLeftClick += (s, e) => { dg.IsHeightFixed = !dg.IsHeightFixed; };
                 bFH.CreateLayout(clayout);
+                bFH.ForeColor = Palette.Neonic;
 
                 debugForm.AddNewControl(bRow, bCol, bFH);
             }
