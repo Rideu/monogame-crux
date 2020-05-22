@@ -81,7 +81,7 @@ namespace Crux.BaseControls
             panel.Alias = $"Cell{TotalRows}";
             panel.SliderVisible = false;
             panel.IsScrollable = false;
-            if (Layout != null) 
+            if (Layout != null)
                 panel.CreateLayout(Layout);
 
             if (value is ControlBase)
@@ -231,50 +231,53 @@ namespace Crux.BaseControls
 
         void Arrange()
         {
+            TableContainer.SuspendLayout();
+
+            //var colwidth = -1;//- bordersize*2?;
+            var colwidth = TableContainer.Width / TotalColumns;//- bordersize*2?;
+            var floatdiff = (colwidth - (int)colwidth) * TotalColumns;
+            colwidth = (int)colwidth;
+            var rowheight = FixedHeight == -1 ? TableContainer.Height / TotalRows : FixedHeight;//- bordersize*2?;
+
+            var acm = 0f;
+
+            for (int c = 0; c < TotalColumns; c++)
             {
+                var cwidth = colwidths[c] * colwidth;
+                var label = colHeaders[c];
 
-                //var colwidth = -1;//- bordersize*2?;
-                var colwidth = TableContainer.Width / TotalColumns;//- bordersize*2?;
-                var floatdiff = (colwidth - (int)colwidth) * TotalColumns;
-                colwidth = (int)colwidth;
-                var rowheight = FixedHeight == -1 ? TableContainer.Height / TotalRows : FixedHeight;//- bordersize*2?;
+                label.RelativePosition = new Vector2(acm + cwidth / 2 - defaultFont.MeasureString(label.Text).X / 2, 0);
 
-                var acm = 0f;
+                acm += cwidth;
+            }
+
+            acm = 0f;
+
+            for (int r = 0; r < TotalRows; r++)
+            {
+                acm = 0f;
+                var rowcolor = r % 2 == 0 ? new Color(.15f, .15f, .15f, 1) : new Color(.13f, .13f, .13f, 1);
 
                 for (int c = 0; c < TotalColumns; c++)
                 {
                     var cwidth = colwidths[c] * colwidth;
-                    var label = colHeaders[c];
+                    var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .95f);
+                    var current_cell = TableCells[r][c];
 
-                    label.RelativePosition = new Vector2(acm + cwidth / 2 - defaultFont.MeasureString(label.Text).X / 2, 0);
+
+
+                    current_cell.BackColor = rowcolcolor;
+                    current_cell.BorderSize = 0;
+
+                    current_cell.RelativePosition = new Vector2(acm, rowheight * r);
+                    current_cell.Width = cwidth + (c == TotalColumns - 1 ? floatdiff : 0);
+                    current_cell.Height = rowheight;
 
                     acm += cwidth;
                 }
-
-                acm = 0f;
-
-                for (int r = 0; r < TotalRows; r++)
-                {
-                    acm = 0f;
-                    var rowcolor = r % 2 == 0 ? new Color(.15f, .15f, .15f, 1) : new Color(.13f, .13f, .13f, 1);
-
-                    for (int c = 0; c < TotalColumns; c++)
-                    {
-                        var cwidth = colwidths[c] * colwidth;
-                        var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .95f);
-                        var current_cell = TableCells[r][c];
-
-                        current_cell.BackColor = rowcolcolor;
-                        current_cell.BorderSize = 0;
-
-                        current_cell.RelativePosition = new Vector2(acm, rowheight * r);
-                        current_cell.Width = cwidth + (c == TotalColumns - 1 ? floatdiff : 0);
-                        current_cell.Height = rowheight;
-
-                        acm += cwidth;
-                    }
-                }
             }
+
+            TableContainer.ResumeLayout();
 
         }
 
@@ -285,12 +288,12 @@ namespace Crux.BaseControls
         List<Label> colHeaders = new List<Label>();
 
         public override void Draw()
-        { 
+        {
             base.Draw();
 
             TableContainer.Draw();
-              
-            ContentSlider.Draw(); 
+
+            ContentSlider.Draw();
         }
     }
 }

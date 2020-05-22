@@ -408,12 +408,24 @@ namespace Crux.BaseControls
             }
         }
 
+        bool LockTransform;
+        public virtual void SuspendLayout()
+        {
+            LockTransform = true;
+        }
+
+        public virtual void ResumeLayout()
+        {
+            LockTransform = false;
+            CalcContentBounds();
+        }
+
         /// <summary>
         /// Used to calculate content clipping
         /// </summary>
         public virtual void CalcContentBounds()
         {
-            if (Controls.Count > 0)
+            if (Controls.Count > 0 && !LockTransform)
             {
                 var x = Controls.Min(n => n.RelativePosition.X);
                 var y = Controls.Min(n => n.RelativePosition.Y);
@@ -667,10 +679,10 @@ namespace Crux.BaseControls
                 {
                     Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f)); // Primary
                     Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
-                     
+
                 }
             }
-            Batch.End(); 
+            Batch.End();
         }
 
         #endregion
