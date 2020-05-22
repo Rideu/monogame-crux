@@ -74,22 +74,14 @@ namespace Crux
         public static Texture2D pixel;
         public static Texture2D form_layout;
 
-        public static Texture2D
-            hud_formbase,
-            hud_form_headname,
-            hud_form_headseam,
-            hud_form_headend,
-            hud_form_leftborder,
-            hud_form_rightborder,
-            hud_form_bottomleft,
-            hud_form_bottomseam,
-            hud_form_bottomright;
 
         // Fonts
         public static SpriteFont font0, font1;
 
         // Sounds
-        public static SoundEffect keyPress;
+        public static SoundEffect
+            keyPress,
+            click, click1, click2, click3;
 
         protected override void LoadContent()
         {
@@ -110,19 +102,18 @@ namespace Crux
 
             #region Sounds
 
-            SoundEffect.MasterVolume = 0.1f;
+            SoundEffect.MasterVolume = 0.5f;
 
-            keyPress = Content.Load<SoundEffect>("sounds\\key");
+            keyPress = Content.Load<SoundEffect>("sounds\\key1");
+            click = Content.Load<SoundEffect>("sounds\\click");
+            click1 = Content.Load<SoundEffect>("sounds\\click1");
+            click2 = Content.Load<SoundEffect>("sounds\\click2");
+            click3 = Content.Load<SoundEffect>("sounds\\click3");
 
             #endregion
 
             #region Textures
 
-
-            { // TODO: Form Layout
-                hud_formbase = Content.Load<Texture2D>("images\\form_layout");
-
-            }
             #endregion
 
             #region Debug
@@ -250,6 +241,7 @@ namespace Crux
                 tbox.Text = "Search...";
                 tbox.ForeColor = Palette.Neonic;
                 tbox.CreateLayout(clayout);
+                tbox.KeyPressedSound = keyPress;
 
                 dg.CreateLayout(clayout);
                 dg.BorderSize = 0;
@@ -274,6 +266,7 @@ namespace Crux
                 bRow.Text = "+Row";
                 bRow.OnLeftClick += (s, e) =>
                 {
+                    click1.Play(1, .5f, 0);
                     for (int i = e.KeysHandled.Contains(Keys.LeftShift) ? -9 : 0; i < 1; i++)
                         dg.AddRow("Yes", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
                 };
@@ -282,7 +275,7 @@ namespace Crux
 
                 var bCol = new Button(liner.GetParams());
                 bCol.Text = "+Col";
-                bCol.OnLeftClick += (s, e) => { dg.AddColumn(); };
+                bCol.OnLeftClick += (s, e) => { click.Play(1, .5f, 0); dg.AddColumn(); };
                 bCol.CreateLayout(clayout);
                 bCol.ForeColor = Palette.Neonic;
 
@@ -290,7 +283,7 @@ namespace Crux
 
                 bRow = new Button(liner.GetParams());
                 bRow.Text = "-Row";
-                bRow.OnLeftClick += (s, e) => { dg.RemoveRow(dg.TotalRows - 1); };
+                bRow.OnLeftClick += (s, e) => { click1.Play(1, .5f, 0); dg.RemoveRow(dg.TotalRows - 1); };
                 bRow.CreateLayout(clayout);
                 bRow.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
                 bRow.OnDeactivated += (s, e) =>
@@ -301,13 +294,13 @@ namespace Crux
 
                 bCol = new Button(liner.GetParams());
                 bCol.Text = "-Col";
-                bCol.OnLeftClick += (s, e) => { dg.RemoveColumn(dg.TotalColumns - 1); };
+                bCol.OnLeftClick += (s, e) => { click2.Play(1, .5f, 0); dg.RemoveColumn(dg.TotalColumns - 1); };
                 bCol.CreateLayout(clayout);
                 bCol.ForeColor = Palette.Neonic;
 
                 var bFH = new Button(liner.GetParams());
                 bFH.Text = "+-FH";
-                bFH.OnLeftClick += (s, e) => { dg.IsHeightFixed = !dg.IsHeightFixed; };
+                bFH.OnLeftClick += (s, e) => { click3.Play(1, .5f, 0); dg.IsHeightFixed = !dg.IsHeightFixed; };
                 bFH.CreateLayout(clayout);
                 bFH.ForeColor = Palette.Neonic;
 
