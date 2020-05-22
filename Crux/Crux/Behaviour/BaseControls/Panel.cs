@@ -200,26 +200,26 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
-            var drawb = Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
-            DrawBorders();
+            //var drawb = Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
+            base.Draw();
 
-            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
-            {
-                if (!hasLayout)
-                {
-                    Batch.DrawFill(Bounds, BackColor * .8f); // Primary
-                    Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
-                }
-                else
-                {
-                    DrawLayout(null);
-                }
-            }
-            Batch.End();
+            //Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+            //{
+            //    if (!hasLayout)
+            //    {
+            //        Batch.DrawFill(Bounds, BackColor * .8f); // Primary
+            //        Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
+            //    }
+            //    else
+            //    {
+            //        DrawLayout(null);
+            //    }
+            //}
+            //Batch.End();
 
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
-                if (drawb.Intersects(Controls[i].DrawingBounds))
+                if (drawingBounds.Intersects(Controls[i].DrawingBounds))
                     Controls[i].Draw();
 
                 if (false) // Drawing bounds debug

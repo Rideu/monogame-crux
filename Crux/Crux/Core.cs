@@ -257,10 +257,12 @@ namespace Crux
 
                 ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 35, Width = 60, BackColor = new Color(50, 50, 50, 250) };
 
-                dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, Color.Gold + "" + 300 + "$", new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
-                dg.AddRow("Leather Armor", 8, 5, 8f / 5, 300 + "$", new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
-                dg.AddRow("Fist Glove", 8, 5, 8f / 5, 300 + "$", new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
-                dg.AddRow("Latex Cover", 8, 5, 8f / 5, 300 + "$", new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
+                var cost = $"{Color.Gold}{300}$";
+
+                dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
+                dg.AddRow("Leather Armor", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
+                dg.AddRow("Fist Glove", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
+                dg.AddRow("Latex Cover", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
 
                 dg.IsHeightFixed = false;
 
@@ -271,7 +273,7 @@ namespace Crux
                 bRow.OnLeftClick += (s, e) =>
                 {
                     for (int i = e.KeysHandled.Contains(Keys.LeftShift) ? -9 : 0; i < 1; i++)
-                        dg.AddRow("Yes", 8, 5, 8f / 5, 300 + "$", new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
+                        dg.AddRow("Yes", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
                 };
                 bRow.CreateLayout(clayout);
 

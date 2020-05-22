@@ -285,21 +285,11 @@ namespace Crux.BaseControls
         List<Label> colHeaders = new List<Label>();
 
         public override void Draw()
-        {
-            //Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
-
-
-
-            DrawBorders();
+        { 
+            base.Draw();
 
             TableContainer.Draw();
-
-
-            for (int i = Controls.Count - 1; i >= 0; i--)
-            {
-                Controls[i].Draw(); 
-            }
-
+              
             ContentSlider.Draw(); 
         }
     }
