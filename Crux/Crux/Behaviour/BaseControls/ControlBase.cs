@@ -828,14 +828,17 @@ namespace Crux.BaseControls
             MultiSampleAntiAlias = true
         };
 
+        static GraphicsMetrics metricsData;
+
         public static void Draw(SpriteBatch batch, GameTime gt)
         {
 #if DEBUG
-
+            metricsData = batch.GraphicsDevice.Metrics;
             batch.Begin(SpriteSortMode.Deferred, bs, ss, null, rs, null, null);
             if (updCalled)
             {
-                batch.DrawString(dbgFont, GetMetrics(), new Vector2(180, 1), Color.White);
+                batch.DrawString(dbgFont, GetGraphicsMetrics(), new Vector2(10, 150), Color.White, 0, .75f);
+                batch.DrawString(dbgFont, GetMetrics(), new Vector2(10, 50), Color.White, 0, .75f);
                 batch.DrawString(dbgFont, $"FPS: {FPS}\nFT: {gt.ElapsedGameTime.TotalMilliseconds:0.000}", new Vector2(10, 1), Color.White);
             }
             batch.End();
@@ -853,6 +856,17 @@ namespace Crux.BaseControls
             updCalled = false;
         }
 
+        public static string GetGraphicsMetrics()
+        {
+            return
+$@"CC: {metricsData.ClearCount}
+DC: {metricsData.DrawCount}
+PC: {metricsData.PrimitiveCount}  
+SC: {metricsData.SpriteCount} 
+[TC: {metricsData.TextureCount}] 
+[TgC: {metricsData.TargetCount}] 
+";
+        }
         public static string GetMetrics()
         {
             return $@"iT: {ControlBase.dbg_initsTotal}

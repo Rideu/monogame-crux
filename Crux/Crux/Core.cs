@@ -36,14 +36,14 @@ namespace Crux
         public Core()
         {
             graphics = new GraphicsDeviceManager(this) { PreferMultiSampling = true };
-            graphics.PreferredBackBufferWidth = 720;
+            graphics.PreferredBackBufferWidth = 1080;
             graphics.PreferredBackBufferHeight = 720;
             graphics.GraphicsProfile = GraphicsProfile.HiDef;
             WinSize = new Point(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
             Content.RootDirectory = "Content";
             GameForm = (WinForms.Form)WinForms.Form.FromHandle(Window.Handle);
             var scr = WinForms.Screen.PrimaryScreen.WorkingArea.Size;
-            Window.Position = new Point(scr.Width / 2 - graphics.PreferredBackBufferWidth / 2, scr.Height / 2 - graphics.PreferredBackBufferHeight / 2);
+            Window.Position = new Point(scr.Width / 2 - graphics.PreferredBackBufferWidth / 2 - 200, scr.Height / 2 - graphics.PreferredBackBufferHeight / 2);
             PrimaryWindow = Window;
 
             //TargetElapsedTime = new TimeSpan(200);
@@ -134,7 +134,7 @@ namespace Crux
             //TextBuilder.EnableDebug = true;
 
 
-            Form debugForm = new Form(30, 140, 550, 550, new Color(74, 74, 74))
+            Form debugForm = new Form(330, 140, 550, 550, new Color(74, 74, 74))
             {
                 IsResizable = true,
                 IsVisible = true

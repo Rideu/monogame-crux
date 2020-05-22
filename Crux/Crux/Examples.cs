@@ -33,7 +33,7 @@ namespace Crux
         {
             #region Color Picker
 
-            colorPicker = new Form(10, 10, 400, 200, new Color(14, 14, 14))
+            colorPicker = new Form(310, 10, 400, 200, new Color(14, 14, 14))
             {
                 IsVisible = true,
                 IsResizable = true,
@@ -58,7 +58,7 @@ namespace Crux
             #endregion
 
             #region Calc
-            var f = new Form(340, 100, 310, 320, new Color(40, 40, 40))
+            var f = new Form(640, 100, 310, 320, new Color(40, 40, 40))
             {
                 IsVisible = true
             };
