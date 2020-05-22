@@ -142,7 +142,7 @@ namespace Crux.BaseControls
 
         public virtual int GetID { get { return ID; } }
 
-        public string Name { get => GetType().ToString() + " : " + Alias; set => Alias = value; }
+        public string Name { get => $"{GetType().ToString()} [{Text.Substring(0, Math.Min(Text.Length, 10))}] : {Alias}"; set => Alias = value; }
 
         internal protected string Alias = "ControlBase";
 
@@ -258,7 +258,7 @@ namespace Crux.BaseControls
         #region Behaviour
 
         /// <summary>
-        /// Returns true if mouse stays inside form's bounds.
+        /// Returns true if mouse stays inside control's bounds.
         /// </summary>
         public virtual bool IsActive { get; internal set; }
 
@@ -447,8 +447,11 @@ namespace Crux.BaseControls
         public event EventHandler<ControlArgs> OnMouseScroll;
 
         internal bool F_Focus;
+        [Obsolete("Delegated to OnMouseEnter")]
         public event EventHandler OnFocusEnter;
+        [Obsolete("Delegated to OnMouseEnter")]
         public event EventHandler OnFocusLeave;
+        [Obsolete("Unused")]
         public event EventHandler OnFocusChanged;
 
         public event EventHandler OnActivated;
@@ -553,7 +556,7 @@ namespace Crux.BaseControls
 
             #region Holding Activity
 
-            IsHovering = Bounds.Contains(Control.MousePos) && Owner.IsActive;
+            IsHovering = IsActive && Bounds.Contains(Control.MousePos) && Owner.IsActive;
             IsHolding = IsHovering && Control.LeftButtonPressed;
             BlockFocus = false;
             //if (BlockFocus = IsHovering && !Control.LeftButtonPressed && EnterHold)
@@ -582,14 +585,14 @@ namespace Crux.BaseControls
                 OnActivated?.Invoke(this, EventArgs.Empty);
             }
 
-            if (IsHovering && Control.LeftClick() && !EnterHold)
+            if (IsActive && IsHovering && Control.LeftClick() && !EnterHold)
             {
                 IsClicked = true;
                 OnLeftClick?.Invoke(this, ControlArgs.GetState);
                 //IsHovering = !true;
             }
 
-            if (IsHovering && Control.RightClick())
+            if (IsActive && IsHovering && Control.RightClick())
             {
                 IsClicked = true;
                 OnRightClick?.Invoke(this, ControlArgs.GetState);
@@ -832,8 +835,8 @@ namespace Crux.BaseControls
             batch.Begin(SpriteSortMode.Deferred, bs, ss, null, rs, null, null);
             if (updCalled)
             {
-                batch.DrawString(dbgFont, GetMetrics(), new Vector2(80, 1), Color.White);
-                batch.DrawString(dbgFont, $"{(float)gt.ElapsedGameTime.TotalMilliseconds:0.000}", new Vector2(10, 1), Color.White);
+                batch.DrawString(dbgFont, GetMetrics(), new Vector2(180, 1), Color.White);
+                batch.DrawString(dbgFont, $"FPS: {FPS}\nFT: {gt.ElapsedGameTime.TotalMilliseconds:0.000}", new Vector2(10, 1), Color.White);
             }
             batch.End();
 

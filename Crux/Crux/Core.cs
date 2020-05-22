@@ -46,6 +46,9 @@ namespace Crux
             Window.Position = new Point(scr.Width / 2 - graphics.PreferredBackBufferWidth / 2, scr.Height / 2 - graphics.PreferredBackBufferHeight / 2);
             PrimaryWindow = Window;
 
+            //TargetElapsedTime = new TimeSpan(200);
+            IsFixedTimeStep = false;
+
             ts = new ToolSet();
             //ts.Show();
         }
@@ -92,7 +95,6 @@ namespace Crux
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-
             #region Fonts
 
             font0 = Content.Load<SpriteFont>("fonts\\arial");
@@ -138,7 +140,17 @@ namespace Crux
                 IsVisible = true
             };
 
-            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = new Color(238, 195, 114), });
+            #region debugForm Setup
+
+            debugForm.OnKeyUp += (s, e) =>
+            {
+                var k = e.KeysHandled;
+            };
+            //debugForm.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout2"), true));
+            FormManager.AddForm("MainForm", debugForm);
+
+            //debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = new Color(238, 195, 114), });
+            #endregion
 
             #region TextArea
             if (false)
@@ -249,7 +261,7 @@ namespace Crux
 
                 dg.IsHeightFixed = false;
 
-                ControlTemplate liner = new ControlTemplate { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
+                ControlTemplate liner = new ControlTemplate { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = -45, MarginY = -35 };
 
                 var bRow = new Button(liner.GetParams());
                 bRow.Text = "+Row";
@@ -295,7 +307,7 @@ namespace Crux
                 DynamicSoundEffectInstance dynaSound = new DynamicSoundEffectInstance(41000, AudioChannels.Mono);
 
 
-                var cl = new ControlTemplate { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
+                var cl = new ControlTemplate { RelativePos = new Vector2(30, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
 
                 var bPlay = new Button(cl.GetParams()) { Text = "Play" };
 
@@ -346,17 +358,6 @@ namespace Crux
             }
             #endregion
 
-
-            #region debugForm Setup
-
-            debugForm.OnKeyUp += (s, e) =>
-            {
-                var k = e.KeysHandled;
-            };
-            debugForm.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout2"), true));
-            FormManager.AddForm("MainForm", debugForm);
-
-            #endregion
             Examples();
 
             Simplex.Init(GraphicsDevice);
@@ -381,6 +382,20 @@ namespace Crux
 
             DebugDevice.Update();
 
+            #region ManualFps
+
+            Elapse += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            var freq = 4f;
+            if (Elapse > 1000 / freq)
+            {
+                FPS = (FramesPassed + PrevFrames + Prev1Frames + Prev2Frames) / 4f * freq;
+                Prev2Frames = Prev1Frames;
+                Prev1Frames = PrevFrames;
+                PrevFrames = FramesPassed;
+                Elapse = FramesPassed = 0; 
+            }
+
+            #endregion
             base.Update(gt = gameTime);
         }
 
@@ -391,7 +406,6 @@ namespace Crux
 
 
         Rectangle reg = new Rectangle(10, 220, 290, 40);
-
 
         static BlendState bs = new BlendState()
         {
@@ -422,52 +436,19 @@ namespace Crux
             MultiSampleAntiAlias = true
         };
 
+        int Prev2Frames, Prev1Frames, PrevFrames, FramesPassed;
+        public static float FPS;
+        float Elapse;
 
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(new Color(10, 10, 10));
-            SpriteEffect se = new SpriteEffect(GraphicsDevice) { };
 
-            spriteBatch.Begin(SpriteSortMode.Deferred, bs, ss, rasterizerState: rs);
-            {
-                spriteBatch.DrawFill(reg, Color.White * 0.2f);
-
-                string ss = "aaaaaaaaa bbb ccccccc dddd eeeeeee";
-                var ws = ss.Split(' ');
-                var cur = new Vector2();
-                var csz = new Vector2();
-                var bw = reg.Width;
-
-                foreach (var w in ws)
-                {
-                    var sz = font0.MeasureString(w);
-                    csz += sz;
-                }
-
-                csz = new Vector2(csz.X, csz.Y);
-
-                var intr = (bw - csz.X) / ws.Length;
-
-                for (int i = 0; i < ws.Length; i++)
-                {
-                    var s = ws[i];
-                    var l = reg.Location.ToVector2();
-                    var sz = font0.MeasureString(s);
-
-
-
-                    l.X += cur.X + (intr) * i + (intr / ws.Length * i);
-
-                    spriteBatch.DrawString(font0, s, l.Floor(), Color.White, 0, 1.0f);
-
-                    cur += sz;
-                }
-            }
-            spriteBatch.End();
 
             FormManager.Draw();
 
             DebugDevice.Draw(spriteBatch, gameTime);
+            FramesPassed++;
             base.Draw(gameTime);
         }
     }

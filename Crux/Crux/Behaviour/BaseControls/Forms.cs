@@ -493,20 +493,7 @@ namespace Crux.BaseControls
         {
             if (IsActive)
             {
-
-                //if (EnterHold)
-                //{
-                //    //IsClicked = true;
-                //    IsHovering = false;
-                //}
-
-                //if (Bounds.Contains(Control.MousePos) && !EnterHold)
-                //{
-                //    IsHovering = !IgnoreControl ? true : false;
-                //}
-                //else IsHovering = false;
-
-
+                 
 
                 if ((IsActive/* && !MessageBox.IsOpened*/) || IsIndepend)
                 {

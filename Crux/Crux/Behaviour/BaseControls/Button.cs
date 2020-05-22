@@ -15,9 +15,7 @@ namespace Crux.BaseControls
         #region Fields
         public override ControlBase Owner { get { return OwnerField; } set { OwnerField = value; } }
         private ControlBase OwnerField;
-
-        //PERF: wrap; precalculate text position in getter, then alter it's drawing code
-        public override string Text { get => text; set { text = value; } }
+         
         public float TextScale { get; set; } = 1f;
 
 
