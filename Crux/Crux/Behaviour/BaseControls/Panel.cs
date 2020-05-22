@@ -232,8 +232,8 @@ namespace Crux.BaseControls
                 }
             }
 
-            //if (ContentSlider.IsVisible)
-            ContentSlider.Draw();
+            if (ContentSlider.IsVisible)
+                ContentSlider.Draw();
 
             //Batch.Begin(SpriteSortMode.Deferred);
             //{

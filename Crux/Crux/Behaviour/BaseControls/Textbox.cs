@@ -62,12 +62,13 @@ namespace Crux.BaseControls
             //ID = Owner.GetControlsCount + 1;
             //Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
             BorderColor = BackColor * 1.5f;
-            OnLeftClick += (s, e) =>
+            OnActivated += (s, e) =>
             {
                 InputMode = true;
                 //t.Reset(false);
                 //t.Start();
             };
+            OnDeactivated += (s, e) => { InputMode = false; };
             //OnMouseLeave += (s, e) => { Invalidate(); };
 
             text = new TextBuilder(DefaultFont, "", new Vector2(0 /*+ (padding.X - scroll.Width)*/, 0), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, true/*, this*/);
@@ -216,7 +217,7 @@ namespace Crux.BaseControls
         public override void InnerUpdate()
         {
             base.InnerUpdate();
-            if (ActiveControl != this) InputMode = false;
+            //if (ActiveControl != this) InputMode = false;
             //InputMode = true; // InputMode && Control.MouseHoverOverG(Bounds); 
         }
 

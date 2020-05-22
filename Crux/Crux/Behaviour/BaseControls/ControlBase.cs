@@ -89,9 +89,9 @@ namespace Crux.BaseControls
         {
             if (ActiveControl != null)
             {
-                if (!ActiveControl.Bounds.Contains(Control.MousePos) && Control.LeftButtonPressed)
+                if (!ActiveControl.IsHovering && Control.LeftButtonPressed && !ActiveControl.LeaveHold)
                 {
-                    ActiveControl.OnControlDisactivated();
+                    ActiveControl.OnControlDeactivated();
                     ActiveControl = null;
                 }
                 else
@@ -272,6 +272,8 @@ namespace Crux.BaseControls
         public bool IsFixed { get; set; } = false;
 
         public bool EnterHold { get; private set; }
+
+        public bool LeaveHold { get; private set; }
 
         public bool BlockFocus { get; private set; }
 
@@ -477,6 +479,7 @@ namespace Crux.BaseControls
             IsClicked = false;
 
 
+            #region Mouse Activity
             if (IsActive)
             {
                 if (!OMEOccured)
@@ -503,53 +506,29 @@ namespace Crux.BaseControls
                     OnMouseLeave?.Invoke(this, ControlArgs.GetState);
                     EnterHold = !(OMLOccured = true);
                     Owner.EnterHold = EnterHold;
-                }
-            }
-
-            #region Focusing
-
-            if (F_Focus != IsActive)
-            {
-                if (!EnterHold && !BlockFocus)
-                {
-                    if (F_Focus == false && IsActive == true)
-                    {
-                        OnFocusEnter?.Invoke(this, EventArgs.Empty);
-                    }
-                    else if (F_Focus == true && IsActive == false)
-                    {
-                        Invalidate();
-                        OnFocusLeave?.Invoke(this, EventArgs.Empty);
-                    }
-                    //OnFocusChanged?.Invoke(this, EventArgs.Empty); //??
+                    Invalidate();
                 }
             }
 
             #endregion
 
-            #region Mouse Activity
+            #region Focusing
 
-            //if (!IsActive) OMEOccured = false;
-            //if (IsActive && !OMEOccured)
+            //if (F_Focus != IsActive)
             //{
-            //    OnMouseEnter?.Invoke(this, ControlArgs.GetState);
-            //    EnterHold = Control.LeftButtonPressed;
-            //    OMEOccured = true;
-            //}
-
-            //if (IsActive)
-            //{
-            //    if (Control.WheelVal != 0)
+            //    if (!EnterHold && !BlockFocus)
             //    {
-            //        OnMouseScroll?.Invoke(this, ControlArgs.GetState);
+            //        if (F_Focus == false && IsActive == true)
+            //        {
+            //            OnFocusEnter?.Invoke(this, EventArgs.Empty);
+            //        }
+            //        else if (F_Focus == true && IsActive == false)
+            //        {
+            //            Invalidate();
+            //            OnFocusLeave?.Invoke(this, EventArgs.Empty);
+            //        }
+            //        //OnFocusChanged?.Invoke(this, EventArgs.Empty); //??
             //    }
-            //}
-
-            //if (IsActive) OMLOccured = false;
-            //if (!IsActive && !OMLOccured)
-            //{
-            //    OnMouseLeave?.Invoke(this, ControlArgs.GetState);
-            //    EnterHold = !(OMLOccured = true);
             //}
 
             #endregion
@@ -558,6 +537,26 @@ namespace Crux.BaseControls
 
             IsHovering = IsActive && Bounds.Contains(Control.MousePos) && Owner.IsActive;
             IsHolding = IsHovering && Control.LeftButtonPressed;
+
+            if (IsHolding && LeaveHold == false)
+            {
+                LeaveHold = true;
+            }
+
+            if (LeaveHold == true)
+            {
+                if (!Control.LeftButtonPressed && !IsHovering || !Control.LeftButtonPressed)
+                    LeaveHold = false;
+            }
+
+            //if (IsHolding == false)
+            //{
+            //    IsHolding = IsHovering && Control.LeftButtonPressed;
+            //}
+            //else
+            //{
+            //    IsHolding = !IsHovering && !Control.LeftButtonPressed;
+            //}
             BlockFocus = false;
             //if (BlockFocus = IsHovering && !Control.LeftButtonPressed && EnterHold)
             //{
@@ -580,7 +579,7 @@ namespace Crux.BaseControls
 
             if (IsActive && IsHolding && !(this is Form) && ActiveControl != this && !EnterHold)
             {
-                ActiveControl?.OnControlDisactivated();
+                ActiveControl?.OnControlDeactivated();
                 ActiveControl = this;
                 OnActivated?.Invoke(this, EventArgs.Empty);
             }
@@ -608,7 +607,7 @@ namespace Crux.BaseControls
             dbg_eventUpdates++;
         }
 
-        protected void OnControlDisactivated()
+        protected void OnControlDeactivated()
         {
             OnDeactivated?.Invoke(this, EventArgs.Empty);
         }
@@ -617,6 +616,7 @@ namespace Crux.BaseControls
         {
             OnUpdate?.Invoke(this, EventArgs.Empty);
             EventProcessor();
+            //drawingBounds = DrawingBounds;
         }
 
         #endregion
@@ -658,9 +658,9 @@ namespace Crux.BaseControls
 
                 var top = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
                 var bottom = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
-                //var fa = FillingArea;
+                var fa = FillingArea;
                 //Batch.GraphicsDevice.ScissorRectangle = fa;
-                //Batch.DrawFill(fa, BackColor);
+                Batch.DrawFill(fa, BackColor);
 
                 //OnDraw?.Invoke();
                 Batch.Draw(Layout.TopLeft, Bounds.Location.ToVector2(), diffuse);
@@ -684,17 +684,30 @@ namespace Crux.BaseControls
         public virtual void DrawBorders()
         {
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
-            if (DrawBorder)
             {
-                Batch.DrawFill(Bounds, BorderColor * (BackColor.A / 255f));
-                Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor);
-            }
-            else
-            {
-                Batch.DrawFill(Bounds, BackColor); // Primary
+                if (DrawBorder)
+                {
+                    Batch.DrawFill(Bounds, BorderColor * (BackColor.A / 255f));
+                    Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor);
+                }
+                else
+                {
+                    if (!hasLayout)
+                    {
+                        Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f)); // Primary
+                        Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
+                    }
+                    else
+                    {
+                        DrawLayout(null);
+                    }
+                    Batch.DrawFill(Bounds, BackColor); // Primary
+                }
             }
             Batch.End();
         }
+
+        //protected Rectangle drawingBounds;
 
         public event Action OnDraw;
         /// <summary>
@@ -702,8 +715,9 @@ namespace Crux.BaseControls
         /// </summary>
         public virtual void Draw()
         {
-            Rectangle drawb;
-            Batch.GraphicsDevice.ScissorRectangle = drawb = DrawingBounds;
+            Rectangle drawingBounds = DrawingBounds;
+            Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
+            //MainDraw();
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 if (!hasLayout)

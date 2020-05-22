@@ -125,9 +125,9 @@ namespace Crux.BaseControls
             if (Bounds.Contains(Control.MousePos))
                 IsHovering = true;
 
-            if (IsHovering)
+            if (ActiveControl == this)
             {
-                if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+                if (Control.LeftButtonPressed)
                 {
                     var v = val;
                     if (DispType == Type.Horizontal)
@@ -167,10 +167,8 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
-            if (!IsVisible) return;
-            var drawb = DrawingBounds;
-            Batch.GraphicsDevice.ScissorRectangle = drawb;
-            //Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)(Owner.X + X), (int)(Owner.Y + Y - 1)), new Point((int)Width, (int)Height + 2));
+            base.Draw();
+
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
                 Batch.DrawFill(Bounds, BorderColor);

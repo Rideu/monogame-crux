@@ -146,10 +146,10 @@ namespace Crux
             {
                 var k = e.KeysHandled;
             };
-            //debugForm.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\form_layout2"), true));
+
             FormManager.AddForm("MainForm", debugForm);
 
-            //debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = new Color(238, 195, 114), });
+            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = new Color(238, 195, 114), });
             #endregion
 
             #region TextArea
@@ -236,17 +236,20 @@ namespace Crux
 
             if (true)
             {
+                var clayout = new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true);
+
                 var dg = new DataGrid(20, 120, 515, 320);
                 debugForm.AddNewControl(dg);
 
-                var tbox = new TextBox(10, 120, 100, 22);
+                var tbox = new TextBox(20,85, 200, 22);
                 debugForm.AddNewControl(tbox);
                 tbox.OnDeactivated += (s, e) => { if (tbox.Text.Length == 0) tbox.Text = "Search..."; };
                 tbox.OnActivated += (s, e) => { if (tbox.Text == "Search...") tbox.Text = ""; };
                 //tbox.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
                 tbox.Text = "Search...";
+                tbox.CreateLayout(clayout);
 
-                //dg.CreateLayout(new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true));
+                dg.CreateLayout(clayout);
                 dg.BorderSize = 0;
 
                 dg.ColumnsSizing(3, 1, 1, 1, 1, 1f);
@@ -261,7 +264,7 @@ namespace Crux
 
                 dg.IsHeightFixed = false;
 
-                ControlTemplate liner = new ControlTemplate { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = -45, MarginY = -35 };
+                ControlTemplate liner = new ControlTemplate { RelativePos = new Vector2(20, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
 
                 var bRow = new Button(liner.GetParams());
                 bRow.Text = "+Row";
@@ -270,16 +273,19 @@ namespace Crux
                     for (int i = e.KeysHandled.Contains(Keys.LeftShift) ? -9 : 0; i < 1; i++)
                         dg.AddRow("Yes", 8, 5, 8f / 5, 300 + "$", new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
                 };
+                bRow.CreateLayout(clayout);
 
                 var bCol = new Button(liner.GetParams());
                 bCol.Text = "+Col";
                 bCol.OnLeftClick += (s, e) => { dg.AddColumn(); };
+                bCol.CreateLayout(clayout);
 
                 debugForm.AddNewControl(bRow, bCol);
 
                 bRow = new Button(liner.GetParams());
                 bRow.Text = "-Row";
                 bRow.OnLeftClick += (s, e) => { dg.RemoveRow(dg.TotalRows - 1); };
+                bRow.CreateLayout(clayout);
                 bRow.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
                 bRow.OnDeactivated += (s, e) =>
                 {
@@ -289,10 +295,12 @@ namespace Crux
                 bCol = new Button(liner.GetParams());
                 bCol.Text = "-Col";
                 bCol.OnLeftClick += (s, e) => { dg.RemoveColumn(dg.TotalColumns - 1); };
+                bCol.CreateLayout(clayout);
 
                 var bFH = new Button(liner.GetParams());
                 bFH.Text = "+-FH";
                 bFH.OnLeftClick += (s, e) => { dg.IsHeightFixed = !dg.IsHeightFixed; };
+                bFH.CreateLayout(clayout);
 
                 debugForm.AddNewControl(bRow, bCol, bFH);
             }
@@ -358,6 +366,9 @@ namespace Crux
             }
             #endregion
 
+            var layout = new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true);
+
+            debugForm.CreateLayout(layout);
             Examples();
 
             Simplex.Init(GraphicsDevice);
@@ -392,7 +403,7 @@ namespace Crux
                 Prev2Frames = Prev1Frames;
                 Prev1Frames = PrevFrames;
                 PrevFrames = FramesPassed;
-                Elapse = FramesPassed = 0; 
+                Elapse = FramesPassed = 0;
             }
 
             #endregion

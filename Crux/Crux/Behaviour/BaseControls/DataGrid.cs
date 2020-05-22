@@ -72,6 +72,8 @@ namespace Crux.BaseControls
             base.InnerUpdate();
         }
 
+        #region Table Content
+
         protected virtual Panel CreateCell(object value = null)
         {
             var panel = new Panel(0, 1, 0, 0);
@@ -98,6 +100,8 @@ namespace Crux.BaseControls
 
         }
 
+        Panel TableContainer;
+
         #region Rows
 
         public virtual void AddRow(params object[] data)
@@ -107,8 +111,8 @@ namespace Crux.BaseControls
             //TableContainer.AddNewControl(p);
             //p.SliderVisible = false;
 
-            Table.Add(new List<Panel>());
-            var row = Table[Table.Count - 1];
+            TableCells.Add(new List<Panel>());
+            var row = TableCells[TableCells.Count - 1];
 
             for (int i = 0; i < TotalColumns; i++)
             {
@@ -123,15 +127,15 @@ namespace Crux.BaseControls
 
         public virtual void RemoveRow(int rowindex)
         {
-            var row = Table[rowindex];
+            var row = TableCells[rowindex];
             for (int i = 0; i < TotalColumns; i++)
             {
                 var c = row[0];
                 TableContainer.RemoveControl(c);
-                Table[rowindex].Remove(c);
+                TableCells[rowindex].Remove(c);
             }
 
-            Table.RemoveAt(rowindex);
+            TableCells.RemoveAt(rowindex);
 
             TotalRows--;
 
@@ -156,7 +160,7 @@ namespace Crux.BaseControls
 
             for (int i = 0; i < TotalRows; i++)
             {
-                Table[i].Add(CreateCell());
+                TableCells[i].Add(CreateCell());
             }
             TotalColumns++;
         }
@@ -200,7 +204,7 @@ namespace Crux.BaseControls
 
             for (int i = 0; i < TotalRows; i++)
             {
-                var row = Table[i];
+                var row = TableCells[i];
                 var c = row[colindex];
                 row.Remove(c);
                 TableContainer.RemoveControl(c);
@@ -258,7 +262,7 @@ namespace Crux.BaseControls
                     {
                         var cwidth = colwidths[c] * colwidth;
                         var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .95f);
-                        var current_cell = Table[r][c];
+                        var current_cell = TableCells[r][c];
 
                         current_cell.BackColor = rowcolcolor;
                         current_cell.BorderSize = 0;
@@ -274,15 +278,15 @@ namespace Crux.BaseControls
 
         }
 
+        #endregion
 
-        Panel TableContainer;
-        List<List<Panel>> Table = new List<List<Panel>>();
+        List<List<Panel>> TableCells = new List<List<Panel>>();
 
         List<Label> colHeaders = new List<Label>();
 
         public override void Draw()
         {
-            Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
+            //Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
 
 
 
@@ -293,26 +297,10 @@ namespace Crux.BaseControls
 
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
-                Controls[i].Draw();
-
-                if (false) // Drawing bounds debug
-                {
-                    //Batch.Begin(SpriteSortMode.Deferred, null, null, null);
-                    //{
-                    //    Batch.DrawFill(Controls[i].DrawingBounds, new Color(123, 77, 63, 50));
-                    //}
-                    //Batch.End();
-                }
+                Controls[i].Draw(); 
             }
 
-            ContentSlider.Draw();
-
-            //Batch.Begin(SpriteSortMode.Deferred);
-            //{
-            //    var u = DrawingBounds;
-            //    Batch.DrawFill(u, Color.Red * .5f);
-            //}
-            //Batch.End();
+            ContentSlider.Draw(); 
         }
     }
 }
