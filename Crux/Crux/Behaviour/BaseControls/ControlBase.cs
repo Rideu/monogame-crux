@@ -149,7 +149,7 @@ namespace Crux.BaseControls
         #endregion
 
         protected string text = "";
-        public virtual string Text { get => text; set => text = value; } 
+        public virtual string Text { get => text; set => text = value; }
         public virtual Color ForeColor { get; set; } = Color.White;
         public float ScrollValue { get; set; }
 
@@ -327,6 +327,17 @@ namespace Crux.BaseControls
             set
             {
                 Bounds = Rectangle(AbsoluteX, AbsoluteY, value, Height);
+                OnResize?.Invoke(this, EventArgs.Empty);
+                Owner?.CalcContentBounds();
+            }
+        }
+
+        public virtual Point Size
+        {
+            get => Bounds.Size;
+            set
+            {
+                Bounds = Rectangle(AbsoluteX, AbsoluteY, value.X, value.Y);
                 OnResize?.Invoke(this, EventArgs.Empty);
                 Owner?.CalcContentBounds();
             }
@@ -526,7 +537,7 @@ namespace Crux.BaseControls
 
             #region Holding Activity
 
-            IsHovering = IsActive && Bounds.Contains(Control.MousePos) && Owner.IsActive;
+            IsHovering = IsActive /*&& Bounds.Contains(Control.MousePos) && Owner.IsActive*/;
             IsHolding = IsHovering && Control.LeftButtonPressed;
 
             if (IsHolding && LeaveHold == false)
@@ -621,7 +632,16 @@ namespace Crux.BaseControls
 
             if (hasLayout)
             {
-                var diffuse = Color.White * backmul;
+                if(this is Panel && Alias.RegMatch(@"Cell\d").Success)
+                {
+                    if(IsHovering)
+                    {
+
+                    }
+                }
+                bool allowcustom = HoverColor.PackedValue > 0 && DiffuseColor.PackedValue > 0;
+                var diffuse = allowcustom ? IsHovering && !EnterHold ? IsHolding ? HoverColor : HoverColor : DiffuseColor : Color.White;
+                diffuse = (diffuse.R | diffuse.G | diffuse.B | diffuse.A) > 0 ? diffuse : Color.White;
                 var fw = Bounds.Width;
                 var fh = Bounds.Height;
 
@@ -629,7 +649,10 @@ namespace Crux.BaseControls
                 var bottom = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
                 var fa = FillingArea;
                 //Batch.GraphicsDevice.ScissorRectangle = fa;
-                Batch.DrawFill(fa, BackColor * backmul);
+                if (allowcustom)
+                    Batch.DrawFill(fa, diffuse * (BackColor.A / 255f));
+                else
+                    Batch.DrawFill(fa, BackColor * backmul);
 
                 //OnDraw?.Invoke();
                 Batch.Draw(Layout.TopLeft, Bounds.Location.ToVector2(), diffuse);
@@ -653,6 +676,9 @@ namespace Crux.BaseControls
         #endregion
 
         protected Rectangle drawingBounds;
+
+        public Color HoverColor { get; set; }
+        public Color DiffuseColor { get; set; }
 
         public event Action OnDraw;
         /// <summary>

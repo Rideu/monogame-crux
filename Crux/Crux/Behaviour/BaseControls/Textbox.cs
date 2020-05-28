@@ -39,20 +39,16 @@ namespace Crux.BaseControls
         SoundEffect keypressSound;
 
         #endregion
+         
+        public TextBox(Vector4 posform) : this(posform.X, posform.Y, posform.Z, posform.W) { }
 
-        public TextBox(Vector4 posform)
-        {
-            AbsoluteX = posform.X; AbsoluteY = posform.Y; Width = posform.Z; Height = posform.W;
-        }
+        public TextBox(Vector2 pos, Vector2 size) : this(pos.X, pos.Y, size.X, size.Y) { }
 
-        public TextBox(Vector2 pos, Vector2 size)
+        public TextBox(float x, float y, float width, float height, Color? col = default)
         {
-            AbsoluteX = pos.X; AbsoluteY = pos.Y; Width = size.X; Height = size.Y;
-        }
-
-        public TextBox(float x, float y, float width, float height)
-        {
-            AbsoluteX = x; AbsoluteY = y; Width = width; Height = height;
+            ForeColor = col.HasValue ? col.Value : Color.White;
+            AbsoluteX = x; AbsoluteY = y;
+            Size = new Point((int)width, (int)height);
         }
 
         internal override void Initialize()
@@ -282,7 +278,7 @@ namespace Crux.BaseControls
 
                 // Draw caret
                 if (InputMode)
-                    Batch.DrawFill(Rectangle(new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, BorderSize + Bounds.Y), new Vector2(1, fontStdHeight)), new Color(255, 255, 255, 255) * ease(t));
+                    Batch.DrawFill(Rectangle(new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, BorderSize + Bounds.Y), new Vector2(1, fontStdHeight)), HoverColor * ease(t));
 
                 //Batch.End();
                 //if (InputMode)

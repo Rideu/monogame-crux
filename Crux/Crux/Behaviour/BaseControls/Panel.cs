@@ -27,26 +27,25 @@ namespace Crux.BaseControls
         public bool IsScrollable { get; set; } = true;
 
         #endregion
-
         public Panel()
         {
-            AbsoluteX = 10; AbsoluteY = 10; Width = 100; Height = 200; BackColor = Palette.DarkenGray;
+            AbsoluteX = 10; AbsoluteY = 10;
+            Size = new Point(60, 40);
+            BackColor = Palette.DarkenGray;
         }
 
-        public Panel(Vector4 posform, Color color = default)
+        public Panel(Vector4 posform) : this(posform.X, posform.Y, posform.Z, posform.W) { }
+
+        public Panel(Vector2 pos, Vector2 size) : this(pos.X, pos.Y, size.X, size.Y) { }
+
+        public Panel(float x, float y, float width, float height, Color? col = default)
         {
-            AbsoluteX = posform.X; AbsoluteY = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
+            ForeColor = col.HasValue ? col.Value : Color.White;
+            AbsoluteX = x; AbsoluteY = y;
+            Size = new Point((int)width, (int)height);
+            BackColor = Palette.DarkenGray;
         }
 
-        public Panel(Vector2 pos, Vector2 size, Color color = default)
-        {
-            AbsoluteX = pos.X; AbsoluteY = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
-        }
-
-        public Panel(float x, float y, float width, float height, Color color = default)
-        {
-            AbsoluteX = x; AbsoluteY = y; Width = width; Height = height; BackColor = color;
-        }
         internal override void Initialize()
         {
             Alias = "Panel";
@@ -222,13 +221,13 @@ namespace Crux.BaseControls
                 if (drawingBounds.Intersects(Controls[i].DrawingBounds))
                     Controls[i].Draw();
 
-                if (false) // Drawing bounds debug
+                if (true) // Drawing bounds debug
                 {
-                    //Batch.Begin(SpriteSortMode.Deferred, null, null, null);
-                    //{
-                    //    Batch.DrawFill(Controls[i].DrawingBounds, new Color(123, 77, 63, 50));
-                    //}
-                    //Batch.End();
+                    Batch.Begin(SpriteSortMode.Deferred, null, null, null);
+                    {
+                        Batch.DrawFill(Controls[i].DrawingBounds, new Color(123, 77, 63, 150)*.5f);
+                    }
+                    Batch.End();
                 }
             }
 

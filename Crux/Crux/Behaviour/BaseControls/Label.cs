@@ -12,6 +12,7 @@ namespace Crux.BaseControls
         public override int GetID { get; }
 
         string tc;
+        [Obsolete("Replace with AutoSize prop")]
         public bool IsFixedWidth { get; set; }
         public bool ParseColor { get; set; } = true;
 
@@ -31,6 +32,8 @@ namespace Crux.BaseControls
                     value = value.Regplace(@"{.+}", "");
                 }
                 tc = value;
+                var meas = defaultFont.MeasureString(tc);
+                Size = meas.ToPoint();
                 //if (!IsFixedWidth)
                 //Width = font.MeasureString(tc).X;
             }
@@ -43,7 +46,7 @@ namespace Crux.BaseControls
 
         public Label()
         {
-            AbsoluteX = 10; AbsoluteY = 10; Width = 60; Height = 40; BackColor = default;
+            AbsoluteX = 10; AbsoluteY = 10; Size = new Point(60, 40); BackColor = default;
         }
 
         public Label(Vector4 posform) : this(posform.X, posform.Y, posform.Z, posform.W) { }
@@ -53,7 +56,8 @@ namespace Crux.BaseControls
         public Label(float x, float y, float width, float height, Color? col = default)
         {
             ForeColor = col.HasValue ? col.Value : Color.White;
-            AbsoluteX = x; AbsoluteY = y; Width = width; Height = height;
+            AbsoluteX = x; AbsoluteY = y;  
+            Size = new Point((int)width, (int)height);
         }
 
         internal override void Initialize()

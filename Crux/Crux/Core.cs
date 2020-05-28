@@ -228,10 +228,17 @@ namespace Crux
             if (true)
             {
                 var clayout = new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true);
+                var dif = Palette.Neonic;
+                var hov = Palette.Neorange;
+                var fore = Color.White;
 
                 var dg = new DataGrid(30, 120, 515, 320);
                 debugForm.AddNewControl(dg);
-                dg.ForeColor = Palette.Neonic;
+                dg.ForeColor = fore;
+                dg.DiffuseColor = dif;
+                dg.HoverColor = hov;
+                dg.CreateLayout(clayout);
+                dg.BorderSize = 0;
 
                 var tbox = new TextBox(30, 85, 200, 22);
                 debugForm.AddNewControl(tbox);
@@ -239,24 +246,25 @@ namespace Crux
                 tbox.OnActivated += (s, e) => { if (tbox.Text == "Search...") tbox.Text = ""; };
                 //tbox.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
                 tbox.Text = "Search...";
-                tbox.ForeColor = Palette.Neonic;
+                tbox.ForeColor = fore;
+                tbox.DiffuseColor = dif;
+                tbox.HoverColor = hov;
                 tbox.CreateLayout(clayout);
                 tbox.KeyPressedSound = keyPress;
 
-                dg.CreateLayout(clayout);
-                dg.BorderSize = 0;
 
                 dg.ColumnsSizing(3, 1, 1, 1, 1, 1f);
                 dg.AddColumns("Name", "DEF", "PRC", "FST", "BUCK$", "Action");
 
-                ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 35, Width = 61, BackColor = new Color(50, 50, 50, 250) };
+                ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 35, Width = 61, BackColor = dif };
+
 
                 var cost = $"{Color.Gold}{300}$";
 
-                dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = Palette.Neonic });
-                dg.AddRow("Leather Armor", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = Palette.Neonic });
-                dg.AddRow("Fist Glove", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = Palette.Neonic });
-                dg.AddRow("Latex Cover", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = Palette.Neonic });
+                dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
+                dg.AddRow("Leather Armor", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
+                dg.AddRow("Fist Glove", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
+                dg.AddRow("Latex Cover", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
 
                 dg.IsHeightFixed = false;
 
@@ -268,16 +276,20 @@ namespace Crux
                 {
                     click1.Play(1, .5f, 0);
                     for (int i = e.KeysHandled.Contains(Keys.LeftShift) ? -9 : 0; i < 1; i++)
-                        dg.AddRow("Yes", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Text = "Buy" });
+                        dg.AddRow("Yes", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
                 };
                 bRow.CreateLayout(clayout);
-                bRow.ForeColor = Palette.Neonic;
+                bRow.ForeColor = fore;
+                bRow.DiffuseColor = dif;
+                bRow.HoverColor = hov;
 
                 var bCol = new Button(liner.GetParams());
                 bCol.Text = "+Col";
                 bCol.OnLeftClick += (s, e) => { click.Play(1, .5f, 0); dg.AddColumn(); };
                 bCol.CreateLayout(clayout);
-                bCol.ForeColor = Palette.Neonic;
+                bCol.ForeColor = fore;
+                bCol.DiffuseColor = dif;
+                bCol.HoverColor = hov;
 
                 debugForm.AddNewControl(bRow, bCol);
 
@@ -290,19 +302,25 @@ namespace Crux
                 {
                     (s as ControlBase).BorderColor = Color.Gray;
                 };
-                bRow.ForeColor = Palette.Neonic;
+                bRow.ForeColor = fore;
+                bRow.DiffuseColor = dif;
+                bRow.HoverColor = hov;
 
                 bCol = new Button(liner.GetParams());
                 bCol.Text = "-Col";
                 bCol.OnLeftClick += (s, e) => { click2.Play(1, .5f, 0); dg.RemoveColumn(dg.TotalColumns - 1); };
                 bCol.CreateLayout(clayout);
-                bCol.ForeColor = Palette.Neonic;
+                bCol.ForeColor = fore;
+                bCol.DiffuseColor = dif;
+                bCol.HoverColor = hov;
 
                 var bFH = new Button(liner.GetParams());
                 bFH.Text = "+-FH";
                 bFH.OnLeftClick += (s, e) => { click3.Play(1, .5f, 0); dg.IsHeightFixed = !dg.IsHeightFixed; };
                 bFH.CreateLayout(clayout);
-                bFH.ForeColor = Palette.Neonic;
+                bFH.ForeColor = fore;
+                bFH.DiffuseColor = dif;
+                bFH.HoverColor = hov;
 
                 debugForm.AddNewControl(bRow, bCol, bFH);
             }

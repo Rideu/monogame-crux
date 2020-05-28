@@ -25,22 +25,21 @@ namespace Crux.BaseControls
 
         public Button()
         {
-            AbsoluteX = 10; AbsoluteY = 10; Width = 60; Height = 40; BackColor = default;
+            AbsoluteX = 10; AbsoluteY = 10;
+            Size = new Point(60, 40);
+            BackColor = Palette.DarkenGray;
         }
 
-        public Button(Vector4 posform, Color color = default)
-        {
-            AbsoluteX = posform.X; AbsoluteY = posform.Y; Width = posform.Z; Height = posform.W; BackColor = color;
-        }
+        public Button(Vector4 posform, Color? col = default) : this(posform.X, posform.Y, posform.Z, posform.W, col) { }
 
-        public Button(Vector2 pos, Vector2 size, Color color = default)
-        {
-            AbsoluteX = pos.X; AbsoluteY = pos.Y; Width = size.X; Height = size.Y; BackColor = color;
-        }
+        public Button(Vector2 pos, Vector2 size, Color? col = default) : this(pos.X, pos.Y, size.X, size.Y, col) { }
 
-        public Button(float x, float y, float width, float height, Color color = default)
+        public Button(float x, float y, float width, float height, Color? col = default)
         {
-            AbsoluteX = x; AbsoluteY = y; Width = width; Height = height; BackColor = color;
+            ForeColor = Color.White;
+            AbsoluteX = x; AbsoluteY = y;
+            Size = new Point((int)width, (int)height);
+            BackColor = col.HasValue ? col.Value : Palette.DarkenGray;
         }
 
         public Button(float x, float y, Texture2D image)
@@ -81,6 +80,40 @@ namespace Crux.BaseControls
 
         public Texture2D Image { get; set; }
 
+        protected override void DrawLayout(float backmul = 1)
+        {
+
+            if (hasLayout)
+            {
+
+                var diffuse = IsHovering && !EnterHold ? IsHolding ? HoverColor : HoverColor : DiffuseColor;
+                var fw = Bounds.Width;
+                var fh = Bounds.Height;
+
+                var top = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
+                var bottom = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
+                var fa = FillingArea;
+                //Batch.GraphicsDevice.ScissorRectangle = fa;
+                Batch.DrawFill(fa, diffuse * (BackColor.A / 255f));
+
+                //OnDraw?.Invoke();
+                Batch.Draw(Layout.TopLeft, Bounds.Location.ToVector2(), diffuse);
+                Batch.Draw(Layout.TopBorder, new Rectangle(Bounds.X + Layout.TopLeft.Width, Bounds.Y, fw - Layout.TopLeft.Width - Layout.TopRight.Width, Layout.TopBorder.Height), diffuse);
+                Batch.Draw(Layout.TopRight, new Vector2(Bounds.X + Layout.TopLeft.Width + top, Bounds.Y), diffuse);
+
+                Batch.Draw(Layout.LeftBorder, new Rectangle(Bounds.X, Bounds.Y + Layout.TopLeft.Height, Layout.LeftBorder.Width, fh - Layout.BottomLeft.Height - Layout.TopLeft.Height), diffuse);
+                Batch.Draw(Layout.RightBorder, new Rectangle(Bounds.X + fw - Layout.RightBorder.Width, Bounds.Y + Layout.TopLeft.Height, Layout.RightBorder.Width, fh - Layout.TopRight.Height - Layout.BottomRight.Height), diffuse);
+
+                Batch.Draw(Layout.BottomLeft, new Vector2(Bounds.X, Bounds.Y + fh - Layout.BottomLeft.Height), diffuse);
+                Batch.Draw(Layout.BottomBorder, new Rectangle(Bounds.X + Layout.BottomLeft.Width, Bounds.Y + fh - Layout.BottomBorder.Height, fw - Layout.BottomLeft.Width - Layout.BottomRight.Width, Layout.BottomBorder.Height), diffuse);
+                Batch.Draw(Layout.BottomRight, new Vector2(Bounds.X + Layout.BottomLeft.Width + bottom, Bounds.Y + fh - Layout.BottomRight.Height), diffuse);
+
+                //Batch.DrawFill(new Vector2(Bounds.X, Bounds.Y + fh - Layout.BottomLeft.Height), Layout.BottomLeft.Bounds.Size.ToVector2(), Color.White);
+                //Batch.DrawFill(new Rectangle(Bounds.X + Layout.BottomLeft.Width, Bounds.Y + fh - Layout.BottomBorder.Height, fw - Layout.BottomLeft.Width - Layout.BottomRight.Width, Layout.BottomBorder.Height), Color.White);
+                //Batch.DrawFill(new Vector2(Bounds.X + Layout.BottomLeft.Width + bottom, Bounds.Y + fh - Layout.BottomRight.Height), Layout.BottomRight.Bounds.Size.ToVector2(), Color.White);
+
+            }
+        }
         public override void Draw()
         {
             Batch.GraphicsDevice.ScissorRectangle = drawingBounds;

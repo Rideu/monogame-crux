@@ -25,7 +25,8 @@ namespace Crux.BaseControls
 
 
         #endregion
-        #region Cstr
+
+        #region Constr
 
         public DataGrid()
         {
@@ -57,8 +58,7 @@ namespace Crux.BaseControls
             TableContainer.SliderVisible = false;
             TableContainer.BackColor = Color.Transparent;
             //TableContainer.BorderSize = 0;
-        }
-
+        } 
 
         public ControlBase ActiveControl;
 
@@ -82,7 +82,11 @@ namespace Crux.BaseControls
             panel.SliderVisible = false;
             panel.IsScrollable = false;
             if (Layout != null)
+            {
                 panel.CreateLayout(Layout);
+                panel.DiffuseColor = DiffuseColor;
+                panel.HoverColor = HoverColor;
+            }
 
             if (value is ControlBase)
             {
@@ -92,7 +96,7 @@ namespace Crux.BaseControls
             {
                 var label = new Label();
                 panel.AddNewControl(label);
-                label.ForeColor = ForeColor;
+                label.ForeColor = ForeColor; 
                 label.Text = value?.ToString() ?? panel.Alias;
                 label.TextSize = 1f;
             }
