@@ -234,9 +234,9 @@ namespace Crux.BaseControls
         public bool IsInitialized { get; protected set; }
 
         /// <summary>
-        /// Describes the sequence of actions once this control has been added onto the form.
+        /// Describes the sequence of actions once this control has been added onto the container.
         /// </summary>
-        internal virtual void Initialize()
+        protected virtual void Initialize()
         {
             Anchor = anchor;
             OwnerRelDiff = Rectangle(Owner.Width - RelativePosition.X, Owner.Height - RelativePosition.Y, Width, Height);
@@ -305,9 +305,9 @@ namespace Crux.BaseControls
 
         internal protected Rectangle ContentBounds;
 
-        protected float ContentOverflow;
+        public float ContentOverflow;
 
-        protected float RelContentScale;
+        public float RelativeContentScale;
 
         public virtual float AbsoluteX
         {
@@ -498,7 +498,7 @@ namespace Crux.BaseControls
 
         public virtual void EventProcessor()
         {
-
+            if (!IsVisible) return; // WARN: untrusted opt
 
             IsClicked = false;
 
@@ -555,7 +555,7 @@ namespace Crux.BaseControls
 
             #region Primary Activity
 
-            if (IsActive && IsHolding && !(this is Form) && ActiveControl != this && !EnterHold)
+            if (IsActive && IsHolding && !(this is Form || this is Panel) && ActiveControl != this && !EnterHold)
             {
                 ActiveControl?.OnControlDeactivated();
                 ActiveControl = this;
@@ -681,6 +681,7 @@ namespace Crux.BaseControls
         /// </summary>
         public virtual void Draw()
         {
+            if (!IsVisible) return;
             Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
             //MainDraw();
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);

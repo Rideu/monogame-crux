@@ -51,7 +51,7 @@ namespace Crux.BaseControls
             Size = new Point((int)width, (int)height);
         }
 
-        internal override void Initialize()
+        protected override void Initialize()
         {
 
             BackColor = BackColor == default ? Owner.BackColor : BackColor;
@@ -111,7 +111,7 @@ namespace Crux.BaseControls
                 }
             };
 
-            PrimaryWindow.TextInput += (sender, e) => // PERF: move to static constructor and apply input only for active control
+            PrimaryWindow.TextInput += (sender, e) => // PERF: move to formmanager and apply input only for active control
             {
                 if (this.InputMode)
                 {

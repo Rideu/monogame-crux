@@ -45,7 +45,7 @@ namespace Crux.BaseControls
             AbsoluteX = x; AbsoluteY = y; Width = width; Height = height;
         }
 
-        internal override void Initialize()
+        protected override void Initialize()
         {
             ID = Owner.GetControlsCount + 1;
             Bounds = new Rectangle((int)(Owner.AbsoluteX + AbsoluteX), (int)(Owner.AbsoluteY + AbsoluteY), (int)Width, (int)Height);

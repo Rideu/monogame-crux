@@ -49,7 +49,7 @@ namespace Crux.BaseControls
         }
 
         //Color BackColor;
-        internal override void Initialize()
+        protected override void Initialize()
         {
             BackColor = BackColor == default ? Owner.BackColor : BackColor;
             //ID = Owner.GetControlsCount + 1;
@@ -116,6 +116,7 @@ namespace Crux.BaseControls
         }
         public override void Draw()
         {
+            if (!IsVisible) return;
             Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {

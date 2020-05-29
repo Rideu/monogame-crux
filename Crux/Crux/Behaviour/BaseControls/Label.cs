@@ -60,7 +60,7 @@ namespace Crux.BaseControls
             Size = new Point((int)width, (int)height);
         }
 
-        internal override void Initialize()
+        protected override void Initialize()
         {
             Bounds = Rectangle(AbsoluteX, AbsoluteY, Width = Width - Owner.BorderSize - BorderSize, Height = Height - Owner.BorderSize - BorderSize);
             base.Initialize();

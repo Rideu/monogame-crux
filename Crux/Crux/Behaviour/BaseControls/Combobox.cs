@@ -35,12 +35,12 @@ namespace Crux.BaseControls
             AbsoluteX = x; AbsoluteY = y; Width = width; Height = height;
         }
 
-        internal override void Initialize()
+        protected override void Initialize()
         {
             Bounds = new Rectangle((int)(Owner.AbsoluteX + AbsoluteX), (int)(Owner.AbsoluteY + AbsoluteY), (int)Width, (int)Height);
             base.Initialize();
             Container = new Panel(0, Height, Width, 0) { Owner = this };
-            Container.Initialize();
+            AddNewControl(Container);
         }
 
         float forecl_mult = 1f;

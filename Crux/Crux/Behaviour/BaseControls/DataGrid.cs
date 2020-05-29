@@ -49,15 +49,47 @@ namespace Crux.BaseControls
         }
 
         #endregion
-        internal override void Initialize()
+
+        protected override void CreateSlider()
+        { 
+            OnMouseScroll += (s, e) =>
+            {
+                if (IsScrollable)
+                    ScrollValue = (SlideSpeed.Y += Control.WheelVal / 50) * 0.025f;
+            };
+            ContentSlider = new Slider(Bounds.Width - 8 - BorderSize, BorderSize, 8, Bounds.Height - BorderSize * 2, Slider.Type.Vertical)
+            {
+                IsFixed = true,
+                Filler = Slider.FillStyle.Slider
+            };
+            AddNewControl(ContentSlider);
+
+            ContentSlider.OnSlide += () =>
+            { 
+                if (TableContainer.RelativeContentScale > 1 || !TableContainer.IsScrollable) return;
+                TableContainer.ScrollValue = ContentSlider.Value;
+                TableContainer.ContentMappingOffset.Y = -TableContainer.ContentOverflow * TableContainer.ContentSlider.Value;
+            };
+
+            this.OnResize += (s, e) =>
+            {
+                ContentSlider.SetRelative(Bounds.Width - 8 - BorderSize, BorderSize);
+                ContentSlider.Width = 8;
+                ContentSlider.Height = Bounds.Height - BorderSize * 2;
+            };
+            //base.CreateSlider();
+        }
+        protected override void Initialize()
         {
-            base.Initialize();
-            Alias = "DataGrid";
+            Alias = GetType().Name;
             AddNewControl(TableContainer = new Panel(0, 20, Width - 8, Height - 20));
             TableContainer.Alias = "TableContainer";
-            TableContainer.SliderVisible = true;
+            TableContainer.SliderVisible = false;
             TableContainer.BackColor = Color.Transparent;
             //TableContainer.BorderSize = 0;
+            base.Initialize();
+            SliderVisible = true;
+            TableContainer.ContentSlider = ContentSlider;
         } 
 
         public ControlBase ActiveControl;
@@ -295,9 +327,7 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
-            base.Draw();
-              
-            ContentSlider.Draw();
+            base.Draw(); 
         }
     }
 }

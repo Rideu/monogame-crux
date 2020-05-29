@@ -343,7 +343,7 @@ namespace Crux
         public PanelDesigner() : base() { }
         public PanelDesigner(P c) : base(c) { }
 
-        public Slider Slider { get => target.ContentSlider; set => target.ContentSlider = value; }
+        //public Slider Slider { get => target.ContentSlider; set => target.ContentSlider = value; }
 
         public override ControlBaseDesigner Copy()
         {

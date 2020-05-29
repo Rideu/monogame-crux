@@ -89,7 +89,7 @@ namespace Crux.BaseControls
         Rectangle padding;
         public Rectangle Padding { get => padding; set => text.Padding = padding = value; }
 
-        internal override void Initialize()
+        protected override void Initialize()
         {
             // left top right bottom
             //padding = new Rectangle(/*left*/10 + scroll.Width,/*top*/10,/*right*/3,/*bottom*/0);

@@ -94,7 +94,7 @@ namespace Crux.BaseControls
                 slider = Rectangle(Bounds.Location.X, Bounds.Location.Y, (Width * val), h);
         }
 
-        internal override void Initialize()
+        protected override void Initialize()
         {
             //ID = Owner.GetControlsCount + 1;
             //Bounds = Rectangle((Owner.X + X), (Owner.Y + Y), Width, Height);
@@ -119,11 +119,11 @@ namespace Crux.BaseControls
 
         public override void Update()
         {
-            if (!IsVisible) return;
-            UpdateBounds();
-            IsHovering = !true;
-            if (Bounds.Contains(Control.MousePos))
-                IsHovering = true;
+            //if (!IsVisible) return;
+            //UpdateBounds();
+            //IsHovering = !true;
+            //if (Bounds.Contains(Control.MousePos))
+            //    IsHovering = true;
 
             if (ActiveControl == this)
             {
@@ -161,12 +161,13 @@ namespace Crux.BaseControls
 
         public override void InternalUpdate()
         {
-            slider = GetSlider();
             base.InternalUpdate();
+            slider = GetSlider();
         }
 
         public override void Draw()
         {
+            if (!IsVisible) return;
             base.Draw();
 
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);

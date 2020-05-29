@@ -35,10 +35,14 @@ namespace Crux
         public static ToolSet ts;
         public Core()
         {
-            graphics = new GraphicsDeviceManager(this) { PreferMultiSampling = true };
-            graphics.PreferredBackBufferWidth = 1080;
-            graphics.PreferredBackBufferHeight = 720;
-            graphics.GraphicsProfile = GraphicsProfile.HiDef;
+            graphics = new GraphicsDeviceManager(this)
+            {
+                PreferMultiSampling = true,
+                PreferredBackBufferHeight = 720,
+                PreferredBackBufferWidth = 1080,
+                GraphicsProfile = GraphicsProfile.HiDef,
+                SynchronizeWithVerticalRetrace = true
+            };
             WinSize = new Point(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
             Content.RootDirectory = "Content";
             GameForm = (WinForms.Form)WinForms.Form.FromHandle(Window.Handle);
@@ -131,6 +135,11 @@ namespace Crux
                 IsVisible = true
             };
 
+            var clayout = new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true);
+            var dif = Palette.DarkenGray;
+            var hov = Palette.Neorange;
+            var fore = Color.White;
+
             #region debugForm Setup
 
             debugForm.OnKeyUp += (s, e) =>
@@ -199,26 +208,37 @@ namespace Crux
             if (false)
             {
                 Panel p, pp;
-                debugForm.AddNewControl(p = new Panel(110, 80, 410, 210, Palette.DarkenGray));
+                debugForm.AddNewControl(p = new Panel(110, 80, 410, 210, Palette.DarkenGray) { Layout = clayout });
+                p.DiffuseColor = dif;
+                p.HoverColor = hov;
                 var w = 100;
                 var h = 200;
                 //p.AddNewControl(new Button(10, 10, w, h, new Color(40, 40, 40)) { Text = "OK" });
-                for (int r = 0; r < (int)p.Height / (h + 0); r++)
+                //for (int r = 0; r < (int)p.Height / (h + 0); r++)
+                //{
+                //    for (int i = 0; i < 2/*(int)p.Width / (w + 20)*/; i++)
+                //    {
+                //        p.AddNewControl(pp = new Panel(10 + (w + 10) * i, 10 + 10 * r + r * h, w, h, new Color(80, 80, 80))
+                //        {
+                //            IsFixed = true,
+                //        });
+
+                //    }
+                //}
+
+                p.AddNewControl(new TextBox(120, 10, 120, 21)
                 {
-                    for (int i = 0; i < 2/*(int)p.Width / (w + 20)*/; i++)
-                    {
-                        p.AddNewControl(pp = new Panel(10 + (w + 10) * i, 10 + 10 * r + r * h, w, h, new Color(80, 80, 80))
-                        {
-                            IsFixed = true,
-                        });
-
-                    }
-                }
-
-                p.AddNewControl(new TextBox(120, 10, 120, 50) { KeyPressedSound = keyPress });
+                    KeyPressedSound = keyPress,
+                    Layout = clayout,
+                    DiffuseColor = dif,
+                    HoverColor = hov
+                });
                 p.AddNewControl(new Button(10, 10, 70, 320)
                 {
-                    Text = "Continue"
+                    Text = "Continue",
+                    Layout = clayout,
+                    DiffuseColor = dif,
+                    HoverColor = hov
                 });
             }
             #endregion
@@ -227,10 +247,6 @@ namespace Crux
 
             if (true)
             {
-                var clayout = new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true);
-                var dif = Palette.DarkenGray;
-                var hov = Palette.Neorange;
-                var fore = Color.White;
 
                 var dg = new DataGrid(30, 120, 515, 320);
                 debugForm.AddNewControl(dg);
@@ -262,9 +278,11 @@ namespace Crux
                 Action<string, float> createRow = (itemname, price) =>
                 {
                     var cost = $"{Color.Gold}{price}$";
-                    var btn = new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy"+ dg.TotalRows, ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov };
-                    btn.OnLeftClick += (ss, ee) => { 
-                        click.Play(1, .5f, 0); };
+                    var btn = new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy" + dg.TotalRows, ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov };
+                    btn.OnLeftClick += (ss, ee) =>
+                    {
+                        click.Play(1, .5f, 0);
+                    };
                     dg.AddRow(itemname, 8, 5, 8f / 5, cost, btn);
                 };
 

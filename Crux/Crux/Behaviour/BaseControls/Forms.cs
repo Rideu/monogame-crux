@@ -268,7 +268,7 @@ namespace Crux.BaseControls
         /// <summary>
         /// Called after form created.
         /// </summary>
-        internal override void Initialize()
+        protected override void Initialize()
         {
             Bounds = new Rectangle((int)AbsoluteX, (int)AbsoluteY, (int)Width, (int)Height);
             BottomBorder = new Rectangle((int)AbsoluteX, (int)AbsoluteY + (int)Height - 4, (int)Width, (int)4);
