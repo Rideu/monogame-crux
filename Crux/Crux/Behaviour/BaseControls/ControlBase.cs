@@ -537,7 +537,7 @@ namespace Crux.BaseControls
 
             #region Holding Activity
 
-            IsHovering = IsActive /*&& Bounds.Contains(Control.MousePos) && Owner.IsActive*/;
+            IsHovering = IsActive && Bounds.Contains(Control.MousePos) && Owner.IsActive;
             IsHolding = IsHovering && Control.LeftButtonPressed;
 
             if (IsHolding && LeaveHold == false)
@@ -590,11 +590,12 @@ namespace Crux.BaseControls
             OnDeactivated?.Invoke(this, EventArgs.Empty);
         }
 
-        public virtual void InnerUpdate()
+        public virtual void InternalUpdate()
         {
             OnUpdate?.Invoke(this, EventArgs.Empty);
             EventProcessor();
             drawingBounds = DrawingBounds;
+            diffuse = allowcustom ? IsHovering && !EnterHold ? IsHolding ? HoverColor : HoverColor : DiffuseColor : Color.White;
         }
 
         #endregion
@@ -632,16 +633,7 @@ namespace Crux.BaseControls
 
             if (hasLayout)
             {
-                if(this is Panel && Alias.RegMatch(@"Cell\d").Success)
-                {
-                    if(IsHovering)
-                    {
-
-                    }
-                }
-                bool allowcustom = HoverColor.PackedValue > 0 && DiffuseColor.PackedValue > 0;
-                var diffuse = allowcustom ? IsHovering && !EnterHold ? IsHolding ? HoverColor : HoverColor : DiffuseColor : Color.White;
-                diffuse = (diffuse.R | diffuse.G | diffuse.B | diffuse.A) > 0 ? diffuse : Color.White;
+                //diffuse = (diffuse.R | diffuse.G | diffuse.B | diffuse.A) > 0 ? diffuse : Color.White;
                 var fw = Bounds.Width;
                 var fh = Bounds.Height;
 
@@ -677,8 +669,11 @@ namespace Crux.BaseControls
 
         protected Rectangle drawingBounds;
 
-        public Color HoverColor { get; set; }
-        public Color DiffuseColor { get; set; }
+        bool allowcustom;
+
+        Color diffuse, hovcolor, difcolor;
+        public Color HoverColor { get => hovcolor; set { hovcolor = value; allowcustom = HoverColor.PackedValue > 0 && DiffuseColor.PackedValue > 0; } }
+        public Color DiffuseColor { get => difcolor; set { difcolor = value; allowcustom = HoverColor.PackedValue > 0 && DiffuseColor.PackedValue > 0; } }
 
         public event Action OnDraw;
         /// <summary>
@@ -770,6 +765,8 @@ namespace Crux.BaseControls
 
     }
 
+    #region Debugging
+
     public static partial class DebugDevice
     {
         static bool updCalled;
@@ -800,6 +797,7 @@ namespace Crux.BaseControls
 
 
         };
+
         static SamplerState ss = new SamplerState
         {
             AddressU = TextureAddressMode.Wrap,
@@ -868,6 +866,8 @@ fums: {fums} [t: {fut:0}]
 fdms: {fdms} [t: {fdt:0}]";
         }
     }
+
+    #endregion
 
     //public enum Align
     //{

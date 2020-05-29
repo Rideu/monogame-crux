@@ -55,7 +55,7 @@ namespace Crux.BaseControls
             Alias = "DataGrid";
             AddNewControl(TableContainer = new Panel(0, 20, Width - 8, Height - 20));
             TableContainer.Alias = "TableContainer";
-            TableContainer.SliderVisible = false;
+            TableContainer.SliderVisible = true;
             TableContainer.BackColor = Color.Transparent;
             //TableContainer.BorderSize = 0;
         } 
@@ -67,9 +67,9 @@ namespace Crux.BaseControls
             base.Update();
         }
 
-        public override void InnerUpdate()
+        public override void InternalUpdate()
         {
-            base.InnerUpdate();
+            base.InternalUpdate();
         }
 
         #region Table Content

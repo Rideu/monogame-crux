@@ -228,7 +228,7 @@ namespace Crux
             if (true)
             {
                 var clayout = new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true);
-                var dif = Palette.Neonic;
+                var dif = Palette.DarkenGray;
                 var hov = Palette.Neorange;
                 var fore = Color.White;
 
@@ -259,12 +259,24 @@ namespace Crux
                 ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 35, Width = 61, BackColor = dif };
 
 
-                var cost = $"{Color.Gold}{300}$";
+                Action<string, float> createRow = (itemname, price) =>
+                {
+                    var cost = $"{Color.Gold}{price}$";
+                    var btn = new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy"+ dg.TotalRows, ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov };
+                    btn.OnLeftClick += (ss, ee) => { 
+                        click.Play(1, .5f, 0); };
+                    dg.AddRow(itemname, 8, 5, 8f / 5, cost, btn);
+                };
 
-                dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
-                dg.AddRow("Leather Armor", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
-                dg.AddRow("Fist Glove", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
-                dg.AddRow("Latex Cover", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
+                createRow("Jabroni Outfit", 300);
+                createRow("Leather Armor", 300);
+                createRow("Fist Glove", 300);
+                createRow("Latex Cover", 300);
+
+                //dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
+                //dg.AddRow("Leather Armor", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
+                //dg.AddRow("Fist Glove", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
+                //dg.AddRow("Latex Cover", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
 
                 dg.IsHeightFixed = false;
 
@@ -276,7 +288,9 @@ namespace Crux
                 {
                     click1.Play(1, .5f, 0);
                     for (int i = e.KeysHandled.Contains(Keys.LeftShift) ? -9 : 0; i < 1; i++)
-                        dg.AddRow("Yes", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
+                    {
+                        createRow("Yes", 300);
+                    }
                 };
                 bRow.CreateLayout(clayout);
                 bRow.ForeColor = fore;

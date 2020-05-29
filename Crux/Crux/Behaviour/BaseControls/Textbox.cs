@@ -210,9 +210,9 @@ namespace Crux.BaseControls
             base.Update();
         }
 
-        public override void InnerUpdate()
+        public override void InternalUpdate()
         {
-            base.InnerUpdate();
+            base.InternalUpdate();
             //if (ActiveControl != this) InputMode = false;
             //InputMode = true; // InputMode && Control.MouseHoverOverG(Bounds); 
         }

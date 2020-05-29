@@ -113,7 +113,7 @@ namespace Crux.BaseControls
             //ContentSlider.Update();
         }
 
-        public ControlBase ActiveControl;
+        public ControlBase ContainerActiveControl;
 
         public override void Update()
         {
@@ -131,17 +131,20 @@ namespace Crux.BaseControls
                     var picked = false;
                     foreach (ControlBase n in Controls)
                     {
-                        n.IsActive = n.IsHovering = !true;
+
+                        n.IsActive = n.IsHovering = false;
                         if (n.Bounds.Contains(Control.MousePos) && !picked)
                         {
-                            ActiveControl = n;
-                            ActiveControl.IsActive = picked = true;
+                            ContainerActiveControl = n;
+                            ContainerActiveControl.IsActive = picked = true;
+
                         }
-                        n.InnerUpdate();
                     }
                     if (!picked)
-                        ActiveControl = null;
-                    ActiveControl?.Update();
+                        ContainerActiveControl = null;
+
+                    if (ActiveControl != ContainerActiveControl)
+                        ContainerActiveControl?.Update();
                 }
 
                 //if (!ContentSlider.IsVisible) return;
@@ -152,9 +155,9 @@ namespace Crux.BaseControls
 
         Vector2 SlideSpeed;
 
-        public override void InnerUpdate()
+        public override void InternalUpdate()
         {
-            base.InnerUpdate();
+            base.InternalUpdate();
 
             if (ContentBounds.Height - Height == ContentMappingOffset.Y)
             {
@@ -185,13 +188,13 @@ namespace Crux.BaseControls
 
             foreach (var c in Controls)
             {
-                c.InnerUpdate();
+                c.InternalUpdate();
             }
 
             if (ContentSlider.IsVisible)
             {
                 ContentSlider.UpdateBounds();
-                ContentSlider.InnerUpdate();
+                ContentSlider.InternalUpdate();
             }
             if (!Alias.Contains("Cell"))
                 UpdateBounds();
@@ -221,11 +224,11 @@ namespace Crux.BaseControls
                 if (drawingBounds.Intersects(Controls[i].DrawingBounds))
                     Controls[i].Draw();
 
-                if (true) // Drawing bounds debug
+                if (false) // Drawing bounds debug
                 {
                     Batch.Begin(SpriteSortMode.Deferred, null, null, null);
                     {
-                        Batch.DrawFill(Controls[i].DrawingBounds, new Color(123, 77, 63, 150)*.5f);
+                        Batch.DrawFill(Controls[i].DrawingBounds, new Color(123, 77, 63, 150) * .5f);
                     }
                     Batch.End();
                 }

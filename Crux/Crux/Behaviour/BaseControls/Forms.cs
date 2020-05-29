@@ -499,9 +499,7 @@ namespace Crux.BaseControls
                 {
 
                     var picked = false;
-
-                    //if(ActiveControl.Bounds.Contains(Control.MousePos))
-
+                      
                     foreach (ControlBase n in Controls)
                     {
 
@@ -532,12 +530,12 @@ namespace Crux.BaseControls
                 }
 
             }
-            InnerUpdate();
+            InternalUpdate();
         }
 
-        public override void InnerUpdate()
+        public override void InternalUpdate()
         {
-            base.InnerUpdate();
+            base.InternalUpdate();
             if (SideControl != null)
             {
                 if (!(SideControl.Bounds.Union(SideControl.Owner.Bounds).Contains(Control.MousePos)) && Control.LeftClick())
@@ -567,7 +565,7 @@ namespace Crux.BaseControls
             SetupResize();
             foreach (var c in Controls)
             {
-                c.InnerUpdate();
+                c.InternalUpdate();
             }
             base.Update();
         }

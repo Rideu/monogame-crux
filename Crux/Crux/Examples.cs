@@ -31,6 +31,11 @@ namespace Crux
     {
         void Examples()
         {
+            var clayout = new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true);
+            var dif = Palette.DarkenGray;
+            var hov = Palette.Neorange;
+            var fore = Color.White;
+
             #region Color Picker
 
             colorPicker = new Form(310, 10, 400, 200, new Color(14, 14, 14))
@@ -83,23 +88,23 @@ namespace Crux
             var buttonx = 5;
             var buttony = 5;
             f.AddNewControl(
-                lb = new TextArea(buttonx + 10, buttony + 10, 140, 30) { Font = font1, ForeColor = Palette.Neonic },
-                er = new Button(buttonx + 160, buttony + 10, 40, 30) { Text = "<=", ForeColor = Palette.Neonic },
-                b1 = new Button(buttonx + 10, buttony + 50, 40, 40) { Text = "1", ForeColor = Palette.Neonic},
-                b2 = new Button(buttonx + 60, buttony + 50, 40, 40) { Text = "2", ForeColor = Palette.Neonic },
-                b3 = new Button(buttonx + 110, buttony + 50, 40, 40) { Text = "3", ForeColor = Palette.Neonic },
-                b4 = new Button(buttonx + 10, buttony + 100, 40, 40) { Text = "4", ForeColor = Palette.Neonic },
-                b5 = new Button(buttonx + 60, buttony + 100, 40, 40) { Text = "5", ForeColor = Palette.Neonic },
-                b6 = new Button(buttonx + 110, buttony + 100, 40, 40) { Text = "6", ForeColor = Palette.Neonic },
-                b7 = new Button(buttonx + 10, buttony + 150, 40, 40) { Text = "7", ForeColor = Palette.Neonic },
-                b8 = new Button(buttonx + 60, buttony + 150, 40, 40) { Text = "8", ForeColor = Palette.Neonic },
-                b9 = new Button(buttonx + 110, buttony + 150, 40, 40) { Text = "9", ForeColor = Palette.Neonic },
-                b0 = new Button(buttonx + 10, buttony + 200, 90, 40) { Text = "0", ForeColor = Palette.Neonic },
-                bex = new Button(buttonx + 110, buttony + 200, 40, 40) { Text = "=", ForeColor = Palette.Neonic },
-                bdiv = new Button(buttonx + 160, buttony + 50, 40, 40) { Text = "/", ForeColor = Palette.Neonic },
-                bmul = new Button(buttonx + 160, buttony + 100, 40, 40) { Text = "*", ForeColor = Palette.Neonic },
-                bsub = new Button(buttonx + 160, buttony + 150, 40, 40) { Text = "-", ForeColor = Palette.Neonic },
-                bsum = new Button(buttonx + 160, buttony + 200, 40, 40) { Text = "+", ForeColor = Palette.Neonic }
+                lb = new TextArea(buttonx + 10, buttony + 10, 140, 30) { Font = font1, ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                er = new Button(buttonx + 160, buttony + 10, 40, 30) { Text = "<=", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                b1 = new Button(buttonx + 10, buttony + 50, 40, 40) { Text = "1", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                b2 = new Button(buttonx + 60, buttony + 50, 40, 40) { Text = "2", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                b3 = new Button(buttonx + 110, buttony + 50, 40, 40) { Text = "3", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                b4 = new Button(buttonx + 10, buttony + 100, 40, 40) { Text = "4", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                b5 = new Button(buttonx + 60, buttony + 100, 40, 40) { Text = "5", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                b6 = new Button(buttonx + 110, buttony + 100, 40, 40) { Text = "6", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                b7 = new Button(buttonx + 10, buttony + 150, 40, 40) { Text = "7", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                b8 = new Button(buttonx + 60, buttony + 150, 40, 40) { Text = "8", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                b9 = new Button(buttonx + 110, buttony + 150, 40, 40) { Text = "9", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                b0 = new Button(buttonx + 10, buttony + 200, 90, 40) { Text = "0", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                bex = new Button(buttonx + 110, buttony + 200, 40, 40) { Text = "=", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                bdiv = new Button(buttonx + 160, buttony + 50, 40, 40) { Text = "/", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                bmul = new Button(buttonx + 160, buttony + 100, 40, 40) { Text = "*", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                bsub = new Button(buttonx + 160, buttony + 150, 40, 40) { Text = "-", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                bsum = new Button(buttonx + 160, buttony + 200, 40, 40) { Text = "+", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov }
                 );
 
             lb.Padding = new Microsoft.Xna.Framework.Rectangle(4, 4, 4, 4);

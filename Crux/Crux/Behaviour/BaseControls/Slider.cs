@@ -159,10 +159,10 @@ namespace Crux.BaseControls
             Rectangle(Bounds.Location.X - 1, Bounds.Location.Y + (Height * val - slider.Height * (val - 0.5f) - slider.Height / 2), slider.Width, slider.Height);
         }
 
-        public override void InnerUpdate()
+        public override void InternalUpdate()
         {
             slider = GetSlider();
-            base.InnerUpdate();
+            base.InternalUpdate();
         }
 
         public override void Draw()

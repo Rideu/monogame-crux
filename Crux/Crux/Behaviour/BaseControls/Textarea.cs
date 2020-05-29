@@ -140,7 +140,7 @@ namespace Crux.BaseControls
 
         Vector2 ContentBounds;
         public Vector2 TextSize => ContentBounds;
-        public override void InnerUpdate()
+        public override void InternalUpdate()
         {
             ContentBounds = text.GetTotalSize;
             if (ContentBounds.Y > Height) // TODO: renaming
@@ -156,7 +156,7 @@ namespace Crux.BaseControls
                     textposspeed *= 0.86f;
                 else textposspeed *= 0;
             }
-            base.InnerUpdate();
+            base.InternalUpdate();
         }
 
          

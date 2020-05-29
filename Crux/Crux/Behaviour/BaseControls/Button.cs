@@ -73,9 +73,9 @@ namespace Crux.BaseControls
             base.Update();
         }
 
-        public override void InnerUpdate()
+        public override void InternalUpdate()
         {
-            base.InnerUpdate();
+            base.InternalUpdate();
         }
 
         public Texture2D Image { get; set; }
@@ -86,7 +86,7 @@ namespace Crux.BaseControls
             if (hasLayout)
             {
 
-                var diffuse = IsHovering && !EnterHold ? IsHolding ? HoverColor : HoverColor : DiffuseColor;
+                var diffuse = IsHovering && !EnterHold ? IsHolding ? HoverColor * .7f : HoverColor : DiffuseColor;
                 var fw = Bounds.Width;
                 var fh = Bounds.Height;
 

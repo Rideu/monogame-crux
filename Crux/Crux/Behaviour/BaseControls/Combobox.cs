@@ -79,10 +79,10 @@ namespace Crux.BaseControls
             base.Update();
         }
 
-        public override void InnerUpdate()
+        public override void InternalUpdate()
         { 
-            base.InnerUpdate(); 
-            Container.InnerUpdate();
+            base.InternalUpdate(); 
+            Container.InternalUpdate();
         }
 
         public override void Draw()
