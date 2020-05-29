@@ -39,7 +39,7 @@ namespace Crux.BaseControls
         SoundEffect keypressSound;
 
         #endregion
-         
+
         public TextBox(Vector4 posform) : this(posform.X, posform.Y, posform.Z, posform.W) { }
 
         public TextBox(Vector2 pos, Vector2 size) : this(pos.X, pos.Y, size.X, size.Y) { }
@@ -230,10 +230,11 @@ namespace Crux.BaseControls
         {
             return -t * (t - 1) * 4;
         }
+        float visiblePosX = 0;
         public override void Draw()
         {
             base.Draw();
-            var drawb = Batch.GraphicsDevice.ScissorRectangle = DrawingBounds;
+            //var drawb = Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
             //Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             //{
             //    Batch.DrawFill(Bounds, BorderColor);
@@ -241,26 +242,32 @@ namespace Crux.BaseControls
             //}
             //Batch.End();
             //Batch.GraphicsDevice.ScissorRectangle = Batch.GraphicsDevice.ScissorRectangle.InflateBy(-1);
-            Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-BorderSize);
+            Batch.GraphicsDevice.ScissorRectangle = drawingBounds.InflateBy(-BorderSize);
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
-                Vector2 cs = new Vector2();
-                Vector2 tsc = new Vector2();
+                Vector2 caretPos = new Vector2();
+                Vector2 ttcScale = new Vector2();
                 //Vector2 ts = font.MeasureString(text.Text);
                 //if (InputMode)
+                float visibleWidth = Width - BorderSize * 2 - Font.Spacing - 2;
                 if (!string.IsNullOrEmpty(text))
                 {
-                    var sub = text.Substring(0, caretpos);
-                    tsc = Font.MeasureString(sub);
-                    cs = tsc;
+                    var textToCaret = text.Substring(0, caretpos);
+                    ttcScale = Font.MeasureString(textToCaret);
+                    caretPos = ttcScale;
                     var b = caretpos == text.Length;
                 }
 
-                var offset = (cs.X > Width / 2 ? Width / 2 - cs.X /*+ (ts.X - cs.X < Width / 2? ts.X - cs.X : 0)*/ /*(caretpos == text.Text.Length ? Width / 2  : 0)*/ : 0);
+                if (caretPos.X < visiblePosX)
+                    visiblePosX = caretPos.X;
+                else if (caretPos.X > visiblePosX + visibleWidth) // +- borders
+                    visiblePosX += caretPos.X - (visiblePosX + visibleWidth);
+
+                var offset = -visiblePosX; //(caretPos.X > Width ? Width - caretPos.X - Font.Spacing /*+ (ts.X - cs.X < Width / 2? ts.X - cs.X : 0)*/ /*(caretpos == text.Text.Length ? Width / 2  : 0)*/ : 0);
 
                 Line cline = new Line(
-                    (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, BorderSize + Bounds.Y)).ToPoint().ToVector2(),
-                    (new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, -BorderSize + Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
+                    (new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + offset, BorderSize + Bounds.Y)).ToPoint().ToVector2(),
+                    (new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + offset, -BorderSize + Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
                 Batch.DrawString(textFont, text, new Vector2(AbsoluteX + BorderSize + offset, 2 + AbsoluteY), ForeColor);
 
 
@@ -278,7 +285,7 @@ namespace Crux.BaseControls
 
                 // Draw caret
                 if (InputMode)
-                    Batch.DrawFill(Rectangle(new Vector2(Bounds.X + BorderSize + 1 + cs.X + offset, BorderSize + Bounds.Y), new Vector2(1, fontStdHeight)), HoverColor * ease(t));
+                    Batch.DrawFill(Rectangle(new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + offset, BorderSize + Bounds.Y), new Vector2(1, fontStdHeight)), HoverColor * ease(t));
 
                 //Batch.End();
                 //if (InputMode)

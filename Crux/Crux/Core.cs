@@ -43,6 +43,7 @@ namespace Crux
                 GraphicsProfile = GraphicsProfile.HiDef,
                 SynchronizeWithVerticalRetrace = true
             };
+            graphics.ApplyChanges();
             WinSize = new Point(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
             Content.RootDirectory = "Content";
             GameForm = (WinForms.Form)WinForms.Form.FromHandle(Window.Handle);
@@ -258,18 +259,18 @@ namespace Crux
 
                 var tbox = new TextBox(30, 85, 200, 22);
                 debugForm.AddNewControl(tbox);
-                tbox.OnDeactivated += (s, e) => { if (tbox.Text.Length == 0) tbox.Text = "Search..."; };
-                tbox.OnActivated += (s, e) => { if (tbox.Text == "Search...") tbox.Text = ""; };
+                tbox.OnDeactivated += (s, e) => { if (tbox.Text.Length == 0) { tbox.Text = "Search..."; tbox.ForeColor = Color.White * .5f; } };
+                tbox.OnActivated += (s, e) => { if (tbox.Text == "Search...") tbox.Text = ""; tbox.ForeColor = Color.White; };
                 //tbox.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
                 tbox.Text = "Search...";
-                tbox.ForeColor = fore;
+                tbox.ForeColor = fore * .5f;
                 tbox.DiffuseColor = dif;
                 tbox.HoverColor = hov;
                 tbox.CreateLayout(clayout);
                 tbox.KeyPressedSound = keyPress;
 
 
-                dg.ColumnsSizing(3, 1, 1, 1, 1, 1f);
+                dg.ColumnsSizing(3, 1, 1, 1, 1, 1);
                 dg.AddColumns("Name", "DEF", "PRC", "FST", "BUCK$", "Action");
 
                 ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 35, Width = 61, BackColor = dif };

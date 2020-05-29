@@ -173,6 +173,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Icon.ico" />
+    <Content Include="todo.txt" />
     <None Include="Resources\delete_selected.png" />
     <None Include="Resources\create_new.png" />
     <None Include="Resources\label.png" />
