@@ -595,9 +595,9 @@ namespace Crux.BaseControls
             OnUpdate?.Invoke(this, EventArgs.Empty);
             EventProcessor();
             drawingBounds = DrawingBounds;
-            diffuse = allowcustom ? IsHovering && !EnterHold ? IsHolding ? HoverColor : HoverColor : DiffuseColor : Color.White;
+            diffuse = allowcustom ? forceHov || IsHovering && !EnterHold ? IsHolding ? HoverColor : HoverColor : DiffuseColor : Color.White;
         }
-
+         
         #endregion
 
         #region Drawing
@@ -627,6 +627,13 @@ namespace Crux.BaseControls
                 Bounds.Width - Layout.RightBorder.Width - Layout.LeftBorder.Width,
                 Bounds.Height - Layout.BottomBorder.Height - Layout.TopBorder.Height)
             : Bounds;
+
+        bool allowcustom;
+
+        protected bool forceHov;
+        Color diffuse, hovcolor, difcolor;
+        public Color HoverColor { get => hovcolor; set { hovcolor = value; allowcustom = HoverColor.PackedValue > 0 && DiffuseColor.PackedValue > 0; } }
+        public Color DiffuseColor { get => difcolor; set { difcolor = value; allowcustom = HoverColor.PackedValue > 0 && DiffuseColor.PackedValue > 0; } }
 
         protected virtual void DrawLayout(float backmul = 1)
         {
@@ -668,12 +675,6 @@ namespace Crux.BaseControls
         #endregion
 
         protected Rectangle drawingBounds;
-
-        bool allowcustom;
-
-        Color diffuse, hovcolor, difcolor;
-        public Color HoverColor { get => hovcolor; set { hovcolor = value; allowcustom = HoverColor.PackedValue > 0 && DiffuseColor.PackedValue > 0; } }
-        public Color DiffuseColor { get => difcolor; set { difcolor = value; allowcustom = HoverColor.PackedValue > 0 && DiffuseColor.PackedValue > 0; } }
 
         public event Action OnDraw;
         /// <summary>

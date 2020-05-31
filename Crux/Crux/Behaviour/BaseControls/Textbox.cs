@@ -60,54 +60,61 @@ namespace Crux.BaseControls
             BorderColor = BackColor * 1.5f;
             OnActivated += (s, e) =>
             {
-                InputMode = true;
+                forceHov = InputMode = true;
                 //t.Reset(false);
                 //t.Start();
             };
-            OnDeactivated += (s, e) => { InputMode = false; };
+            OnDeactivated += (s, e) => { forceHov = InputMode = false; };
             //OnMouseLeave += (s, e) => { Invalidate(); };
 
             text = new TextBuilder(DefaultFont, "", new Vector2(0 /*+ (padding.X - scroll.Width)*/, 0), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, true/*, this*/);
             fontStdHeight = DefaultFont.MeasureString(" ").Y;
 
-            t = new Timer(1000);
-            t.OnFinish += () =>
+            caretEase = new Timer(1000);
+            caretEase.OnFinish += () =>
             {
-                t.Reset();
-                t.Start();
+                caretEase.Reset();
+                caretEase.Start();
             };
 
-            rlt = new Timer(50);
-            rlt.OnFinish += () =>
+            repeat = new Timer(25);
+            repeat.OnFinish += () =>
             {
                 if (Control.IsKeyDown(Keys.Left))
                 {
-                    caretpos -= caretpos > 0 ? 1 : 0;
+                    caretIndex -= caretIndex > 0 ? 1 : 0;
                 }
                 else
                 if (Control.IsKeyDown(Keys.Right))
                 {
-                    caretpos += caretpos < text.Length ? 1 : 0;
+                    caretIndex += caretIndex < text.Length ? 1 : 0;
                 }
-                if (Control.IsKeyDown(Keys.Left) && Control.IsKeyDown(Keys.Right))
+                else
+                if (Control.IsKeyDown(Keys.Delete))
                 {
-                    rlt.Reset();
-                    rlt.Stop();
-                    delay.Reset();
-                    delay.Stop();
-                    return;
+                    var t = text;
+                    delFrontChar(ref t);
+                    text = t;
                 }
-                rlt.Reset();
+                //if (Control.IsKeyDown(Keys.Left) && Control.IsKeyDown(Keys.Right))
+                //{
+                //    rlt.Reset();
+                //    rlt.Stop();
+                //    delay.Reset();
+                //    delay.Stop();
+                //    return;
+                //}
+                repeat.Reset();
 
-                rlt.Start();
+                repeat.Start();
             };
 
             delay = new Timer(500);
             delay.OnFinish += () =>
             {
-                if (Control.IsKeyDown(Keys.Left) || Control.IsKeyDown(Keys.Right))
+                if (Control.IsKeyDown(Keys.Left) || Control.IsKeyDown(Keys.Right) || Control.IsKeyDown(Keys.Delete))
                 {
-                    rlt.Start();
+                    repeat.Start();
                 }
             };
 
@@ -118,23 +125,24 @@ namespace Crux.BaseControls
                     var t = text;
                     if (e.Character == 8) // Backspace
                     {
-                        if (t.Length > 0)
-                        {
-                            if (caretpos > 0)
-                            {
-                                t = t.Remove(caretpos - 1, 1);
+                        delBackChar(ref t);
+                        //if (t.Length > 0)
+                        //{
+                        //    if (caretIndex > 0)
+                        //    {
+                        //        t = t.Remove(caretIndex - 1, 1);
 
-                                keypressSound?.Play();
-                            }
-                            caretpos -= caretpos > 0 ? 1 : 0;
-                        }
+                        //        keypressSound?.Play();
+                        //    }
+                        //    caretIndex -= caretIndex > 0 ? 1 : 0;
+                        //}
                     }
                     else
                     if (e.Character == 127)
                     {
                         var ls = t.LastIndexOf(' ');
                         if (t.Length > 0)
-                            t = t.Remove(caretpos = ls < 0 ? 0 : ls);
+                            t = t.Remove(caretIndex = ls < 0 ? 0 : ls);
                     }
                     else
                     {
@@ -142,7 +150,7 @@ namespace Crux.BaseControls
                         //var v = font.Glyphs[5];
                         //if (font.Glyphs.Any(n => n.ToString()[0] == c))
                         //if (t[caretpos] != ' ' || (t[caretpos + ((t.Length == caretpos) ? -1 : 0)] != ' '))
-                        t = t.Insert(caretpos++, e.Character + "");
+                        t = t.Insert(caretIndex++, e.Character + "");
                         keypressSound?.Play();
                         //caretpos += caretpos + 1 == t.Length ? 0 : 1;
                     }
@@ -150,9 +158,10 @@ namespace Crux.BaseControls
                     //caretpos = text.CleanText.Length == 0 ? 0 : caretpos;
                 }
             };
+
             base.Initialize();
         }
-        Timer t, rlt, delay;
+        Timer caretEase, repeat, delay;
         public override void Invalidate()
         {
             //TODO: debug comment
@@ -169,6 +178,42 @@ namespace Crux.BaseControls
             //}
         }
 
+        void delBackChar(ref string t)
+        { 
+            if (t.Length > 0)
+            {
+                if (caretIndex > 0)
+                {
+                    t = t.Remove(caretIndex - 1, 1);
+
+                    keypressSound?.Play();
+                }
+                caretIndex -= caretIndex > 0 ? 1 : 0;
+            }
+        }
+
+        void delFrontChar(ref string t)
+        { 
+            if (t.Length > 0)
+            {
+                if (caretIndex > 0 && t.Length - caretIndex > 0)
+                {
+
+                    t = t.Remove(caretIndex, 1);
+
+                    keypressSound?.Play();
+                }
+                //caretIndex -= caretIndex > 0 ? 1 : 0;
+            }
+        }
+
+        protected void StartKeyRepeat()
+        {
+            repeat.Reset(); repeat.Stop();
+            delay.Reset(); delay.Stop();
+            delay.Start();
+        }
+
         public override void Update()
         {
 
@@ -178,33 +223,40 @@ namespace Crux.BaseControls
             if (IsActive && Control.LeftClick())
             {
                 InputMode = true;
-                t.Reset();
-                t.Start();
+                caretEase.Reset();
+                caretEase.Start();
             }
             if (InputMode)
             {
+                var allKeys = Control.GetPressedKeys();
+
                 if (Control.PressedDownKey(Keys.Left))
                 {
-                    rlt.Reset(); rlt.Stop();
-                    delay.Reset(); delay.Stop();
-                    caretpos -= caretpos > 0 ? 1 : 0;
-                    delay.Start();
+                    StartKeyRepeat();
+                    caretIndex -= caretIndex > 0 ? 1 : 0;
                 }
                 else
                 if (Control.PressedDownKey(Keys.Right))
                 {
-                    rlt.Reset(); rlt.Stop();
-                    delay.Reset(); delay.Stop();
-                    caretpos += caretpos < text.Length ? 1 : 0;
-                    delay.Start();
+                    StartKeyRepeat();
+                    caretIndex += caretIndex < text.Length ? 1 : 0;
+                }
+                else
+                // Proc all the control keys
+                if (Control.PressedDownKey(Keys.Delete))
+                { 
+                    StartKeyRepeat();
+                    var t = text;
+                    delFrontChar(ref t);
+                    text = t; 
                 }
                 //if (Control.IsKeyUp(Keys.Right) || Control.IsKeyUp(Keys.Left))
                 //{
                 //    delay.Reset(false); delay.Stop();
                 //} 
                 var el = (float)gt.ElapsedGameTime.TotalMilliseconds;
-                t.Update(el);
-                rlt.Update(el);
+                caretEase.Update(el);
+                repeat.Update(el);
                 delay.Update(el);
             }
             base.Update();
@@ -213,6 +265,8 @@ namespace Crux.BaseControls
         public override void InternalUpdate()
         {
             base.InternalUpdate();
+            if (InputMode)
+                UpdateCaret();
             //if (ActiveControl != this) InputMode = false;
             //InputMode = true; // InputMode && Control.MouseHoverOverG(Bounds); 
         }
@@ -222,82 +276,62 @@ namespace Crux.BaseControls
 
         }
 
-        int caretpos = 0;
 
-        //Vector2 AbsolutePosition => new Vector2(Owner.X + X, Owner.Y + Y);
+
 
         static float ease(float t)
         {
             return -t * (t - 1) * 4;
         }
+
         float visiblePosX = 0;
+        int caretIndex = 0;
+        float caretOffset;
+        Vector2 caretPos = new Vector2();
+        Vector2 ttcScale = new Vector2();
+        protected void UpdateCaret()
+        {
+            //Vector2 ts = font.MeasureString(text.Text);
+            //if (InputMode)
+            float visibleWidth = Width - BorderSize * 2 - Font.Spacing - 2;
+            if (!string.IsNullOrEmpty(text))
+            {
+                var textToCaret = text.Substring(0, caretIndex);
+                ttcScale = Font.MeasureString(textToCaret);
+                caretPos = ttcScale;
+                var b = caretIndex == text.Length;
+            }
+            else
+            {
+                caretPos = Vector2.Zero;
+            }
+
+            if (caretPos.X < visiblePosX)
+                visiblePosX = caretPos.X;
+            else if (caretPos.X > visiblePosX + visibleWidth) // +- borders
+                visiblePosX += caretPos.X - (visiblePosX + visibleWidth);
+
+            caretOffset = -visiblePosX; //(caretPos.X > Width ? Width - caretPos.X - Font.Spacing /*+ (ts.X - cs.X < Width / 2? ts.X - cs.X : 0)*/ /*(caretpos == text.Text.Length ? Width / 2  : 0)*/ : 0);
+
+            //Line caretLine = new Line(
+            //    (new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + caretOffset, BorderSize + Bounds.Y)).ToPoint().ToVector2(),
+            //    (new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + caretOffset, -BorderSize + Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
+        }
+
         public override void Draw()
         {
             base.Draw();
-            //var drawb = Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
-            //Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
-            //{
-            //    Batch.DrawFill(Bounds, BorderColor);
-            //    Batch.DrawFill(Bounds.InflateBy(-2), BackColor * (InputMode ? 0.4f : 1f)); // Primary
-            //}
-            //Batch.End();
-            //Batch.GraphicsDevice.ScissorRectangle = Batch.GraphicsDevice.ScissorRectangle.InflateBy(-1);
+
             Batch.GraphicsDevice.ScissorRectangle = drawingBounds.InflateBy(-BorderSize);
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
-                Vector2 caretPos = new Vector2();
-                Vector2 ttcScale = new Vector2();
-                //Vector2 ts = font.MeasureString(text.Text);
-                //if (InputMode)
-                float visibleWidth = Width - BorderSize * 2 - Font.Spacing - 2;
-                if (!string.IsNullOrEmpty(text))
-                {
-                    var textToCaret = text.Substring(0, caretpos);
-                    ttcScale = Font.MeasureString(textToCaret);
-                    caretPos = ttcScale;
-                    var b = caretpos == text.Length;
-                }
-
-                if (caretPos.X < visiblePosX)
-                    visiblePosX = caretPos.X;
-                else if (caretPos.X > visiblePosX + visibleWidth) // +- borders
-                    visiblePosX += caretPos.X - (visiblePosX + visibleWidth);
-
-                var offset = -visiblePosX; //(caretPos.X > Width ? Width - caretPos.X - Font.Spacing /*+ (ts.X - cs.X < Width / 2? ts.X - cs.X : 0)*/ /*(caretpos == text.Text.Length ? Width / 2  : 0)*/ : 0);
-
-                Line cline = new Line(
-                    (new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + offset, BorderSize + Bounds.Y)).ToPoint().ToVector2(),
-                    (new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + offset, -BorderSize + Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
-                Batch.DrawString(textFont, text, new Vector2(AbsoluteX + BorderSize + offset, 2 + AbsoluteY), ForeColor);
-
-
-                //text.Render(Batch, new Vector2(Owner.X, Owner.Y + 1)/* + textpos*/);
-
-                //var tr = new Vector2(Owner.X - textoffset, Owner.Y + 1);
-
-                //Line cline = new Line(
-                //    (new Vector2(Bounds.X + 1 + caretoffset, Bounds.Y)).ToPoint().ToVector2(),
-                //    (new Vector2(Bounds.X + 1 + caretoffset, Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
-
-                //text.Render(Batch, tr);
-
-                //Batch.Begin(SpriteSortMode.Deferred);
+                Batch.DrawString(textFont, text, new Vector2(AbsoluteX + BorderSize + caretOffset, 2 + AbsoluteY), ForeColor);
+                //Batch.DrawFill(new Vector2(AbsoluteX + BorderSize + caretOffset, 2 + AbsoluteY), caretPos, Color.White * .2f);
 
                 // Draw caret
                 if (InputMode)
-                    Batch.DrawFill(Rectangle(new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + offset, BorderSize + Bounds.Y), new Vector2(1, fontStdHeight)), HoverColor * ease(t));
+                    Batch.DrawFill(Rectangle(new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + caretOffset, BorderSize + Bounds.Y), new Vector2(1, fontStdHeight)), HoverColor * ease(caretEase));
 
-                //Batch.End();
-                //if (InputMode)
-                //{
-                //    Line caret = new Line
-                //    (
-                //        (AbsolutePosition + new Vector2(5, 2)).ToPoint().ToVector2(),
-                //        (AbsolutePosition + new Vector2(5, -2)).ToPoint().ToVector2()
-                //    );
-                //    Batch.DrawLine(caret, new Color(255, 255, 255, 255) * ease(t));
-                //}
-                //Batch.DrawString(font, text, new Vector2(Owner.X + X, Owner.Y + Y) + new Vector2(4, 2), Color.White, 0f, new Vector2(), 0.98f, SpriteEffects.None, 1f);
             }
             Batch.End();
         }
