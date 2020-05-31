@@ -18,8 +18,9 @@ namespace Crux.BaseControls
     {
         #region Fields  
 
-        //public override string Text { get { return text ; } set { text.UpdateText(value); } }
         SpriteFont textFont = DefaultFont;
+        public override string Text { get => text; set { text = value; caretIndex = caretIndex > text.Length - 1 ? text.Length : caretIndex; } }
+
         public SpriteFont Font
         {
             set
@@ -61,10 +62,13 @@ namespace Crux.BaseControls
             OnActivated += (s, e) =>
             {
                 forceHov = InputMode = true;
+                caretIndex = traceCaretIndex(Control.MousePos.X - AbsoluteX);
                 //t.Reset(false);
                 //t.Start();
             };
             OnDeactivated += (s, e) => { forceHov = InputMode = false; };
+
+            OnLeftClick += (s, e) => { caretIndex = traceCaretIndex(Control.MousePos.X - AbsoluteX); };
             //OnMouseLeave += (s, e) => { Invalidate(); };
 
             text = new TextBuilder(DefaultFont, "", new Vector2(0 /*+ (padding.X - scroll.Width)*/, 0), new Vector2(-1 /*- scroll.Width - padding.Width*/, Height), Color.White, true/*, this*/);
@@ -146,12 +150,9 @@ namespace Crux.BaseControls
                     }
                     else
                     {
-                        //var c = (int)(e.Character);
-                        //var v = font.Glyphs[5];
-                        //if (font.Glyphs.Any(n => n.ToString()[0] == c))
-                        //if (t[caretpos] != ' ' || (t[caretpos + ((t.Length == caretpos) ? -1 : 0)] != ' '))
-                        t = t.Insert(caretIndex++, e.Character + "");
+                        t = t.Insert(caretIndex, e.Character + "");
                         keypressSound?.Play();
+                        caretIndex++;
                         //caretpos += caretpos + 1 == t.Length ? 0 : 1;
                     }
                     text = t;
@@ -179,7 +180,7 @@ namespace Crux.BaseControls
         }
 
         void delBackChar(ref string t)
-        { 
+        {
             if (t.Length > 0)
             {
                 if (caretIndex > 0)
@@ -193,7 +194,7 @@ namespace Crux.BaseControls
         }
 
         void delFrontChar(ref string t)
-        { 
+        {
             if (t.Length > 0)
             {
                 if (caretIndex > 0 && t.Length - caretIndex > 0)
@@ -244,11 +245,11 @@ namespace Crux.BaseControls
                 else
                 // Proc all the control keys
                 if (Control.PressedDownKey(Keys.Delete))
-                { 
+                {
                     StartKeyRepeat();
                     var t = text;
                     delFrontChar(ref t);
-                    text = t; 
+                    text = t;
                 }
                 //if (Control.IsKeyUp(Keys.Right) || Control.IsKeyUp(Keys.Left))
                 //{
@@ -284,15 +285,14 @@ namespace Crux.BaseControls
             return -t * (t - 1) * 4;
         }
 
-        float visiblePosX = 0;
+        float visiblePosX = 0; // x pos of the visibile region
         int caretIndex = 0;
         float caretOffset;
         Vector2 caretPos = new Vector2();
         Vector2 ttcScale = new Vector2();
         protected void UpdateCaret()
         {
-            //Vector2 ts = font.MeasureString(text.Text);
-            //if (InputMode)
+            //Vector2 ts = 
             float visibleWidth = Width - BorderSize * 2 - Font.Spacing - 2;
             if (!string.IsNullOrEmpty(text))
             {
@@ -316,6 +316,20 @@ namespace Crux.BaseControls
             //Line caretLine = new Line(
             //    (new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + caretOffset, BorderSize + Bounds.Y)).ToPoint().ToVector2(),
             //    (new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + caretOffset, -BorderSize + Bounds.Y + Bounds.Size.Y)).ToPoint().ToVector2());
+        }
+
+        int traceCaretIndex(float at)
+        {
+            if (text.Length == 0) return 0;
+            if (at > Font.MeasureString(text).X) return text.Length;
+            Vector2 traced = Vector2.Zero;
+            int index = 0;
+            while (traced.X <= at && index < text.Length)
+            {
+                index++;
+                traced = Font.MeasureString(text.Substring(0, index));
+            }
+            return index < 0 ? 0 : index - 1;
         }
 
         public override void Draw()
