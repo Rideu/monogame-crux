@@ -39,7 +39,8 @@ namespace Crux.BaseControls
             {
                 if (value != val)
                 {
-                    val = value.Clamp(0, 1); Invalidate();
+                    val = value.Clamp(0, 1); 
+                    //Invalidate();
                 }
             }
         }

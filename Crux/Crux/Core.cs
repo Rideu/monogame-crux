@@ -78,6 +78,7 @@ namespace Crux
         // Textures
         public static Texture2D pixel;
         public static Texture2D form_layout;
+        public static Texture2D h_cpu, h_gpu, h_ram;
 
 
         // Fonts
@@ -119,6 +120,10 @@ namespace Crux
 
             #region Textures
 
+            h_cpu = Content.Load<Texture2D>("images\\h_cpu");
+            h_gpu = Content.Load<Texture2D>("images\\h_gpu");
+            h_ram = Content.Load<Texture2D>("images\\h_ram");
+
             #endregion
 
             #region Debug
@@ -130,7 +135,7 @@ namespace Crux
             //TextBuilder.EnableDebug = true;
 
 
-            Form debugForm = new Form(330, 140, 550, 550, new Color(74, 74, 74))
+            Form debugForm = new Form(330, 140, 550, 550, new Color(14, 14, 14))
             {
                 IsResizable = true,
                 IsVisible = true
@@ -261,6 +266,9 @@ namespace Crux
                 debugForm.AddNewControl(tbox);
                 tbox.OnDeactivated += (s, e) => { if (tbox.Text.Length == 0) { tbox.Text = "Search..."; tbox.ForeColor = Color.White * .5f; } };
                 tbox.OnActivated += (s, e) => { if (tbox.Text == "Search...") tbox.Text = ""; tbox.ForeColor = Color.White; };
+                tbox.OnTextInput += (s, e) => { 
+                    dg.Filter(n => n[0].Contains(tbox.Text));
+                };
                 //tbox.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
                 tbox.Text = "Search...";
                 tbox.ForeColor = fore * .5f;
@@ -291,6 +299,8 @@ namespace Crux
                 createRow("Leather Armor", 300);
                 createRow("Fist Glove", 300);
                 createRow("Latex Cover", 300);
+
+                dg.Filter(n => n[0].Contains("Latex"));
 
                 //dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
                 //dg.AddRow("Leather Armor", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
@@ -421,8 +431,8 @@ namespace Crux
 
             var layout = new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true);
 
-            debugForm.CreateLayout(layout);
-            Examples();
+            //debugForm.CreateLayout(layout);
+            //Examples();
 
             Simplex.Init(GraphicsDevice);
             #endregion

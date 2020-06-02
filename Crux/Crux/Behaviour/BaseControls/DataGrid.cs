@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using static Crux.Simplex;
 using System.ComponentModel.Design;
 using System.Linq;
+using System.Collections;
 
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
@@ -51,7 +52,7 @@ namespace Crux.BaseControls
         #endregion
 
         protected override void CreateSlider()
-        { 
+        {
             OnMouseScroll += (s, e) =>
             {
                 if (IsScrollable)
@@ -65,7 +66,7 @@ namespace Crux.BaseControls
             AddNewControl(ContentSlider);
 
             ContentSlider.OnSlide += () =>
-            { 
+            {
                 if (TableContainer.RelativeContentScale > 1 || !TableContainer.IsScrollable) return;
                 TableContainer.ScrollValue = ContentSlider.Value;
                 TableContainer.ContentMappingOffset.Y = -TableContainer.ContentOverflow * TableContainer.ContentSlider.Value;
@@ -90,7 +91,7 @@ namespace Crux.BaseControls
             base.Initialize();
             SliderVisible = true;
             TableContainer.ContentSlider = ContentSlider;
-        } 
+        }
 
         public ControlBase ActiveControl;
 
@@ -104,11 +105,45 @@ namespace Crux.BaseControls
             base.InternalUpdate();
         }
 
+        public void Filter(Func<string[], bool> f)
+        {
+            foreach (var r in TableRows)
+            {
+                var d = r.GetData();
+                r.IsShown = f(d);
+            }
+            Arrange();
+        }
+
+        protected class DataRow : List<DataCell>
+        {
+            public DataRow()
+            {
+            }
+
+            public bool IsShown { get; set; } = true;
+
+            public string[] GetData()
+            {
+                string[] data = new string[Count];
+                for (int i = 0; i < Count; i++)
+                {
+                    data[i] = this[i].GetData();
+                }
+                return data;
+            }
+        }
+
+        protected class DataCell : Panel
+        {
+            public string GetData() => Controls[0]?.ToString();
+        }
+
         #region Table Content
 
-        protected virtual Panel CreateCell(object value = null)
+        protected virtual DataCell CreateCell(object value = null)
         {
-            var panel = new Panel(0, 1, 0, 0);
+            var panel = new DataCell();
             TableContainer.AddNewControl(panel);
             panel.Alias = $"Cell{TotalRows}";
             panel.SliderVisible = false;
@@ -128,7 +163,7 @@ namespace Crux.BaseControls
             {
                 var label = new Label();
                 panel.AddNewControl(label);
-                label.ForeColor = ForeColor; 
+                label.ForeColor = ForeColor;
                 label.Text = value?.ToString() ?? panel.Alias;
                 label.TextSize = 1f;
             }
@@ -148,8 +183,8 @@ namespace Crux.BaseControls
             //TableContainer.AddNewControl(p);
             //p.SliderVisible = false;
 
-            TableCells.Add(new List<Panel>());
-            var row = TableCells[TableCells.Count - 1];
+            TableRows.Add(new DataRow());
+            var row = TableRows[TableRows.Count - 1];
 
             for (int i = 0; i < TotalColumns; i++)
             {
@@ -164,15 +199,15 @@ namespace Crux.BaseControls
 
         public virtual void RemoveRow(int rowindex)
         {
-            var row = TableCells[rowindex];
+            var row = TableRows[rowindex];
             for (int i = 0; i < TotalColumns; i++)
             {
                 var c = row[0];
                 TableContainer.RemoveControl(c);
-                TableCells[rowindex].Remove(c);
+                TableRows[rowindex].Remove(c);
             }
 
-            TableCells.RemoveAt(rowindex);
+            TableRows.RemoveAt(rowindex);
 
             TotalRows--;
 
@@ -198,7 +233,7 @@ namespace Crux.BaseControls
 
             for (int i = 0; i < TotalRows; i++)
             {
-                TableCells[i].Add(CreateCell());
+                TableRows[i].Add(CreateCell());
             }
             TotalColumns++;
         }
@@ -242,7 +277,7 @@ namespace Crux.BaseControls
 
             for (int i = 0; i < TotalRows; i++)
             {
-                var row = TableCells[i];
+                var row = TableRows[i];
                 var c = row[colindex];
                 row.Remove(c);
                 TableContainer.RemoveControl(c);
@@ -279,6 +314,7 @@ namespace Crux.BaseControls
 
             var acm = 0f;
 
+            // Headers
             for (int c = 0; c < TotalColumns; c++)
             {
                 var cwidth = colwidths[c] * colwidth;
@@ -291,28 +327,52 @@ namespace Crux.BaseControls
 
             acm = 0f;
 
-            for (int r = 0; r < TotalRows; r++)
+            // Rows
+            for (int r = 0, shown = 0; r < TotalRows; r++)
             {
                 acm = 0f;
-                var rowcolor = r % 2 == 0 ? BackColor: BackColor;
+                var rowcolor = r % 2 == 0 ? BackColor : BackColor;
+                var row = TableRows[r];
 
-                for (int c = 0; c < TotalColumns; c++)
+                if (row.IsShown)
                 {
-                    var cwidth = colwidths[c] * colwidth;
-                    var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .95f);
-                    var current_cell = TableCells[r][c];
+                    for (int c = 0; c < TotalColumns; c++)
+                    {
+                        var cwidth = colwidths[c] * colwidth;
+                        var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .95f);
+                        var current_cell = row[c];
 
 
 
-                    //current_cell.BackColor = rowcolcolor;
-                    current_cell.BorderSize = 0;
+                        //current_cell.BackColor = rowcolcolor;
+                        current_cell.BorderSize = 0;
 
-                    current_cell.RelativePosition = new Vector2(acm, rowheight * r);
-                    current_cell.Width = cwidth + (c == TotalColumns - 1 ? floatdiff : 0);
-                    current_cell.Height = rowheight;
+                        current_cell.RelativePosition = new Vector2(acm, rowheight * shown);
+                        current_cell.Width = cwidth + (c == TotalColumns - 1 ? floatdiff : 0);
+                        current_cell.Height = rowheight;
 
-                    acm += cwidth;
+                        acm += cwidth;
+                    }
+                    shown++;
                 }
+                else
+                {
+                    for (int c = 0; c < TotalColumns; c++)
+                    {
+                        var cwidth = colwidths[c] * colwidth;
+                        var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .95f);
+                        var current_cell = row[c];
+
+                        current_cell.BorderSize = 0;
+
+                        current_cell.RelativePosition = new Vector2(0);
+                        current_cell.Width = 0;
+                        current_cell.Height = 0;
+
+                        //acm += cwidth;
+                    }
+                }
+                //    skipped++;
             }
 
             TableContainer.ResumeLayout();
@@ -321,13 +381,13 @@ namespace Crux.BaseControls
 
         #endregion
 
-        List<List<Panel>> TableCells = new List<List<Panel>>();
+        List<DataRow> TableRows = new List<DataRow>();
 
         List<Label> colHeaders = new List<Label>();
 
         public override void Draw()
         {
-            base.Draw(); 
+            base.Draw();
         }
     }
 }

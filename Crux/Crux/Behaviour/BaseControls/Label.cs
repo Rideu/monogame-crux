@@ -56,7 +56,7 @@ namespace Crux.BaseControls
         public Label(float x, float y, float width, float height, Color? col = default)
         {
             ForeColor = col.HasValue ? col.Value : Color.White;
-            AbsoluteX = x; AbsoluteY = y;  
+            AbsoluteX = x; AbsoluteY = y;
             Size = new Point((int)width, (int)height);
         }
 
@@ -99,5 +99,7 @@ namespace Crux.BaseControls
             //}
             //Batch.End();
         }
+
+        public override string ToString() => Text;
     }
 }

@@ -493,13 +493,13 @@ namespace Crux.BaseControls
         {
             if (IsActive)
             {
-                 
+
 
                 if ((IsActive/* && !MessageBox.IsOpened*/) || IsIndepend)
                 {
 
                     var picked = false;
-                      
+
                     foreach (ControlBase n in Controls)
                     {
 
@@ -589,33 +589,37 @@ namespace Crux.BaseControls
             if (IsVisible)
             {
                 Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)AbsoluteX, (int)AbsoluteY), new Point((int)Width, (int)Height));
-                Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState:rasterizer*/);
+                if (!hasLayout)
                 {
-                    var fa = FillingArea;
+                    Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState:rasterizer*/);
+                    {
 
-                    //Batch.DrawFill(fa, BackColor);
+                        var fa = FillingArea;
 
-                    // Border
-                    //Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f)); // Primary
-                    // Diffuse
-                    //Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
+                        //Batch.DrawFill(fa, BackColor);
 
-                    //if (IsActive && false) // DBG: Debug
-                    //    Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
+                        // Border
+                        Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f)); // Primary
+                        // Diffuse
+                        Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
 
+                        //if (IsActive && false) // DBG: Debug
+                        //    Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
+
+                    }
+                    Batch.End();
                 }
-                Batch.End();
-
 
                 OnDraw?.Invoke();
 
-                Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState:rasterizer*/);
                 if (hasLayout)
                 {
-                    DrawLayout( );
+                    Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState:rasterizer*/);
+                    {
+                        DrawLayout();
+                    }
+                    Batch.End();
                 }
-                Batch.End();
-
                 for (int i = Controls.Count - 1; i >= 0; i--)
                 {
                     //Parallel.For(0, Controls.Count, (i) => { lock (Batch) { Controls[i].Draw(); } });

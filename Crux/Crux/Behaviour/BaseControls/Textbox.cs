@@ -19,7 +19,15 @@ namespace Crux.BaseControls
         #region Fields  
 
         SpriteFont textFont = DefaultFont;
-        public override string Text { get => text; set { text = value; caretIndex = caretIndex > text.Length - 1 ? text.Length : caretIndex; } }
+        public override string Text
+        {
+            get => text; set
+            {
+                text = value;
+                caretIndex = caretIndex > text.Length - 1 ? text.Length : caretIndex;
+                OnTextChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
         public SpriteFont Font
         {
@@ -35,6 +43,9 @@ namespace Crux.BaseControls
 
         //TextBuilder text;
         bool InputMode;
+
+        /// <summary> Skips 0-36 (control) chars of ASCII table. True by default </summary>
+        public bool DropControlChars { get; set; } = true;
 
         public SoundEffect KeyPressedSound { get => keypressSound; set => keypressSound = value; }
         SoundEffect keypressSound;
@@ -96,9 +107,12 @@ namespace Crux.BaseControls
                 else
                 if (Control.IsKeyDown(Keys.Delete))
                 {
-                    var t = text;
-                    delFrontChar(ref t);
-                    text = t;
+                    var t = Text;
+                    if (delFrontChar(ref t))
+                    {
+                        OnTextInput?.Invoke(this, EventArgs.Empty);
+                    }
+                    Text = t;
                 }
                 //if (Control.IsKeyDown(Keys.Left) && Control.IsKeyDown(Keys.Right))
                 //{
@@ -124,40 +138,46 @@ namespace Crux.BaseControls
 
             PrimaryWindow.TextInput += (sender, e) => // PERF: move to formmanager and apply input only for active control
             {
-                if (this.InputMode)
-                {
-                    var t = text;
-                    if (e.Character == 8) // Backspace
+                var inchar = e.Character;
+                if (DropControlChars && (inchar >= 32 || inchar == 8))
+                    if (this.InputMode)
                     {
-                        delBackChar(ref t);
-                        //if (t.Length > 0)
-                        //{
-                        //    if (caretIndex > 0)
-                        //    {
-                        //        t = t.Remove(caretIndex - 1, 1);
+                        var t = text;
+                        if (inchar == 8) // Backspace
+                        {
+                            delBackChar(ref t);
+                            //if (t.Length > 0)
+                            //{
+                            //    if (caretIndex > 0)
+                            //    {
+                            //        t = t.Remove(caretIndex - 1, 1);
 
-                        //        keypressSound?.Play();
-                        //    }
-                        //    caretIndex -= caretIndex > 0 ? 1 : 0;
+                            //        keypressSound?.Play();
+                            //    }
+                            //    caretIndex -= caretIndex > 0 ? 1 : 0;
+                            //}
+                        }
+                        else
+                        if (inchar == 127)
+                        {
+                            var ls = t.LastIndexOf(' ');
+                            if (t.Length > 0)
+                                t = t.Remove(caretIndex = ls < 0 ? 0 : ls);
+                        }
+                        else
+                        {
+                            t = t.Insert(caretIndex, inchar + "");
+                            keypressSound?.Play();
+                            caretIndex++;
+                            //caretpos += caretpos + 1 == t.Length ? 0 : 1;
+                        }
+                        Text = t;
+                        OnTextInput?.Invoke(this, EventArgs.Empty);
+                        //{
+                        //    OnTextInput?.Invoke(this, EventArgs.Empty);
                         //}
+                        //caretpos = text.CleanText.Length == 0 ? 0 : caretpos;
                     }
-                    else
-                    if (e.Character == 127)
-                    {
-                        var ls = t.LastIndexOf(' ');
-                        if (t.Length > 0)
-                            t = t.Remove(caretIndex = ls < 0 ? 0 : ls);
-                    }
-                    else
-                    {
-                        t = t.Insert(caretIndex, e.Character + "");
-                        keypressSound?.Play();
-                        caretIndex++;
-                        //caretpos += caretpos + 1 == t.Length ? 0 : 1;
-                    }
-                    text = t;
-                    //caretpos = text.CleanText.Length == 0 ? 0 : caretpos;
-                }
             };
 
             base.Initialize();
@@ -179,7 +199,7 @@ namespace Crux.BaseControls
             //}
         }
 
-        void delBackChar(ref string t)
+        bool delBackChar(ref string t)
         {
             if (t.Length > 0)
             {
@@ -188,12 +208,14 @@ namespace Crux.BaseControls
                     t = t.Remove(caretIndex - 1, 1);
 
                     keypressSound?.Play();
+                    return true;
                 }
                 caretIndex -= caretIndex > 0 ? 1 : 0;
             }
+            return false;
         }
 
-        void delFrontChar(ref string t)
+        bool delFrontChar(ref string t)
         {
             if (t.Length > 0)
             {
@@ -201,11 +223,12 @@ namespace Crux.BaseControls
                 {
 
                     t = t.Remove(caretIndex, 1);
-
                     keypressSound?.Play();
+                    return true;
                 }
                 //caretIndex -= caretIndex > 0 ? 1 : 0;
             }
+            return false;
         }
 
         protected void StartKeyRepeat()
@@ -214,6 +237,10 @@ namespace Crux.BaseControls
             delay.Reset(); delay.Stop();
             delay.Start();
         }
+
+        // TODO: to cb
+        public event EventHandler OnTextChanged;
+        public event EventHandler OnTextInput;
 
         public override void Update()
         {
@@ -248,8 +275,11 @@ namespace Crux.BaseControls
                 {
                     StartKeyRepeat();
                     var t = text;
-                    delFrontChar(ref t);
-                    text = t;
+                    if (delFrontChar(ref t))
+                    {
+                        OnTextInput?.Invoke(this, EventArgs.Empty);
+                    }
+                    Text = t;
                 }
                 //if (Control.IsKeyUp(Keys.Right) || Control.IsKeyUp(Keys.Left))
                 //{
