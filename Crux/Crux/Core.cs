@@ -135,14 +135,14 @@ namespace Crux
             //TextBuilder.EnableDebug = true;
 
 
-            Form debugForm = new Form(330, 140, 550, 550, new Color(14, 14, 14))
+            Form debugForm = new Form(330, 140, 575, 550, new Color(14, 14, 14))
             {
                 IsResizable = true,
                 IsVisible = true
             };
 
             var clayout = new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true);
-            var dif = Palette.DarkenGray;
+            var dif = Palette.NanoBlue;
             var hov = Palette.Neorange;
             var fore = Color.White;
 
@@ -155,7 +155,7 @@ namespace Crux
 
             FormManager.AddForm("MainForm", debugForm);
 
-            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1f, ForeColor = Palette.Neonic, });
+            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1.5f, ForeColor = Palette.Neonic, });
             #endregion
 
             #region TextArea
@@ -254,53 +254,84 @@ namespace Crux
             if (true)
             {
 
-                var dg = new DataGrid(30, 120, 515, 320);
-                debugForm.AddNewControl(dg);
+                var dg = new DataGrid(30, 155, 515, 320);
                 dg.ForeColor = fore;
                 dg.DiffuseColor = dif;
                 dg.HoverColor = hov;
                 dg.CreateLayout(clayout);
                 dg.BorderSize = 0;
+                dg.IsHeightFixed = true;
+                dg.FixedHeight = 55;
 
-                var tbox = new TextBox(30, 85, 200, 22);
-                debugForm.AddNewControl(tbox);
-                tbox.OnDeactivated += (s, e) => { if (tbox.Text.Length == 0) { tbox.Text = "Search..."; tbox.ForeColor = Color.White * .5f; } };
-                tbox.OnActivated += (s, e) => { if (tbox.Text == "Search...") tbox.Text = ""; tbox.ForeColor = Color.White; };
-                tbox.OnTextInput += (s, e) => { 
-                    dg.Filter(n => n[0].Contains(tbox.Text));
+                var rowc = new Label(35, 165 + 320, 30, 30) { Text = "Total:", TextSize = .75f };
+                debugForm.AddNewControl(rowc);
+
+                ControlTemplate controlStyler = new ControlTemplate
+                {
+                    ForeColor = fore,
+                    Layout = clayout,
+                    DiffuseColor = dif,
+                    HoverColor = hov,
                 };
-                //tbox.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
-                tbox.Text = "Search...";
-                tbox.ForeColor = fore * .5f;
-                tbox.DiffuseColor = dif;
-                tbox.HoverColor = hov;
-                tbox.CreateLayout(clayout);
-                tbox.KeyPressedSound = keyPress;
+
+                ControlTemplate buttonLiner = new ControlTemplate { RelativePos = new Vector2(30, 50), Height = 30, Width = 70, MarginX = 5, MarginY = -30 };
+
+                var tboxByName = new TextBox(30, buttonLiner.GetCurrent().Y + 40, 189, 22);
+                debugForm.AddNewControl(tboxByName);
+                tboxByName.OnDeactivated += (s, e) => { if (tboxByName.Text.Length == 0) { tboxByName.Text = "Search..."; tboxByName.ForeColor = Color.White * .5f; } };
+                tboxByName.OnActivated += (s, e) => { if (tboxByName.Text == "Search...") tboxByName.Text = ""; tboxByName.ForeColor = Color.White; };
+                tboxByName.OnTextInput += (s, e) =>
+                {
+                    dg.Filter(n => n.Any(m => m.Contains(tboxByName.Text)));
+                };
+                tboxByName.Text = "Search...";
+                tboxByName.KeyPressedSound = keyPress;
+                controlStyler.SetStyling(tboxByName);
+                tboxByName.ForeColor = Color.White * .5f;
 
 
-                dg.ColumnsSizing(3, 1, 1, 1, 1, 1);
-                dg.AddColumns("Name", "DEF", "PRC", "FST", "BUCK$", "Action");
+                dg.ColumnsSizing(1.25f, 1, 1, 1, 1, 1);
+                dg.AddColumns("Name", "Cores", "Threads", "Freq (GHz)", "$", "Action");
+                dg.HeaderTextSize = .75f;
 
-                ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 35, Width = 61, BackColor = dif };
+                ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 36, Width = 62, BackColor = dif };
 
+                Func<string[], bool> doFilter = (n) => n.Any(m => m.Contains(tboxByName.Text));
 
                 Action<string, float> createRow = (itemname, price) =>
                 {
                     var cost = $"{Color.Gold}{price}$";
-                    var btn = new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy" + dg.TotalRows, ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov };
+                    var btn = new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy" + dg.TotalRows, ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor.Value, HoverColor = hov };
                     btn.OnLeftClick += (ss, ee) =>
                     {
                         click.Play(1, .5f, 0);
                     };
-                    dg.AddRow(itemname, 8, 5, 8f / 5, cost, btn);
+                    var iconBox = new PictureBox(20, -5, h_cpu);
+                    //debugForm.AddNewControl(iconBox);
+                    iconBox.Size = new Point(50);
+
+                    var itemName = new Label(10, 40, 0, 0);
+                    itemName.Text = itemname;
+                    itemName.TextSize = .75f;
+
+                    var itemCores = new Label(5, 5, 0, 0);
+                    itemCores.Text = "64";
+                    itemCores.TextSize = .75f;
+
+                    var itemThreads = new Label(5, 5, 0, 0);
+                    itemThreads.Text = "256";
+                    itemThreads.TextSize = .75f;
+
+                    var itemFreq = new Label(5, 5, 0, 0);
+                    itemFreq.Text = "10 THz";
+                    itemFreq.TextSize = .75f;
+
+                    dg.AddRow(new List<ControlBase> { iconBox, itemName }, itemCores, itemThreads, itemFreq, cost, btn);
+                    rowc.Text = $"Total: {dg.TotalRows}";
                 };
 
-                createRow("Jabroni Outfit", 300);
-                createRow("Leather Armor", 300);
-                createRow("Fist Glove", 300);
-                createRow("Latex Cover", 300);
 
-                dg.Filter(n => n[0].Contains("Latex"));
+                //dg.Filter(n => n[0].Contains("Latex"));
 
                 //dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
                 //dg.AddRow("Leather Armor", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
@@ -309,9 +340,8 @@ namespace Crux
 
                 dg.IsHeightFixed = false;
 
-                ControlTemplate liner = new ControlTemplate { RelativePos = new Vector2(30, 40), Height = 30, Width = 50, MarginX = 10, MarginY = -30 };
 
-                var bRow = new Button(liner.GetParams());
+                var bRow = new Button(buttonLiner.GetParams());
                 bRow.Text = "+Row";
                 bRow.OnLeftClick += (s, e) =>
                 {
@@ -321,51 +351,57 @@ namespace Crux
                         createRow("Yes", 300);
                     }
                 };
-                bRow.CreateLayout(clayout);
-                bRow.ForeColor = fore;
-                bRow.DiffuseColor = dif;
-                bRow.HoverColor = hov;
+                controlStyler.SetStyling(bRow);
 
-                var bCol = new Button(liner.GetParams());
+                var bCol = new Button(buttonLiner.GetParams());
                 bCol.Text = "+Col";
                 bCol.OnLeftClick += (s, e) => { click.Play(1, .5f, 0); dg.AddColumn(); };
-                bCol.CreateLayout(clayout);
-                bCol.ForeColor = fore;
-                bCol.DiffuseColor = dif;
-                bCol.HoverColor = hov;
+                controlStyler.SetStyling(bCol);
 
                 debugForm.AddNewControl(bRow, bCol);
 
-                bRow = new Button(liner.GetParams());
+                bRow = new Button(buttonLiner.GetParams());
                 bRow.Text = "-Row";
-                bRow.OnLeftClick += (s, e) => { click1.Play(1, .5f, 0); dg.RemoveRow(dg.TotalRows - 1); };
-                bRow.CreateLayout(clayout);
+                bRow.OnLeftClick += (s, e) =>
+                {
+                    click1.Play(1, .5f, 0);
+                    dg.RemoveRow(dg.TotalRows - 1);
+                    rowc.Text = $"Total: {dg.TotalRows}";
+                };
                 bRow.OnActivated += (s, e) => { (s as ControlBase).BorderColor = Color.Green; };
                 bRow.OnDeactivated += (s, e) =>
                 {
                     (s as ControlBase).BorderColor = Color.Gray;
                 };
-                bRow.ForeColor = fore;
-                bRow.DiffuseColor = dif;
-                bRow.HoverColor = hov;
+                controlStyler.SetStyling(bRow);
 
-                bCol = new Button(liner.GetParams());
+                bCol = new Button(buttonLiner.GetParams());
                 bCol.Text = "-Col";
-                bCol.OnLeftClick += (s, e) => { click2.Play(1, .5f, 0); dg.RemoveColumn(dg.TotalColumns - 1); };
-                bCol.CreateLayout(clayout);
-                bCol.ForeColor = fore;
-                bCol.DiffuseColor = dif;
-                bCol.HoverColor = hov;
+                bCol.OnLeftClick += (s, e) =>
+                {
+                    click2.Play(1, .5f, 0);
+                    dg.RemoveColumn(dg.TotalColumns - 1);
+                };
+                controlStyler.SetStyling(bCol);
 
-                var bFH = new Button(liner.GetParams());
-                bFH.Text = "+-FH";
-                bFH.OnLeftClick += (s, e) => { click3.Play(1, .5f, 0); dg.IsHeightFixed = !dg.IsHeightFixed; };
-                bFH.CreateLayout(clayout);
-                bFH.ForeColor = fore;
-                bFH.DiffuseColor = dif;
-                bFH.HoverColor = hov;
+                //var bFH = new Button(buttonLiner.GetParams());
+                //bFH.Text = "+-FH";
+                //bFH.OnLeftClick += (s, e) =>
+                //{
+                //    click3.Play(1, .5f, 0);
+                //    dg.IsHeightFixed = !dg.IsHeightFixed;
+                //};
+                //controlStyler.SetStyling(bFH);
 
-                debugForm.AddNewControl(bRow, bCol, bFH);
+                dg.IsHeightFixed = true;
+
+                debugForm.AddNewControl(bRow, bCol);
+                debugForm.AddNewControl(dg);
+                createRow("AI13-900MK", 300);
+                createRow("AI13-800X", 300);
+                createRow("AI11-600", 300);
+                createRow("AI11-500", 300);
+                //controlStyler.SetStyling(debugForm);
             }
 
             #endregion
@@ -429,9 +465,11 @@ namespace Crux
             }
             #endregion
 
-            var layout = new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true);
+            var flayout = new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true);
 
-            //debugForm.CreateLayout(layout);
+            debugForm.CreateLayout(flayout);
+            debugForm.DiffuseColor =
+            debugForm.HoverColor = dif;
             //Examples();
 
             Simplex.Init(GraphicsDevice);
@@ -451,7 +489,6 @@ namespace Crux
 
         protected override void Update(GameTime gameTime)
         {
-
             FormManager.Update();
 
             DebugDevice.Update();
@@ -516,7 +553,7 @@ namespace Crux
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(10, 10, 10));
+            GraphicsDevice.Clear(new Color(60, 10, 10));
 
 
             FormManager.Draw();

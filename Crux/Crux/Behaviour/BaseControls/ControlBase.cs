@@ -19,7 +19,6 @@ namespace Crux.BaseControls
 {
     public struct ControlTemplate
     {
-        public Color BackColor;
 
         public Vector2 RelativePos;
 
@@ -27,6 +26,10 @@ namespace Crux.BaseControls
 
         public int Width, Height;
 
+        /// <summary>
+        /// Get current rectangle data and increment position of the rectangle further.
+        /// </summary>
+        /// <returns></returns>
         public Vector4 GetParams()
         {
             var v = new Vector4(RelativePos, Width, Height);
@@ -34,6 +37,11 @@ namespace Crux.BaseControls
 
             return v;
         }
+
+        /// <summary>
+        /// Get current rectangle data.
+        /// </summary>
+        /// <returns></returns>
         public Vector4 GetCurrent()
         {
             var v = new Vector4(RelativePos, Width, Height);
@@ -41,11 +49,31 @@ namespace Crux.BaseControls
             return v;
         }
 
+        public ControlLayout Layout { get; set; }
+        public Color? HoverColor { get; set; }
+        public Color? DiffuseColor { get; set; }
+        public Color? ForeColor { get; set; }
+        public Color? BackColor { get; set; }
+
+        /// <summary>
+        /// Sets styling data (layout, colors) for the control.
+        /// </summary>
+        /// <param name="control"></param>
+        public void SetStyling(ControlBase control)
+        {
+            control.BackColor = BackColor ?? control.BackColor;
+            control.Layout = Layout ?? control.Layout;
+            control.HoverColor = HoverColor ?? control.HoverColor;
+            control.DiffuseColor = DiffuseColor ?? control.DiffuseColor;
+            control.ForeColor = ForeColor ?? control.ForeColor;
+        }
+
         public void ResetTo(Vector2 relativepos)
         {
             RelativePos = relativepos;
         }
     }
+
     /// <summary>
     /// Base interface that describes updatable and drawable Controls.
     /// </summary>
@@ -412,7 +440,7 @@ namespace Crux.BaseControls
                 AbsoluteX = RelativePosition.X;
                 AbsoluteY = RelativePosition.Y;
             }
-            Bounds = Rectangle(AbsoluteX, AbsoluteY, Width, Height);
+            //Bounds = Rectangle(AbsoluteX, AbsoluteY, Width, Height);
             foreach (var n in Controls)
             {
                 n.UpdateBounds();
@@ -597,7 +625,7 @@ namespace Crux.BaseControls
             drawingBounds = DrawingBounds;
             diffuse = allowcustom ? forceHov || IsHovering && !EnterHold ? IsHolding ? HoverColor : HoverColor : DiffuseColor : Color.White;
         }
-         
+
         #endregion
 
         #region Drawing
@@ -638,7 +666,7 @@ namespace Crux.BaseControls
         protected virtual void DrawLayout(float backmul = 1)
         {
 
-            if (hasLayout)
+            //if (hasLayout)
             {
                 //diffuse = (diffuse.R | diffuse.G | diffuse.B | diffuse.A) > 0 ? diffuse : Color.White;
                 var fw = Bounds.Width;

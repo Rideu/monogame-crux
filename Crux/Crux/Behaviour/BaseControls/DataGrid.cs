@@ -90,6 +90,7 @@ namespace Crux.BaseControls
             //TableContainer.BorderSize = 0;
             base.Initialize();
             SliderVisible = true;
+            TableContainer.RemoveControl(TableContainer.ContentSlider);
             TableContainer.ContentSlider = ContentSlider;
         }
 
@@ -102,6 +103,7 @@ namespace Crux.BaseControls
 
         public override void InternalUpdate()
         {
+            //if(IsActive)
             base.InternalUpdate();
         }
 
@@ -112,7 +114,7 @@ namespace Crux.BaseControls
                 var d = r.GetData();
                 r.IsShown = f(d);
             }
-            Arrange();
+            ArrangeRows();
         }
 
         protected class DataRow : List<DataCell>
@@ -121,7 +123,10 @@ namespace Crux.BaseControls
             {
             }
 
-            public bool IsShown { get; set; } = true;
+            public event EventHandler<bool> OnShownChanged;
+
+            bool shown = true;
+            public bool IsShown { get => shown; set { if (shown != value) { shown = value; OnShownChanged?.Invoke(this, shown); } } }
 
             public string[] GetData()
             {
@@ -159,6 +164,14 @@ namespace Crux.BaseControls
             {
                 panel.AddNewControl(value as ControlBase);
             }
+            else if (value is ICollection<ControlBase>)
+            {
+                var cast = value as ICollection<ControlBase>;
+                foreach (var c in cast)
+                {
+                    panel.AddNewControl(c);
+                }
+            }
             else
             {
                 var label = new Label();
@@ -176,14 +189,16 @@ namespace Crux.BaseControls
 
         #region Rows
 
+
         public virtual void AddRow(params object[] data)
         {
 
             //var p = new Panel(0, 20, TableContainer.Width - 9, (TableContainer.Height - 20) / 2);
             //TableContainer.AddNewControl(p);
             //p.SliderVisible = false;
-
-            TableRows.Add(new DataRow());
+            var r = new DataRow();
+            TableRows.Add(r);
+            r.OnShownChanged += RowShownChanged;
             var row = TableRows[TableRows.Count - 1];
 
             for (int i = 0; i < TotalColumns; i++)
@@ -192,9 +207,20 @@ namespace Crux.BaseControls
                 row.Add(CreateCell(value));
             }
 
+            TotalShownRows += r.IsShown ? 1 : -1;
             TotalRows++;
 
-            Arrange();
+            ArrangeRows();
+        }
+
+        protected int TotalShownRows;
+        protected virtual void RowShownChanged(object sender, bool e)
+        {
+            TotalShownRows += e ? 1 : -1;
+            if (TotalShownRows < 0)
+            {
+                throw new IndexOutOfRangeException();
+            }
         }
 
         public virtual void RemoveRow(int rowindex)
@@ -209,14 +235,18 @@ namespace Crux.BaseControls
 
             TableRows.RemoveAt(rowindex);
 
+            TotalShownRows--;
             TotalRows--;
 
-            Arrange();
+            ArrangeRows();
         }
 
         #endregion
 
         #region Columns
+
+        float headSize = 1;
+        public float HeaderTextSize { get => headSize; set { headSize = value; ArrangeHeaders(); } }
 
         protected virtual void addColumn(string header = "")
         {
@@ -244,7 +274,7 @@ namespace Crux.BaseControls
             {
                 addColumn(n);
             }
-            Arrange();
+            ArrangeRows();
         }
 
         List<float> colwidths = new List<float>();
@@ -266,7 +296,8 @@ namespace Crux.BaseControls
         {
             addColumn(header);
 
-            Arrange();
+            ArrangeRows();
+            ArrangeHeaders();
         }
 
         public virtual void RemoveColumn(int colindex)
@@ -284,7 +315,7 @@ namespace Crux.BaseControls
             }
             TotalColumns--;
 
-            Arrange();
+            ArrangeRows();
         }
 
         #endregion
@@ -293,39 +324,57 @@ namespace Crux.BaseControls
         public int FixedHeight { get { return fixwidthsize; } set { fixwidthsize_rmb = (fixwidthsize = value) > 0 ? value : fixwidthsize_rmb; } }
 
         public bool hf;
-        public bool IsHeightFixed { get { return hf; } set { FixedHeight = (hf = value) ? fixwidthsize_rmb : -1; Arrange(); } }
+        public bool IsHeightFixed { get { return hf; } set { FixedHeight = (hf = value) ? fixwidthsize_rmb : -1; ArrangeRows(); } }
 
 
         //public int fixise = 40, fixise_rmb = 40;
         //public int FixedHeight { get { return fixise; } set { fixise_rmb = (fixise = value) > 0 ? value : fixise_rmb; } }
 
         public bool wf;
-        public bool IsWidthFixed { get { return wf; } set { wf = value; Arrange(); } }
+        public bool IsWidthFixed { get { return wf; } set { wf = value; ArrangeRows(); } }
 
-        void Arrange()
+        void ArrangeHeaders()
         {
-            TableContainer.SuspendLayout();
-
-            //var colwidth = -1;//- bordersize*2?;
-            var colwidth = TableContainer.Width / TotalColumns;//- bordersize*2?;
-            var floatdiff = (colwidth - (int)colwidth) * TotalColumns;
-            colwidth = (int)colwidth;
-            var rowheight = FixedHeight == -1 ? TableContainer.Height / TotalRows : FixedHeight;//- bordersize*2?;
+            if (TableContainer == null) return;
 
             var acm = 0f;
+            var colwidth = TableContainer.Width / TotalColumns;//- bordersize*2?;
 
             // Headers
             for (int c = 0; c < TotalColumns; c++)
             {
                 var cwidth = colwidths[c] * colwidth;
                 var label = colHeaders[c];
+                var mea = defaultFont.MeasureString(label.Text);
 
-                label.RelativePosition = new Vector2(acm + cwidth / 2 - defaultFont.MeasureString(label.Text).X / 2, 0);
+                label.RelativePosition = new Vector2(
+                    acm + cwidth / 2 - mea.X / 2 * HeaderTextSize,
+                    TableContainer.RelativePosition.Y / 2 - mea.Y / 2 * HeaderTextSize);
+                label.TextSize = headSize;
 
                 acm += cwidth;
             }
+        }
 
-            acm = 0f;
+        void ArrangeRows()
+        {
+            if (TotalRows == 0 || TotalColumns == 0) return;
+            TableContainer.SuspendLayout();
+
+            if (TotalShownRows < 0)
+            {
+                throw new IndexOutOfRangeException();
+            }
+            //var colwidth = -1;//- bordersize*2?;
+            var colwidth = TableContainer.Width / TotalColumns;//- bordersize*2?;
+            var floatdiff = (colwidth - (int)colwidth) * TotalColumns;
+            colwidth = (int)colwidth;
+            var rowheight = FixedHeight == -1 ? TableContainer.Height / TotalShownRows : FixedHeight;//- bordersize*2?;
+
+
+            ArrangeHeaders();
+
+            var acm = 0f;
 
             // Rows
             for (int r = 0, shown = 0; r < TotalRows; r++)

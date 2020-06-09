@@ -18,6 +18,8 @@ namespace Crux.BaseControls
 
         public float TextScale { get; set; } = 1f;
 
+        public override Color BackColor { get => base.BackColor; 
+            set => base.BackColor = value; }
 
         //public event EventHandler OnLeftClick;
         //public event EventHandler OnRightClick;
@@ -51,7 +53,7 @@ namespace Crux.BaseControls
         //Color BackColor;
         protected override void Initialize()
         {
-            BackColor = BackColor == default ? Owner.BackColor : BackColor;
+            //BackColor = BackColor == default ? Owner.BackColor : BackColor;
             //ID = Owner.GetControlsCount + 1;
             //Bounds = new Rectangle((int)(Owner.X + X), (int)(Owner.Y + Y), (int)Width, (int)Height);
             BorderColor = BackColor * 1.5f;
@@ -80,69 +82,70 @@ namespace Crux.BaseControls
 
         public Texture2D Image { get; set; }
 
-        protected override void DrawLayout(float backmul = 1)
-        {
+        //protected override void DrawLayout(float backmul = 1)
+        //{
 
-            if (hasLayout)
-            {
+        //    if (hasLayout)
+        //    {
 
-                var diffuse = IsHovering && !EnterHold ? IsHolding ? HoverColor * .7f : HoverColor : DiffuseColor;
-                var fw = Bounds.Width;
-                var fh = Bounds.Height;
+        //        var diffuse = IsHovering && !EnterHold ? IsHolding ? HoverColor * .7f : HoverColor : DiffuseColor;
+        //        var fw = Bounds.Width;
+        //        var fh = Bounds.Height;
 
-                var top = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
-                var bottom = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
-                var fa = FillingArea;
-                //Batch.GraphicsDevice.ScissorRectangle = fa;
-                Batch.DrawFill(fa, diffuse * (BackColor.A / 255f));
+        //        var top = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
+        //        var bottom = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
+        //        var fa = FillingArea;
+        //        //Batch.GraphicsDevice.ScissorRectangle = fa;
+        //        Batch.DrawFill(fa, diffuse * (BackColor.A / 255f));
 
-                //OnDraw?.Invoke();
-                Batch.Draw(Layout.TopLeft, Bounds.Location.ToVector2(), diffuse);
-                Batch.Draw(Layout.TopBorder, new Rectangle(Bounds.X + Layout.TopLeft.Width, Bounds.Y, fw - Layout.TopLeft.Width - Layout.TopRight.Width, Layout.TopBorder.Height), diffuse);
-                Batch.Draw(Layout.TopRight, new Vector2(Bounds.X + Layout.TopLeft.Width + top, Bounds.Y), diffuse);
+        //        //OnDraw?.Invoke();
+        //        Batch.Draw(Layout.TopLeft, Bounds.Location.ToVector2(), diffuse);
+        //        Batch.Draw(Layout.TopBorder, new Rectangle(Bounds.X + Layout.TopLeft.Width, Bounds.Y, fw - Layout.TopLeft.Width - Layout.TopRight.Width, Layout.TopBorder.Height), diffuse);
+        //        Batch.Draw(Layout.TopRight, new Vector2(Bounds.X + Layout.TopLeft.Width + top, Bounds.Y), diffuse);
 
-                Batch.Draw(Layout.LeftBorder, new Rectangle(Bounds.X, Bounds.Y + Layout.TopLeft.Height, Layout.LeftBorder.Width, fh - Layout.BottomLeft.Height - Layout.TopLeft.Height), diffuse);
-                Batch.Draw(Layout.RightBorder, new Rectangle(Bounds.X + fw - Layout.RightBorder.Width, Bounds.Y + Layout.TopLeft.Height, Layout.RightBorder.Width, fh - Layout.TopRight.Height - Layout.BottomRight.Height), diffuse);
+        //        Batch.Draw(Layout.LeftBorder, new Rectangle(Bounds.X, Bounds.Y + Layout.TopLeft.Height, Layout.LeftBorder.Width, fh - Layout.BottomLeft.Height - Layout.TopLeft.Height), diffuse);
+        //        Batch.Draw(Layout.RightBorder, new Rectangle(Bounds.X + fw - Layout.RightBorder.Width, Bounds.Y + Layout.TopLeft.Height, Layout.RightBorder.Width, fh - Layout.TopRight.Height - Layout.BottomRight.Height), diffuse);
 
-                Batch.Draw(Layout.BottomLeft, new Vector2(Bounds.X, Bounds.Y + fh - Layout.BottomLeft.Height), diffuse);
-                Batch.Draw(Layout.BottomBorder, new Rectangle(Bounds.X + Layout.BottomLeft.Width, Bounds.Y + fh - Layout.BottomBorder.Height, fw - Layout.BottomLeft.Width - Layout.BottomRight.Width, Layout.BottomBorder.Height), diffuse);
-                Batch.Draw(Layout.BottomRight, new Vector2(Bounds.X + Layout.BottomLeft.Width + bottom, Bounds.Y + fh - Layout.BottomRight.Height), diffuse);
+        //        Batch.Draw(Layout.BottomLeft, new Vector2(Bounds.X, Bounds.Y + fh - Layout.BottomLeft.Height), diffuse);
+        //        Batch.Draw(Layout.BottomBorder, new Rectangle(Bounds.X + Layout.BottomLeft.Width, Bounds.Y + fh - Layout.BottomBorder.Height, fw - Layout.BottomLeft.Width - Layout.BottomRight.Width, Layout.BottomBorder.Height), diffuse);
+        //        Batch.Draw(Layout.BottomRight, new Vector2(Bounds.X + Layout.BottomLeft.Width + bottom, Bounds.Y + fh - Layout.BottomRight.Height), diffuse);
 
-                //Batch.DrawFill(new Vector2(Bounds.X, Bounds.Y + fh - Layout.BottomLeft.Height), Layout.BottomLeft.Bounds.Size.ToVector2(), Color.White);
-                //Batch.DrawFill(new Rectangle(Bounds.X + Layout.BottomLeft.Width, Bounds.Y + fh - Layout.BottomBorder.Height, fw - Layout.BottomLeft.Width - Layout.BottomRight.Width, Layout.BottomBorder.Height), Color.White);
-                //Batch.DrawFill(new Vector2(Bounds.X + Layout.BottomLeft.Width + bottom, Bounds.Y + fh - Layout.BottomRight.Height), Layout.BottomRight.Bounds.Size.ToVector2(), Color.White);
+        //        //Batch.DrawFill(new Vector2(Bounds.X, Bounds.Y + fh - Layout.BottomLeft.Height), Layout.BottomLeft.Bounds.Size.ToVector2(), Color.White);
+        //        //Batch.DrawFill(new Rectangle(Bounds.X + Layout.BottomLeft.Width, Bounds.Y + fh - Layout.BottomBorder.Height, fw - Layout.BottomLeft.Width - Layout.BottomRight.Width, Layout.BottomBorder.Height), Color.White);
+        //        //Batch.DrawFill(new Vector2(Bounds.X + Layout.BottomLeft.Width + bottom, Bounds.Y + fh - Layout.BottomRight.Height), Layout.BottomRight.Bounds.Size.ToVector2(), Color.White);
 
-            }
-        }
+        //    }
+        //}
         public override void Draw()
         {
-            if (!IsVisible) return;
-            Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
-            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
-            {
-                var f = IsHovering && !EnterHold ? IsHolding ? 0.3f : 0.6f : 1f;
 
-                if (!hasLayout)
-                {
-                    if (DrawBorder)
-                    {
-                        Batch.DrawFill(Bounds, BorderColor); // Primary
-                        Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor * f); // Primary
-                    }
-                    else
-                    {
-                        Batch.DrawFill(Bounds, BackColor * f); // Primary
-                    }
-                }
-                else
-                {
-                    DrawLayout(f);
-                }
+            base.Draw();
+            //Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
+            //Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+            //{
+            //    var f = IsHovering && !EnterHold ? IsHolding ? 0.3f : 0.6f : 1f;
 
-                if (Image != null)
-                    Batch.Draw(Image, Bounds, Color.White);
-            }
-            Batch.End();
+            //    if (!hasLayout)
+            //    {
+            //        if (DrawBorder)
+            //        {
+            //            Batch.DrawFill(Bounds, BorderColor); // Primary
+            //            Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor * f); // Primary
+            //        }
+            //        else
+            //        {
+            //            Batch.DrawFill(Bounds, BackColor * f); // Primary
+            //        }
+            //    }
+            //    else
+            //    {
+            //        DrawLayout(f);
+            //    }
+
+            //    if (Image != null)
+            //        Batch.Draw(Image, Bounds, Color.White);
+            //}
+            //Batch.End();
 
             Batch.GraphicsDevice.ScissorRectangle = drawingBounds.InflateBy(-1);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);

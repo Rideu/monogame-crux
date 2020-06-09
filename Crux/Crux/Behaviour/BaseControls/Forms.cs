@@ -220,7 +220,7 @@ namespace Crux.BaseControls
 
         public Form()
         {
-            BackColor = new Color();
+            //BackColor = new Color();
             AbsoluteX = 10; AbsoluteY = 10; Width = 500; Height = 500;
             Initialize();
         }
@@ -280,10 +280,10 @@ namespace Crux.BaseControls
             Batch.GraphicsDevice.ScissorRectangle = Bounds;
 
 
-            OnMouseLeave += delegate
-            {
-                Invalidate();
-            };
+            //OnMouseLeave += delegate
+            //{
+            //    Invalidate();
+            //};
 
             Owner = originForm = this;
             #region Debug
@@ -589,26 +589,26 @@ namespace Crux.BaseControls
             if (IsVisible)
             {
                 Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)AbsoluteX, (int)AbsoluteY), new Point((int)Width, (int)Height));
-                if (!hasLayout)
-                {
-                    Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState:rasterizer*/);
-                    {
+                //if (!hasLayout)
+                //{
+                //    Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState:rasterizer*/);
+                //    {
 
-                        var fa = FillingArea;
+                //        var fa = FillingArea;
 
-                        //Batch.DrawFill(fa, BackColor);
+                //        //Batch.DrawFill(fa, BackColor);
 
-                        // Border
-                        Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f)); // Primary
-                        // Diffuse
-                        Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
+                //        // Border
+                //        Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f)); // Primary
+                //        // Diffuse
+                //        Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
 
-                        //if (IsActive && false) // DBG: Debug
-                        //    Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
+                //        //if (IsActive && false) // DBG: Debug
+                //        //    Batch.DrawFill(Bounds, new Color(73, 123, 63, 50));
 
-                    }
-                    Batch.End();
-                }
+                //    }
+                //    Batch.End();
+                //}
 
                 OnDraw?.Invoke();
 

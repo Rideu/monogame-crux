@@ -11,14 +11,14 @@ namespace Crux.BaseControls
         public override ControlBase Owner { get; set; }
         public override int GetID { get; }
 
-        string tc;
+        //string tc;
         [Obsolete("Replace with AutoSize prop")]
         public bool IsFixedWidth { get; set; }
         public bool ParseColor { get; set; } = true;
 
         public override string Text
         {
-            get => tc;
+            get => text;
             set
             {
                 if (ParseColor)
@@ -31,8 +31,8 @@ namespace Crux.BaseControls
                     }
                     value = value.Regplace(@"{.+}", "");
                 }
-                tc = value;
-                var meas = defaultFont.MeasureString(tc);
+                text = value;
+                var meas = defaultFont.MeasureString(text);
                 Size = meas.ToPoint();
                 //if (!IsFixedWidth)
                 //Width = font.MeasureString(tc).X;
@@ -88,7 +88,7 @@ namespace Crux.BaseControls
             {
                 if (drawBackground)
                     Batch.DrawFill(Bounds, BackColor);
-                Batch.DrawString(defaultFont, tc, new Vector2(AbsoluteX + 0, AbsoluteY), ForeColor, 0, TextSize);
+                Batch.DrawString(defaultFont, text, new Vector2(AbsoluteX + 0, AbsoluteY), ForeColor, 0, TextSize);
             }
             Batch.End();
 

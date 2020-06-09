@@ -21,7 +21,7 @@ namespace Crux.BaseControls
         //TODO: wrap
         public override string Text { get => text; set { text = value; } }
 
-        internal Slider ContentSlider;
+        protected internal Slider ContentSlider;
 
         public bool SliderVisible { get => ContentSlider.IsVisible; set => ContentSlider.IsVisible = value; }
         public bool IsScrollable { get; set; } = true;
@@ -47,7 +47,7 @@ namespace Crux.BaseControls
         }
 
         protected virtual void CreateSlider()
-        { 
+        {
             OnMouseScroll += (s, e) =>
             {
                 if (IsScrollable)
@@ -194,6 +194,13 @@ namespace Crux.BaseControls
             foreach (var c in Controls)
             {
                 c.InternalUpdate();
+                if (c != ContentSlider)
+                    c.IsVisible = (drawingBounds.Intersects(c.DrawingBounds));
+                else
+                {
+
+                }
+
             }
 
             //if (ContentSlider.IsVisible)
@@ -207,23 +214,24 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
-            if (!IsVisible) return;
-            base.Draw(); 
+            //if (!IsVisible) return;
+            base.Draw();
 
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
-                if (drawingBounds.Intersects(Controls[i].DrawingBounds))
-                    Controls[i].Draw();
+                var c = Controls[i];
+                if (c.IsVisible)
+                    c.Draw();
 
                 if (false) // Drawing bounds debug
                 {
                     Batch.Begin(SpriteSortMode.Deferred, null, null, null);
                     {
-                        Batch.DrawFill(Controls[i].DrawingBounds, new Color(123, 77, 63, 150) * .5f);
+                        Batch.DrawFill(c.DrawingBounds, new Color(123, 77, 63, 150) * .5f);
                     }
                     Batch.End();
                 }
-            } 
+            }
         }
     }
 }
