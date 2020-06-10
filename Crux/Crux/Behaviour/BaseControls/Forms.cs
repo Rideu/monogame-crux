@@ -614,7 +614,7 @@ namespace Crux.BaseControls
 
                 if (hasLayout)
                 {
-                    Batch.Begin(SpriteSortMode.Deferred/*, rasterizerState:rasterizer*/);
+                    Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
                     {
                         DrawLayout();
                     }

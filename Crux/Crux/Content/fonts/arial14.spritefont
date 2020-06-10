@@ -8,7 +8,7 @@ with.
 <XnaContent xmlns:Graphics="Microsoft.Xna.Framework.Content.Pipeline.Graphics">
   <Asset Type="Graphics:FontDescription">
     <FontName>Trebuchet</FontName> <!-- Euphemia, Dotum -->
-    <Size>10</Size>
+    <Size>14</Size>
     <Spacing>1</Spacing>
     <UseKerning>true</UseKerning>
     <Style>Bold</Style><!-- "Regular", "Bold", "Italic" -->

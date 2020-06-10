@@ -8,8 +8,8 @@ with.
 <XnaContent xmlns:Graphics="Microsoft.Xna.Framework.Content.Pipeline.Graphics">
   <Asset Type="Graphics:FontDescription">
     <FontName>Xolonium</FontName> <!-- Euphemia, -->
-    <Size>12</Size>
-    <Spacing>0</Spacing>
+    <Size>10</Size>
+    <Spacing>1</Spacing>
     <UseKerning>true</UseKerning>
     <Style>Regular</Style><!-- "Regular", "Bold", "Italic" -->
     <CharacterRegions>

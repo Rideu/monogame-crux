@@ -63,6 +63,8 @@ namespace Crux
             base.Initialize();
             IsMouseVisible = true;
 
+            GraphicsDevice.PresentationParameters.MultiSampleCount = 8;
+            graphics.ApplyChanges();
 
         }
 
@@ -82,7 +84,9 @@ namespace Crux
 
 
         // Fonts
-        public static SpriteFont font0, font1;
+        public static SpriteFont
+           arial8, arial, arial14,
+           xol8, xol, xol14;
 
         // Sounds
         public static SoundEffect
@@ -91,20 +95,28 @@ namespace Crux
 
         static DataGrid dg;
         static Action<string, float> createRow;
+
+        SpriteFont LoadFont(string path)
+        {
+            var f = Content.Load<SpriteFont>(path);
+            f.Glyphs[0].Width += 5;
+            f.DefaultCharacter = ' ';
+
+            return f;
+        }
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             #region Fonts
 
-            font0 = Content.Load<SpriteFont>("fonts\\arial");
-            font0.Glyphs[0].Width += 5; // Alters space size
-                                        //font.LineSpacing = 5;
-            font0.DefaultCharacter = ' ';
+            arial8 = LoadFont("fonts\\arial8");
+            arial = LoadFont("fonts\\arial");
+            arial14 = LoadFont("fonts\\arial14");
 
-            font1 = Content.Load<SpriteFont>("fonts\\Xolonium");
-            font1.Glyphs[0].Width += 5; // Alters space size
-                                        //font1.LineSpacing = 5;
+            xol8 = LoadFont("fonts\\Xolonium8");
+            xol = LoadFont("fonts\\Xolonium");
+            xol14 = LoadFont("fonts\\Xolonium14");
 
             #endregion
 
@@ -130,9 +142,9 @@ namespace Crux
 
             #region Debug
 
-            font1.DefaultCharacter = ' ';
+            xol.DefaultCharacter = ' ';
 
-            ControlBase.DefaultFont = font1;
+            ControlBase.DefaultFont = arial;
             TextBuilder.Batch = spriteBatch;
             //TextBuilder.EnableDebug = true;
 
@@ -165,7 +177,7 @@ namespace Crux
 
             FormManager.AddForm("MainForm", debugForm);
 
-            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Text = "How to Reference", TextSize = 1.5f, ForeColor = Palette.Neonic, });
+            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Font = arial14, Text = "How to Reference", TextSize = 1f, ForeColor = Palette.Neonic, });
             #endregion
 
             #region TextArea
@@ -173,11 +185,11 @@ namespace Crux
             {
                 TextArea t = new TextArea(20, 80, 415, 280);
 
-                t.Font = font0;
+                t.Font = arial;
                 var tb = t.GetTextBuilder;
                 {
-                    tb.FontSize = .6f;
-                    tb.LineSpacing = -25;
+                    tb.FontSize = 1f;
+                    tb.LineSpacing = -15;
                 }
 
                 debugForm.AddNewControl(t);
@@ -215,7 +227,7 @@ namespace Crux
 
                 Slider s;
                 debugForm.AddNewControl(s = new Slider(20, 60, 415, 10, Slider.Type.Horizontal));
-                s.OnSlide += delegate { t.FontSize = (0.75f + (s.Value * 10) * 0.05f); };
+                s.OnSlide += delegate { t.FontSize = (0.5f + (s.Value * 1)); };
 
             }
             #endregion
@@ -273,7 +285,7 @@ namespace Crux
                 dg.IsHeightFixed = true;
                 dg.FixedHeight = 55;
 
-                var rowc = new Label(35, 165 + 320, 30, 30) { Text = "Total:", TextSize = .75f };
+                var rowc = new Label(35, 165 + 320, 30, 30) { Font = arial8, Text = "Total:", TextSize = 1f };
                 debugForm.AddNewControl(rowc);
 
                 ControlTemplate controlStyler = new ControlTemplate
@@ -302,7 +314,7 @@ namespace Crux
 
                 dg.ColumnsSizing(1.25f, 1, 1, 1, 1, 1);
                 dg.AddColumns("Name", "Cores", "Threads", "Freq", "$", "Action");
-                dg.HeaderTextSize = .75f;
+                //dg.HeaderTextSize = .75f;
 
                 ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 36, Width = 62, BackColor = dif };
 
@@ -339,25 +351,32 @@ namespace Crux
 
                     var costmul = (srb + mdb + idb) * (f * 0.05f * (cr * (gt ? 2 : 1)));
 
+                    float textsize = 1f;
+
                     var itemName = new Label(10, 40, 0, 0);
                     itemName.Text = $"{s}-{m}{i}";
-                    itemName.TextSize = .75f;
+                    itemName.TextSize = textsize;
 
                     var itemCores = new Label(5, 5, 0, 0);
                     itemCores.Text = $"{cr}";
-                    itemCores.TextSize = .75f;
+                    itemCores.TextSize = textsize;
 
                     var itemThreads = new Label(5, 5, 0, 0);
                     itemThreads.Text = $"{(cr * (gt ? 2 : 1))}";
-                    itemThreads.TextSize = .75f;
+                    itemThreads.TextSize = textsize;
 
                     var itemFreq = new Label(5, 5, 0, 0);
                     itemFreq.Text = $"{f} THz";
-                    itemFreq.TextSize = .75f;
+                    itemFreq.TextSize = textsize;
 
-                    var cost = $"{Color.Gold}{(int)(costmul) * 10}$";
+                    //var cost = ;
+                    var itemCost = new Label(5, 5, 0, 0);
+                    itemCost.ForeColor = Color.FromNonPremultiplied(255, 220, 60, 255);
+                    itemCost.TextSize = textsize;
+                    itemCost.Text = $"{(int)(costmul) * 10}";
+                    itemCost.StringFormat = "C2";
 
-                    dg.AddRow(new List<ControlBase> { iconBox, itemName }, itemCores, itemThreads, itemFreq, cost, btn);
+                    dg.AddRow(new List<ControlBase> { iconBox, itemName }, itemCores, itemThreads, itemFreq, itemCost, btn);
                     rowc.Text = $"Total: {dg.TotalRows}";
                 };
 
@@ -512,8 +531,8 @@ namespace Crux
             var flayout = new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true);
 
             debugForm.CreateLayout(flayout);
-            //debugForm.DiffuseColor =
-            //debugForm.HoverColor = dif;
+            debugForm.DiffuseColor =
+            debugForm.HoverColor = dif;
             //Examples();
 
             Simplex.Init(GraphicsDevice);

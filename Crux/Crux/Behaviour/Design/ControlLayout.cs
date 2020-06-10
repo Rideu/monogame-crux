@@ -26,6 +26,7 @@ namespace Crux
         public Texture2D TopRight { get; private set; }
         public Texture2D BottomLeft { get; private set; }
         public Texture2D BottomRight { get; private set; }
+        public Texture2D ReliancePixel { get; private set; }
 
         public Color Diffuse { get; private set; }
 
@@ -65,8 +66,10 @@ namespace Crux
             if (centerator1.X == 0)
                 throw new Exception("Blue marker not found on the layout image.");
 
+            ReliancePixel = CutOut(main, new Rectangle(centerator1.X + 1, centerator1.Y + 1, 1, 1));
+
             if (!grad)
-            { 
+            {
                 TopLeft = CutOut(main, new Rectangle(0, 0, centerator1.X, centerator1.Y));
 
                 TopBorder = CutOut(main, new Rectangle(centerator1.X + 1, 0, 1, centerator1.Y));
@@ -87,7 +90,7 @@ namespace Crux
             {
                 TopLeft = CutOut(main, new Rectangle(0, 0, centerator1.X, centerator1.Y));
                 TopRight = CutOut(main, new Rectangle(centerator1.X + 3, 0, main.Width - centerator1.X - 3, centerator1.Y));
-                BottomLeft = CutOut(main, new Rectangle(0, centerator1.Y + 3, centerator1.X, main.Height - centerator1.Y - 3)); 
+                BottomLeft = CutOut(main, new Rectangle(0, centerator1.Y + 3, centerator1.X, main.Height - centerator1.Y - 3));
                 BottomRight = CutOut(main, new Rectangle(centerator1.X + 3, centerator1.Y + 3, main.Width - centerator1.X - 3, main.Height - centerator1.Y - 3));
 
 

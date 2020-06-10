@@ -310,19 +310,6 @@ namespace Crux.BaseControls
             TotalColumns++;
         }
 
-        int SortedBy = -1;
-        protected void ColSort(object sender, ControlArgs e)
-        {
-            foreach (var l in colHeaders)
-            {
-                l.ForeColor = ForeColor;
-            }
-            var label = sender as Label;
-            int colindex = colHeaders.IndexOf(label);
-            label.ForeColor = label.ForeColor.MulRGB(.4f);
-            SortByColumn(colindex);
-
-        }
 
         public virtual void AddColumns(params string[] headers)
         {
@@ -490,6 +477,20 @@ namespace Crux.BaseControls
         #endregion
 
         #region Sort
+
+        int SortedBy = -1;
+        protected void ColSort(object sender, ControlArgs e)
+        {
+            foreach (var l in colHeaders)
+            {
+                l.ForeColor = ForeColor;
+            }
+            var label = sender as Label;
+            int colindex = colHeaders.IndexOf(label);
+            label.ForeColor = Palette.Neorange;
+            SortByColumn(colindex);
+
+        }
 
         SemiNumericComparer cmp = new SemiNumericComparer();
 

@@ -88,7 +88,7 @@ namespace Crux
             var buttonx = 5;
             var buttony = 5;
             f.AddNewControl(
-                lb = new TextArea(buttonx + 10, buttony + 10, 140, 30) { Font = font1, ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
+                lb = new TextArea(buttonx + 10, buttony + 10, 140, 30) { Font = xol, ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
                 er = new Button(buttonx + 160, buttony + 10, 40, 30) { Text = "<=", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
                 b1 = new Button(buttonx + 10, buttony + 50, 40, 40) { Text = "1", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },
                 b2 = new Button(buttonx + 60, buttony + 50, 40, 40) { Text = "2", ForeColor = Palette.Neonic, DiffuseColor = dif, HoverColor = hov },

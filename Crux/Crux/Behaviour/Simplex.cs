@@ -831,7 +831,8 @@ namespace Crux
 
     public static class RegexLib
     {
-        public static string MatchIfContains => "(?<={).??([()]).*?(?=})";
+        public static readonly string MatchIfContains = "(?<={).??([()]).*?(?=})";
+        public static readonly string MatchColor = "(?<={).??([()]).*?(?=})";
 
     }
 }

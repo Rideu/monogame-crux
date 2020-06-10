@@ -1,10 +1,18 @@
 ﻿using System;
+using System.Globalization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using static Crux.Simplex;
 
 namespace Crux.BaseControls
 {
+    enum ValueType
+    {
+        Int = 0x001,
+        Float = 0x002,
+        Double = 0x003,
+        String = 0x000
+    }
     public class Label : ControlBase
     {
         #region Fields
@@ -16,6 +24,31 @@ namespace Crux.BaseControls
         public bool IsFixedWidth { get; set; }
         public bool ParseColor { get; set; } = true;
 
+        string drawString = "";
+
+        ValueType valType;
+
+        float textSize = 1f;
+
+
+        object formatValue;
+        string format;
+
+        internal bool drawBackground;
+
+        #endregion
+
+        static object getTextType(string value)
+        {
+            int parsedInt = 0;
+            float parsedFloat = 0;
+            double parsedDouble = 0;
+            if (int.TryParse(value, out parsedInt)) return parsedInt;
+            if (float.TryParse(value, out parsedFloat)) return parsedFloat;
+            if (double.TryParse(value, out parsedDouble)) return parsedDouble;
+            return null;
+        }
+
         public override string Text
         {
             get => text;
@@ -23,7 +56,7 @@ namespace Crux.BaseControls
             {
                 if (ParseColor)
                 {
-                    var m = value.RegMatches(@"(\{)?((?<=((R|G|B|A):){1,1})\d{1,3})");
+                    var m = value.RegMatches(RegexLib.MatchColor);
                     if (m.Count == 4)
                     {
                         var color = new Color(byte.Parse(m[0].Value), byte.Parse(m[1].Value), byte.Parse(m[2].Value), byte.Parse(m[3].Value));
@@ -31,29 +64,49 @@ namespace Crux.BaseControls
                     }
                     value = value.Regplace(@"{.+}", "");
                 }
-                text = value;
-                var meas = defaultFont.MeasureString(text);
-                Size = meas.ToPoint();
+
+                drawString = text = value;
+                updateSize();
+
+                formatValue = getTextType(text);
+
+                StringFormat = StringFormat;
+                TextSize = TextSize;
+
                 //if (!IsFixedWidth)
                 //Width = font.MeasureString(tc).X;
             }
-        } // TODO: 
+        }
 
-        float textSize = 1f;
+        public Vector2 TextSizeOverhead /*= new Vector2(defaultFont.Glyphs[0].Width, 0)*/;
         public float TextSize
         {
             get => textSize; set
             {
                 textSize = value;
-                var meas = defaultFont.MeasureString(text) * textSize;
-                Size = meas.ToPoint();
+                updateSize();
+            }
+        }
+        public string StringFormat
+        {
+            get => format;
+            set
+            {
+                if (!string.IsNullOrEmpty(value) && formatValue != null)
+                {
+                    format = value;
+                    drawString = string.Format(CultureInfo.GetCultureInfo("en-us"), "{0:" + format + "}", formatValue);
+                    updateSize();
+                }
             }
         }
 
-        internal bool drawBackground;
+        void updateSize()
+        {
 
-        #endregion
-
+            var meas = Font.MeasureString(drawString) * textSize + TextSizeOverhead;
+            Size = meas.ToPoint();
+        }
         public Label()
         {
             AbsoluteX = 10; AbsoluteY = 10; Size = new Point(60, 40); BackColor = default;
@@ -92,13 +145,14 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
-            //var drawb = Owner.DrawingBounds;
-            Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
+
+            Batch.GraphicsDevice.ScissorRectangle = Owner.DrawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
-                if (drawBackground)
-                    Batch.DrawFill(Bounds, BackColor);
-                Batch.DrawString(defaultFont, text, new Vector2(AbsoluteX + 0, AbsoluteY), ForeColor, 0, TextSize);
+                //if (true)
+                //    Batch.DrawFill(Bounds, BackColor);
+
+                Batch.DrawString(Font, drawString, new Vector2(AbsoluteX + 0, AbsoluteY), ForeColor, 0, TextSize);
             }
             Batch.End();
 

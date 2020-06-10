@@ -20,12 +20,40 @@
 /processorParam:TextureFormat=NoChange
 /build:fonts/arial.spritefont
 
+#begin fonts/arial14.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/arial14.spritefont
+
+#begin fonts/arial8.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/arial8.spritefont
+
 #begin fonts/Xolonium.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=NoChange
 /build:fonts/Xolonium.spritefont
+
+#begin fonts/Xolonium14.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/Xolonium14.spritefont
+
+#begin fonts/Xolonium8.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/Xolonium8.spritefont
 
 #begin images/control_layout2.png
 /importer:TextureImporter

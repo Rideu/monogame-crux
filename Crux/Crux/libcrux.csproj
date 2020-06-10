@@ -147,6 +147,14 @@
       <DependentUpon>ToolSet.cs</DependentUpon>
     </Compile>
     <Compile Include="Behaviour\BaseControls\ControlBase.cs" />
+    <None Include="Content\fonts\arial8.spritefont" />
+    <None Include="Content\fonts\arial14.spritefont" />
+    <None Include="Content\fonts\Xolonium8.spritefont">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Content\fonts\Xolonium14.spritefont">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="͏.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="Examples.cs" />

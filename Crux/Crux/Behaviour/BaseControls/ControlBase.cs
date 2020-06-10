@@ -142,6 +142,8 @@ namespace Crux.BaseControls
 
         #region Displaying
 
+        public virtual SpriteFont Font { get; set; } = defaultFont;
+
         public virtual Color BackColor { get; set; } = Palette.DarkenGray;
 
         public bool DrawBorder { get; set; } = true;
@@ -677,7 +679,7 @@ namespace Crux.BaseControls
                 var fa = FillingArea;
                 //Batch.GraphicsDevice.ScissorRectangle = fa;
                 if (allowcustom)
-                    Batch.DrawFill(fa, layout.Diffuse);
+                    Batch.Draw(layout.ReliancePixel, fa, diffuse);
                 //Batch.DrawFill(fa, diffuse * (BackColor.A / 255f));
                 else
                     Batch.DrawFill(fa, BackColor * backmul);
@@ -781,8 +783,9 @@ namespace Crux.BaseControls
 
         public static SpriteBatch Batch { get; set; } = Core.spriteBatch;
 
-        protected static readonly RasterizerState rasterizer = new RasterizerState()
+        protected static readonly RasterizerState rasterizer = new RasterizerState
         {
+            MultiSampleAntiAlias = true,
             ScissorTestEnable = true,
         };
 

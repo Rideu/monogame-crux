@@ -7,11 +7,11 @@ with.
 -->
 <XnaContent xmlns:Graphics="Microsoft.Xna.Framework.Content.Pipeline.Graphics">
   <Asset Type="Graphics:FontDescription">
-    <FontName>Trebuchet</FontName> <!-- Euphemia, Dotum -->
-    <Size>10</Size>
+    <FontName>Xolonium</FontName> <!-- Euphemia, -->
+    <Size>8</Size>
     <Spacing>1</Spacing>
     <UseKerning>true</UseKerning>
-    <Style>Bold</Style><!-- "Regular", "Bold", "Italic" -->
+    <Style>Regular</Style><!-- "Regular", "Bold", "Italic" -->
     <CharacterRegions>
       <CharacterRegion>
         <Start>&#32;</Start>

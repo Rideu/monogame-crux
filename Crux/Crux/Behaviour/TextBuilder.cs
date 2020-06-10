@@ -131,6 +131,8 @@ namespace Crux
         public void UpdateText(string text)
         {
             //Console.Write(text);
+            wordslist.Clear();
+            wordsgroups.Clear();
             mea.Restart();
             t = Replace(t = text + " ", "\\r\\n", " ^n");
             Vector2 currentPoint = new Vector2();
@@ -664,6 +666,7 @@ namespace Crux
         {
             var p = (w + pos).Floor();
             b.DrawString(w, w, p, w, 0f, w.origin, new Vector2(w.scale), SpriteEffects.None, 1f);
+            //b.DrawFill(new Rectangle(p.ToPoint(), w.bounds.Size), w.color * .2f);
             if (w.onDraw != null)
                 w.onDraw?.Invoke(b, p);
         }
