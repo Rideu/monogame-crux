@@ -24,6 +24,7 @@ namespace Crux.BaseControls
         public int TotalRows { get; private set; }
         public int TotalColumns { get; private set; }
 
+        public override Color ForeColor { get => base.ForeColor; set => base.ForeColor = value; }
 
         #endregion
 
@@ -117,16 +118,20 @@ namespace Crux.BaseControls
             ArrangeRows();
         }
 
-        protected class DataRow : List<DataCell>
+        public class DataRow : IList<DataCell>
         {
             public DataRow()
             {
             }
 
+
+            protected List<DataCell> dataCells = new List<DataCell>();
+
             public event EventHandler<bool> OnShownChanged;
 
             bool shown = true;
-            public bool IsShown { get => shown; set { if (shown != value) { shown = value; OnShownChanged?.Invoke(this, shown); } } }
+
+            public bool IsShown { get => shown; set { if (shown != value) { OnShownChanged?.Invoke(this, shown = value); } } }
 
             public string[] GetData()
             {
@@ -137,23 +142,59 @@ namespace Crux.BaseControls
                 }
                 return data;
             }
+
+            #region IList
+            public int IndexOf(DataCell item) => dataCells.IndexOf(item);
+
+            public void Insert(int index, DataCell item) => dataCells.Insert(index, item);
+
+            public void RemoveAt(int index) => dataCells.RemoveAt(index);
+
+            public void Add(DataCell item) => dataCells.Add(item);
+
+            public void Clear() => dataCells.Clear();
+
+            public bool Contains(DataCell item) => dataCells.Contains(item);
+
+            public void CopyTo(DataCell[] array, int arrayIndex) => dataCells.CopyTo(array, arrayIndex);
+
+            public bool Remove(DataCell item) => dataCells.Remove(item);
+
+            public IEnumerator<DataCell> GetEnumerator() => dataCells.GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => dataCells.GetEnumerator();
+
+            public int Count => dataCells.Count;
+
+            public bool IsReadOnly => true;
+
+            public DataCell this[int index] { get => dataCells[index]; set => dataCells[index] = value; }
+            #endregion
         }
 
-        protected class DataCell : Panel
+        public class DataCell : Panel
         {
             public string GetData() => Controls[0]?.ToString();
+
+            public override string ToString()
+            {
+                return base.ToString() + Controls[0]?.ToString();
+            }
         }
 
         #region Table Content
+
+        public bool ApplyLayoutForCells { get; set; } = false;
 
         protected virtual DataCell CreateCell(object value = null)
         {
             var panel = new DataCell();
             TableContainer.AddNewControl(panel);
+            panel.BackColor = default;
             panel.Alias = $"Cell{TotalRows}";
             panel.SliderVisible = false;
             panel.IsScrollable = false;
-            if (Layout != null)
+            if (Layout != null && ApplyLayoutForCells)
             {
                 panel.CreateLayout(Layout);
                 panel.DiffuseColor = DiffuseColor;
@@ -255,9 +296,10 @@ namespace Crux.BaseControls
             var l = new Label()
             {
                 Text = text,
-                ForeColor = Palette.Neonic
+                ForeColor = ForeColor
             };
             AddNewControl(l);
+            l.OnLeftClick += ColSort;
             colHeaders.Add(l);
             colwidths.Add(1f);
 
@@ -266,6 +308,20 @@ namespace Crux.BaseControls
                 TableRows[i].Add(CreateCell());
             }
             TotalColumns++;
+        }
+
+        int SortedBy = -1;
+        protected void ColSort(object sender, ControlArgs e)
+        {
+            foreach (var l in colHeaders)
+            {
+                l.ForeColor = ForeColor;
+            }
+            var label = sender as Label;
+            int colindex = colHeaders.IndexOf(label);
+            label.ForeColor = label.ForeColor.MulRGB(.4f);
+            SortByColumn(colindex);
+
         }
 
         public virtual void AddColumns(params string[] headers)
@@ -340,6 +396,8 @@ namespace Crux.BaseControls
             var acm = 0f;
             var colwidth = TableContainer.Width / TotalColumns;//- bordersize*2?;
 
+            this.SuspendLayout();
+
             // Headers
             for (int c = 0; c < TotalColumns; c++)
             {
@@ -354,6 +412,8 @@ namespace Crux.BaseControls
 
                 acm += cwidth;
             }
+
+            this.ResumeLayout();
         }
 
         void ArrangeRows()
@@ -425,9 +485,80 @@ namespace Crux.BaseControls
             }
 
             TableContainer.ResumeLayout();
+            SortedBy = -1;
+        }
+        #endregion
 
+        #region Sort
+
+        SemiNumericComparer cmp = new SemiNumericComparer();
+
+        public void SortByColumn(int colindex)
+        {
+            TableRows = TableRows.OrderByDescending(
+                n =>
+                {
+                    var v = n.GetData()[colindex];
+                    var intv = 0;
+                    //if (int.TryParse(v, out intv))
+                    //{
+                    //    return intv;
+                    //}
+                    //else
+                    return v;
+                }, cmp).ToList();
+            ArrangeRows();
+            SortedBy = colindex;
         }
 
+        public class SemiNumericComparer : IComparer<string>
+        {
+            // Source: https://stackoverflow.com/questions/6396378/how-do-i-sort-strings-alphabetically-while-accounting-for-value-when-a-string-is
+            public static bool IsNumeric(string value)
+            {
+                return int.TryParse(value, out _);
+            }
+
+            /// <inheritdoc />
+            public int Compare(string s1, string s2)
+            {
+                const int S1GreaterThanS2 = 1;
+                const int S2GreaterThanS1 = -1;
+
+                var IsNumeric1 = IsNumeric(s1);
+                var IsNumeric2 = IsNumeric(s2);
+
+                if (IsNumeric1 && IsNumeric2)
+                {
+                    var i1 = Convert.ToInt32(s1);
+                    var i2 = Convert.ToInt32(s2);
+
+                    if (i1 > i2)
+                    {
+                        return S1GreaterThanS2;
+                    }
+
+                    if (i1 < i2)
+                    {
+                        return S2GreaterThanS1;
+                    }
+
+                    return 0;
+                }
+
+                if (IsNumeric1)
+                {
+                    return S2GreaterThanS1;
+                }
+
+                if (IsNumeric2)
+                {
+                    return S1GreaterThanS2;
+                }
+
+                return string.Compare(s1, s2, true);
+            }
+        }
         #endregion
 
         List<DataRow> TableRows = new List<DataRow>();

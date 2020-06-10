@@ -223,11 +223,11 @@ namespace Crux.BaseControls
                 if (c.IsVisible)
                     c.Draw();
 
-                if (false) // Drawing bounds debug
+                if (true) // Drawing bounds debug
                 {
                     Batch.Begin(SpriteSortMode.Deferred, null, null, null);
                     {
-                        Batch.DrawFill(c.DrawingBounds, new Color(123, 77, 63, 150) * .5f);
+                        Batch.DrawFill(c.DrawingBounds, new Color(123, 77, 63, 150) * .25f);
                     }
                     Batch.End();
                 }

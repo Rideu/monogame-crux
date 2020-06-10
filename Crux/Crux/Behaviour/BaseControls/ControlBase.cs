@@ -677,7 +677,8 @@ namespace Crux.BaseControls
                 var fa = FillingArea;
                 //Batch.GraphicsDevice.ScissorRectangle = fa;
                 if (allowcustom)
-                    Batch.DrawFill(fa, diffuse * (BackColor.A / 255f));
+                    Batch.DrawFill(fa, layout.Diffuse);
+                //Batch.DrawFill(fa, diffuse * (BackColor.A / 255f));
                 else
                     Batch.DrawFill(fa, BackColor * backmul);
 

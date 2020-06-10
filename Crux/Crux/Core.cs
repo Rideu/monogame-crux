@@ -89,6 +89,8 @@ namespace Crux
             keyPress,
             click, click1, click2, click3;
 
+        static DataGrid dg;
+        static Action<string, float> createRow;
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -145,6 +147,14 @@ namespace Crux
             var dif = Palette.NanoBlue;
             var hov = Palette.Neorange;
             var fore = Color.White;
+
+            #region Data sets
+
+            var series = new[] { "AI9", "AI11", "AI13" };
+            var models = new[] { 400, 600, 800, 900 };
+            var indexes = new[] { "", "N", "F", "K" };
+
+            #endregion
 
             #region debugForm Setup
 
@@ -254,10 +264,10 @@ namespace Crux
             if (true)
             {
 
-                var dg = new DataGrid(30, 155, 515, 320);
+                dg = new DataGrid(30, 155, 515, 320);
                 dg.ForeColor = fore;
-                dg.DiffuseColor = dif;
-                dg.HoverColor = hov;
+                dg.DiffuseColor = dif.MulRGB(.15f);
+                dg.HoverColor = dif.MulRGB(.15f);
                 dg.CreateLayout(clayout);
                 dg.BorderSize = 0;
                 dg.IsHeightFixed = true;
@@ -291,40 +301,61 @@ namespace Crux
 
 
                 dg.ColumnsSizing(1.25f, 1, 1, 1, 1, 1);
-                dg.AddColumns("Name", "Cores", "Threads", "Freq (GHz)", "$", "Action");
+                dg.AddColumns("Name", "Cores", "Threads", "Freq", "$", "Action");
                 dg.HeaderTextSize = .75f;
 
                 ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 36, Width = 62, BackColor = dif };
 
                 Func<string[], bool> doFilter = (n) => n.Any(m => m.Contains(tboxByName.Text));
 
-                Action<string, float> createRow = (itemname, price) =>
+                createRow = (itemname, price) =>
                 {
-                    var cost = $"{Color.Gold}{price}$";
                     var btn = new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy" + dg.TotalRows, ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor.Value, HoverColor = hov };
                     btn.OnLeftClick += (ss, ee) =>
                     {
                         click.Play(1, .5f, 0);
                     };
                     var iconBox = new PictureBox(20, -5, h_cpu);
-                    //debugForm.AddNewControl(iconBox);
                     iconBox.Size = new Point(50);
 
+                    var si = (int)(Rand() * series.Length);
+                    var s = series[si];
+                    var srb = (si + 1f) / series.Length;
+
+                    var mi = (int)(Rand() * models.Length);
+                    var m = models[mi];
+                    var mdb = (mi + 1f) / models.Length;
+
+                    var ii = (int)(Rand() * indexes.Length);
+                    var i = indexes[ii];
+                    var idb = (ii + 1f) / indexes.Length;
+
+                    var sb = (si < 1 ? 2 : (si < 2 ? 3 : 4));
+                    var mb = m / 1000;
+
+                    var cr = Pow(2, sb + (int)(Rand() * 4)) / (si < 1 ? 2 : 1);
+                    var gt = Rand() > .5f;
+                    var f = (8 + mb) + (int)(Rand() * 4) + ((.2f + (int)(Rand() * 4)) * (int)(Rand() * 4));
+
+                    var costmul = (srb + mdb + idb) * (f * 0.05f * (cr * (gt ? 2 : 1)));
+
                     var itemName = new Label(10, 40, 0, 0);
-                    itemName.Text = itemname;
+                    itemName.Text = $"{s}-{m}{i}";
                     itemName.TextSize = .75f;
 
                     var itemCores = new Label(5, 5, 0, 0);
-                    itemCores.Text = "64";
+                    itemCores.Text = $"{cr}";
                     itemCores.TextSize = .75f;
 
                     var itemThreads = new Label(5, 5, 0, 0);
-                    itemThreads.Text = "256";
+                    itemThreads.Text = $"{(cr * (gt ? 2 : 1))}";
                     itemThreads.TextSize = .75f;
 
                     var itemFreq = new Label(5, 5, 0, 0);
-                    itemFreq.Text = "10 THz";
+                    itemFreq.Text = $"{f} THz";
                     itemFreq.TextSize = .75f;
+
+                    var cost = $"{Color.Gold}{(int)(costmul) * 10}$";
 
                     dg.AddRow(new List<ControlBase> { iconBox, itemName }, itemCores, itemThreads, itemFreq, cost, btn);
                     rowc.Text = $"Total: {dg.TotalRows}";
@@ -393,14 +424,27 @@ namespace Crux
                 //};
                 //controlStyler.SetStyling(bFH);
 
+                var bSort = new Button(buttonLiner.GetParams());
+                bSort.Text = "Sort";
+                bSort.OnLeftClick += (s, e) =>
+                {
+                    click3.Play(1, .5f, 0);
+                    dg.SortByColumn(0);
+                };
+                controlStyler.SetStyling(bSort);
+
                 dg.IsHeightFixed = true;
 
-                debugForm.AddNewControl(bRow, bCol);
+                debugForm.AddNewControl(bRow, bCol, bSort);
                 debugForm.AddNewControl(dg);
+
                 createRow("AI13-900MK", 300);
                 createRow("AI13-800X", 300);
                 createRow("AI11-600", 300);
                 createRow("AI11-500", 300);
+
+
+                //dg.Sort();
                 //controlStyler.SetStyling(debugForm);
             }
 
@@ -468,8 +512,8 @@ namespace Crux
             var flayout = new ControlLayout(Content.Load<Texture2D>("images\\form_layout"), true);
 
             debugForm.CreateLayout(flayout);
-            debugForm.DiffuseColor =
-            debugForm.HoverColor = dif;
+            //debugForm.DiffuseColor =
+            //debugForm.HoverColor = dif;
             //Examples();
 
             Simplex.Init(GraphicsDevice);

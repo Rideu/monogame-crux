@@ -9,12 +9,16 @@ with.
   <Asset Type="Graphics:FontDescription">
     <FontName>Xolonium</FontName> <!-- Euphemia, -->
     <Size>12</Size>
-    <Spacing>0.5</Spacing>
+    <Spacing>0</Spacing>
     <UseKerning>true</UseKerning>
     <Style>Regular</Style><!-- "Regular", "Bold", "Italic" -->
     <CharacterRegions>
       <CharacterRegion>
         <Start>&#32;</Start>
+        <End>&#126;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#1040;</Start>
         <End>&#1203;</End>
       </CharacterRegion>
     </CharacterRegions>

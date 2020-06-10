@@ -38,7 +38,17 @@ namespace Crux.BaseControls
                 //Width = font.MeasureString(tc).X;
             }
         } // TODO: 
-        public float TextSize { get; set; } = 1f;
+
+        float textSize = 1f;
+        public float TextSize
+        {
+            get => textSize; set
+            {
+                textSize = value;
+                var meas = defaultFont.MeasureString(text) * textSize;
+                Size = meas.ToPoint();
+            }
+        }
 
         internal bool drawBackground;
 
@@ -82,8 +92,8 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
-            var drawb = Owner.DrawingBounds;
-            Batch.GraphicsDevice.ScissorRectangle = drawb;
+            //var drawb = Owner.DrawingBounds;
+            Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
             Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
             {
                 if (drawBackground)
