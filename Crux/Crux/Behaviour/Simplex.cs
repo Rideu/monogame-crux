@@ -515,6 +515,11 @@ namespace Crux
             to = a;
         }
 
+        public static bool EqualType(this object v1, object v2)
+        {
+            return v1.GetType() == v2.GetType();
+        }
+
         public static void AddRange<A, B>(this IDictionary<A, B> tgt, IDictionary<A, B> source)
         {
             foreach (var n in source)
@@ -659,6 +664,16 @@ namespace Crux
         public static string Regplace(this string s, string pattern, string with) => Regex.Replace(s, pattern, with);
         #endregion
 
+        public static object GetNumericTextValue(string value)
+        {
+            int parsedInt = 0;
+            float parsedFloat = 0;
+            double parsedDouble = 0;
+            if (int.TryParse(value, out parsedInt)) return parsedInt;
+            if (float.TryParse(value, out parsedFloat)) return parsedFloat;
+            if (double.TryParse(value, out parsedDouble)) return parsedDouble;
+            return null;
+        }
 
 
         public static bool DrawGrid;

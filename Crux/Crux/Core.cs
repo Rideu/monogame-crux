@@ -68,8 +68,11 @@ namespace Crux
 
         }
 
-        static Random r = new Random(1234);
+        static Random
+            r = new Random(1234),
+            hwroll = new Random(r.Next(0, 10000) * DateTime.UtcNow.Second * DateTime.UtcNow.Millisecond / 32);
         public static float Rand() => (float)r.NextDouble();
+        static float HWRand() => (float)hwroll.NextDouble();
 
         #region Colorpicker
         public static Form colorPicker;
@@ -330,24 +333,24 @@ namespace Crux
                     var iconBox = new PictureBox(20, -5, h_cpu);
                     iconBox.Size = new Point(50);
 
-                    var si = (int)(Rand() * series.Length);
+                    var si = (int)(HWRand() * series.Length);
                     var s = series[si];
                     var srb = (si + 1f) / series.Length;
 
-                    var mi = (int)(Rand() * models.Length);
+                    var mi = (int)(HWRand() * models.Length);
                     var m = models[mi];
                     var mdb = (mi + 1f) / models.Length;
 
-                    var ii = (int)(Rand() * indexes.Length);
+                    var ii = (int)(HWRand() * indexes.Length);
                     var i = indexes[ii];
                     var idb = (ii + 1f) / indexes.Length;
 
                     var sb = (si < 1 ? 2 : (si < 2 ? 3 : 4));
                     var mb = m / 1000;
 
-                    var cr = Pow(2, sb + (int)(Rand() * 4)) / (si < 1 ? 2 : 1);
-                    var gt = Rand() > .5f;
-                    var f = (8 + mb) + (int)(Rand() * 4) + ((.2f + (int)(Rand() * 4)) * (int)(Rand() * 4));
+                    var cr = Pow(2, sb + (int)(HWRand() * 4)) / (si < 1 ? 2 : 1);
+                    var gt = HWRand() > .5f;
+                    var f = (8 + mb) + (int)(HWRand() * 4) + ((.2f + (int)(HWRand() * 4)) * (int)(HWRand() * 4));
 
                     var costmul = (srb + mdb + idb) * (f * 0.05f * (cr * (gt ? 2 : 1)));
 
@@ -366,7 +369,8 @@ namespace Crux
                     itemThreads.TextSize = textsize;
 
                     var itemFreq = new Label(5, 5, 0, 0);
-                    itemFreq.Text = $"{f} THz";
+                    itemFreq.Text = $"{f}";
+                    itemFreq.Appendix = "THz";
                     itemFreq.TextSize = textsize;
 
                     //var cost = ;

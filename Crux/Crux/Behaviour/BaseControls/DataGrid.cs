@@ -28,6 +28,16 @@ namespace Crux.BaseControls
 
         #endregion
 
+        #region Events
+
+        public event EventHandler<DataRow> OnRowAdded;
+        public event EventHandler<DataRow> OnRowRemoved;
+
+        public event EventHandler<string> OnColumnAdded;
+        public event EventHandler<string> OnColumnRemoved;
+
+        #endregion
+
         #region Constr
 
         public DataGrid()
@@ -93,6 +103,14 @@ namespace Crux.BaseControls
             SliderVisible = true;
             TableContainer.RemoveControl(TableContainer.ContentSlider);
             TableContainer.ContentSlider = ContentSlider;
+
+            OnRowAdded += onRowsChanged;
+            OnRowRemoved += onRowsChanged;
+        }
+
+        protected void onRowsChanged(object sender, DataRow e)
+        {
+            sortedBy = -1;
         }
 
         public ControlBase ActiveControl;
@@ -250,6 +268,8 @@ namespace Crux.BaseControls
 
             TotalShownRows += r.IsShown ? 1 : -1;
             TotalRows++;
+            OnRowAdded?.Invoke(this, row);
+
 
             ArrangeRows();
         }
@@ -278,6 +298,7 @@ namespace Crux.BaseControls
 
             TotalShownRows--;
             TotalRows--;
+            OnRowRemoved?.Invoke(this, row);
 
             ArrangeRows();
         }
@@ -308,6 +329,8 @@ namespace Crux.BaseControls
                 TableRows[i].Add(CreateCell());
             }
             TotalColumns++;
+
+            OnColumnAdded?.Invoke(this, l.Text);
         }
 
 
@@ -345,7 +368,8 @@ namespace Crux.BaseControls
 
         public virtual void RemoveColumn(int colindex)
         {
-            RemoveControl(colHeaders[colindex]);
+            var l = colHeaders[colindex];
+            RemoveControl(l);
             colHeaders.RemoveAt(colindex);
             colwidths.RemoveAt(colindex);
 
@@ -357,6 +381,7 @@ namespace Crux.BaseControls
                 TableContainer.RemoveControl(c);
             }
             TotalColumns--;
+            OnColumnRemoved?.Invoke(this, l.Text);
 
             ArrangeRows();
         }
@@ -472,22 +497,28 @@ namespace Crux.BaseControls
             }
 
             TableContainer.ResumeLayout();
-            SortedBy = -1;
         }
         #endregion
 
         #region Sort
 
-        int SortedBy = -1;
-        protected void ColSort(object sender, ControlArgs e)
+        int sortedby = -1;
+        int sortedBy { get => sortedby; set { if ((sortedby = value) == -1) { cleanHeaderColors(); } } }
+
+        protected void cleanHeaderColors()
         {
             foreach (var l in colHeaders)
             {
                 l.ForeColor = ForeColor;
             }
+        }
+
+        protected void ColSort(object sender, ControlArgs e)
+        {
+            cleanHeaderColors();
             var label = sender as Label;
             int colindex = colHeaders.IndexOf(label);
-            label.ForeColor = Palette.Neorange;
+            label.ForeColor = Palette.Neorange; // TODO: assign HeaderColor value instead
             SortByColumn(colindex);
 
         }
@@ -509,15 +540,20 @@ namespace Crux.BaseControls
                     return v;
                 }, cmp).ToList();
             ArrangeRows();
-            SortedBy = colindex;
+            sortedBy = colindex;
         }
 
         public class SemiNumericComparer : IComparer<string>
         {
             // Source: https://stackoverflow.com/questions/6396378/how-do-i-sort-strings-alphabetically-while-accounting-for-value-when-a-string-is
-            public static bool IsNumeric(string value)
+            public static bool IsNumeric(object value)
             {
-                return int.TryParse(value, out _);
+                if (value != null)
+                {
+                    var t = value.GetType();
+                    return t == typeof(int) || t == typeof(double) || t == typeof(float);
+                }
+                return false;
             }
 
             /// <inheritdoc />
@@ -526,25 +562,25 @@ namespace Crux.BaseControls
                 const int S1GreaterThanS2 = 1;
                 const int S2GreaterThanS1 = -1;
 
+                var ntv1 = GetNumericTextValue(s1);
+                var ntv2 = GetNumericTextValue(s2);
+
                 var IsNumeric1 = IsNumeric(s1);
                 var IsNumeric2 = IsNumeric(s2);
 
-                if (IsNumeric1 && IsNumeric2)
+                if (ntv1 != null && ntv2 != null)
                 {
-                    var i1 = Convert.ToInt32(s1);
-                    var i2 = Convert.ToInt32(s2);
+                    var v = Convert.ChangeType(s1, GetNumericTextValue(s1).GetType());
 
-                    if (i1 > i2)
-                    {
-                        return S1GreaterThanS2;
-                    }
+                    //var eq = ntv1.EqualType(ntv2);
+                    //var t = ntv1.GetType();
+                    //object vv = 24;
+                    var i1 = Convert.ToDouble(ntv1);
+                    var i2 = Convert.ToDouble(ntv2);
 
-                    if (i1 < i2)
-                    {
-                        return S2GreaterThanS1;
-                    }
+                    //if (eq)
+                    return i1.CompareTo(i2);
 
-                    return 0;
                 }
 
                 if (IsNumeric1)

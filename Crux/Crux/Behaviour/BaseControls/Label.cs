@@ -31,23 +31,11 @@ namespace Crux.BaseControls
         float textSize = 1f;
 
 
-        object formatValue;
-        string format;
 
         internal bool drawBackground;
 
         #endregion
 
-        static object getTextType(string value)
-        {
-            int parsedInt = 0;
-            float parsedFloat = 0;
-            double parsedDouble = 0;
-            if (int.TryParse(value, out parsedInt)) return parsedInt;
-            if (float.TryParse(value, out parsedFloat)) return parsedFloat;
-            if (double.TryParse(value, out parsedDouble)) return parsedDouble;
-            return null;
-        }
 
         public override string Text
         {
@@ -68,7 +56,7 @@ namespace Crux.BaseControls
                 drawString = text = value;
                 updateSize();
 
-                formatValue = getTextType(text);
+                formatValue = GetNumericTextValue(text);
 
                 StringFormat = StringFormat;
                 TextSize = TextSize;
@@ -87,15 +75,30 @@ namespace Crux.BaseControls
                 updateSize();
             }
         }
+
+        string append;
+        public string Appendix
+        {
+            get => append;
+            set
+            {
+                append = value;
+                StringFormat = StringFormat;
+            }
+        }
+
+        object formatValue;
+        string format = "";
         public string StringFormat
         {
             get => format;
             set
             {
-                if (!string.IsNullOrEmpty(value) && formatValue != null)
+                if (formatValue != null)
                 {
-                    format = value;
-                    drawString = string.Format(CultureInfo.GetCultureInfo("en-us"), "{0:" + format + "}", formatValue);
+                    format = !string.IsNullOrEmpty(value) ? $":{value}" : "";
+                    var apd = !string.IsNullOrEmpty(append) ? $" {append}":"";
+                    drawString = string.Format(CultureInfo.GetCultureInfo("en-us"), "{0" + format + "}" + apd, formatValue);
                     updateSize();
                 }
             }
