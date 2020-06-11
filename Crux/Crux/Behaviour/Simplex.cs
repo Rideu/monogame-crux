@@ -21,7 +21,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 
 using sRectangle = Microsoft.Xna.Framework.Rectangle;
-using static Crux.Core;
+using static Crux.CoreTests;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
@@ -349,7 +349,7 @@ namespace Crux
         [Obsolete("Use Line().ReflectPoint instead")]
         public static Vector2 ReflectNormal(Vector2 point, Line normal) => Vector2.Reflect(-point, normal.GetUnitAngle());
 
-        public static Vector2 GetWCenter() => new Vector2(Core.PrimaryViewport.Width / 2, Core.PrimaryViewport.Height / 2);
+        public static Vector2 GetWCenter() => new Vector2(CoreTests.PrimaryViewport.Width / 2, CoreTests.PrimaryViewport.Height / 2);
 
 
         public static Vector2 GetWCentered(Vector2 v) => GetWCenter() + v;

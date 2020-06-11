@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using static Crux.Simplex;
-using static Crux.Core;
+using static Crux.CoreTests;
 /// <summary>
 // SPECIFIED CODE LISTINGS INSIDE AREN'T RECOMMENDED FOR DIRECT USAGE AND ARE INTENDED ONLY FOR INTRODUCTION 
 // OR FOLLOWING MODIFIACTION
@@ -27,7 +27,7 @@ namespace Crux.BaseControls
         public int Width, Height;
 
         /// <summary>
-        /// Get current rectangle data and increment position of the rectangle further.
+        /// Gets current rectangle data and increments position of the rectangle further.
         /// </summary>
         /// <returns></returns>
         public Vector4 GetParams()
@@ -781,7 +781,7 @@ namespace Crux.BaseControls
         public static SpriteFont DefaultFont { set => defaultFont = value; get => defaultFont; }
         protected static SpriteFont defaultFont;
 
-        public static SpriteBatch Batch { get; set; } = Core.spriteBatch;
+        public static SpriteBatch Batch { get; set; } = CoreTests.spriteBatch;
 
         protected static readonly RasterizerState rasterizer = new RasterizerState
         {

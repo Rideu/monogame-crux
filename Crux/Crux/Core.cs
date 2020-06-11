@@ -24,7 +24,7 @@ namespace Crux
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public partial class Core : Game
+    public partial class CoreTests : Game
     {
         public static GraphicsDeviceManager graphics;
         public static SpriteBatch spriteBatch;
@@ -33,7 +33,7 @@ namespace Crux
         public static GameWindow PrimaryWindow;
 
         public static ToolSet ts;
-        public Core()
+        public CoreTests()
         {
             graphics = new GraphicsDeviceManager(this)
             {
@@ -43,16 +43,22 @@ namespace Crux
                 GraphicsProfile = GraphicsProfile.HiDef,
                 SynchronizeWithVerticalRetrace = true
             };
+            IsFixedTimeStep = false;
             graphics.ApplyChanges();
+
+            #region Windows
+
             WinSize = new Point(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
-            Content.RootDirectory = "Content";
             GameForm = (WinForms.Form)WinForms.Form.FromHandle(Window.Handle);
             var scr = WinForms.Screen.PrimaryScreen.WorkingArea.Size;
             Window.Position = new Point(scr.Width / 2 - graphics.PreferredBackBufferWidth / 2 - 200, scr.Height / 2 - graphics.PreferredBackBufferHeight / 2);
             PrimaryWindow = Window;
 
+            #endregion
+
             //TargetElapsedTime = new TimeSpan(200);
-            IsFixedTimeStep = false;
+
+            Content.RootDirectory = "Content";
 
             ts = new ToolSet();
             //ts.Show();
@@ -279,14 +285,14 @@ namespace Crux
             if (true)
             {
 
-                dg = new DataGrid(30, 155, 515, 320);
+                dg = new DataGrid(30, 155, 516, 320);
                 dg.ForeColor = fore;
                 dg.DiffuseColor = dif.MulRGB(.15f);
                 dg.HoverColor = dif.MulRGB(.15f);
                 dg.CreateLayout(clayout);
                 dg.BorderSize = 0;
                 dg.IsHeightFixed = true;
-                dg.FixedHeight = 55;
+                dg.FixedHeight = 105;
 
                 var rowc = new Label(35, 165 + 320, 30, 30) { Font = arial8, Text = "Total:", TextSize = 1f };
                 debugForm.AddNewControl(rowc);
@@ -307,7 +313,10 @@ namespace Crux
                 tboxByName.OnActivated += (s, e) => { if (tboxByName.Text == "Search...") tboxByName.Text = ""; tboxByName.ForeColor = Color.White; };
                 tboxByName.OnTextInput += (s, e) =>
                 {
-                    dg.Filter(n => n.Any(m => m.Contains(tboxByName.Text)));
+                    dg.JoinFilter(
+                    n =>
+                    n.Contains(tboxByName.Text)
+                    );
                 };
                 tboxByName.Text = "Search...";
                 tboxByName.KeyPressedSound = keyPress;
@@ -315,23 +324,21 @@ namespace Crux
                 tboxByName.ForeColor = Color.White * .5f;
 
 
-                dg.ColumnsSizing(1.25f, 1, 1, 1, 1, 1);
-                dg.AddColumns("Name", "Cores", "Threads", "Freq", "$", "Action");
+                dg.ColumnsSizing(4.25f, 1.26f, .75f);
+                dg.AddColumns("Product", "Cost", "Action");
                 //dg.HeaderTextSize = .75f;
 
-                ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = 36, Width = 62, BackColor = dif };
+                ControlTemplate rowbBuyliner = new ControlTemplate { RelativePos = new Vector2(2, 2), Height = dg.FixedHeight - 4, Width = 62, BackColor = dif };
 
                 Func<string[], bool> doFilter = (n) => n.Any(m => m.Contains(tboxByName.Text));
 
                 createRow = (itemname, price) =>
                 {
-                    var btn = new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy" + dg.TotalRows, ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor.Value, HoverColor = hov };
+                    var btn = new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor.Value, HoverColor = hov };
                     btn.OnLeftClick += (ss, ee) =>
                     {
                         click.Play(1, .5f, 0);
                     };
-                    var iconBox = new PictureBox(20, -5, h_cpu);
-                    iconBox.Size = new Point(50);
 
                     var si = (int)(HWRand() * series.Length);
                     var s = series[si];
@@ -356,31 +363,44 @@ namespace Crux
 
                     float textsize = 1f;
 
-                    var itemName = new Label(10, 40, 0, 0);
+                    var iconBox = new PictureBox(-10, -10, h_cpu);
+                    iconBox.Size = new Point(125);
+
+
+                    var itemName = new Label(125, 5, 0, 0);
                     itemName.Text = $"{s}-{m}{i}";
                     itemName.TextSize = textsize;
+                    itemName.Font = arial14;
 
-                    var itemCores = new Label(5, 5, 0, 0);
+                    ControlTemplate descLiner = new ControlTemplate { RelativePos = new Vector2(125, 35), MarginY = 15 };
+
+                    var itemCores = new Label(descLiner.GetParams());
                     itemCores.Text = $"{cr}";
+                    itemCores.Appendix = "-core processor";
                     itemCores.TextSize = textsize;
+                    itemCores.Font = arial8;
 
-                    var itemThreads = new Label(5, 5, 0, 0);
+                    var itemThreads = new Label(descLiner.GetParams());
                     itemThreads.Text = $"{(cr * (gt ? 2 : 1))}";
+                    itemThreads.Appendix = " threads";
                     itemThreads.TextSize = textsize;
+                    itemThreads.Font = arial8;
 
-                    var itemFreq = new Label(5, 5, 0, 0);
+                    var itemFreq = new Label(descLiner.GetParams());
                     itemFreq.Text = $"{f}";
-                    itemFreq.Appendix = "THz";
+                    itemFreq.Appendix = " THz";
                     itemFreq.TextSize = textsize;
+                    itemFreq.Font = arial8;
 
                     //var cost = ;
-                    var itemCost = new Label(5, 5, 0, 0);
+                    var itemCost = new Label(5, 40, 0, 0);
                     itemCost.ForeColor = Color.FromNonPremultiplied(255, 220, 60, 255);
                     itemCost.TextSize = textsize;
                     itemCost.Text = $"{(int)(costmul) * 10}";
                     itemCost.StringFormat = "C2";
+                    itemCost.Font = arial14;
 
-                    dg.AddRow(new List<ControlBase> { iconBox, itemName }, itemCores, itemThreads, itemFreq, itemCost, btn);
+                    dg.AddRow(new List<ControlBase> { iconBox, itemName, itemCores, itemThreads, itemFreq }, itemCost, btn);
                     rowc.Text = $"Total: {dg.TotalRows}";
                 };
 
@@ -587,31 +607,19 @@ namespace Crux
 
         static BlendState bs = new BlendState()
         {
-            ColorSourceBlend = Blend.One,
-            AlphaSourceBlend = Blend.One,
-
-            ColorDestinationBlend = Blend.One,
-            AlphaDestinationBlend = Blend.One,
         };
 
         static SamplerState ss = new SamplerState
         {
-            AddressU = TextureAddressMode.Wrap,
-            BorderColor = Color.Red,
-            ComparisonFunction = CompareFunction.Greater,
-            Filter = TextureFilter.Anisotropic,
-            FilterMode = TextureFilterMode.Default,
-            MaxAnisotropy = 16,
-            MaxMipLevel = 2,
-            MipMapLevelOfDetailBias = -10.004f
+            //Filter = TextureFilter.Anisotropic,
+            //FilterMode = TextureFilterMode.Default,
+            //MaxAnisotropy = 16,
 
         };
 
         static RasterizerState rs = new RasterizerState
         {
-            FillMode = FillMode.Solid,
-            SlopeScaleDepthBias = 44.04f,
-            MultiSampleAntiAlias = true
+            //MultiSampleAntiAlias = true
         };
 
         int Prev2Frames, Prev1Frames, PrevFrames, FramesPassed;
@@ -620,7 +628,7 @@ namespace Crux
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(60, 10, 10));
+            GraphicsDevice.Clear(Color.CornflowerBlue);
 
 
             FormManager.Draw();

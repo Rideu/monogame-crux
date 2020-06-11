@@ -136,6 +136,21 @@ namespace Crux.BaseControls
             ArrangeRows();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="f"></param>
+        public void JoinFilter(Func<string, bool> f)
+        {
+            foreach (var r in TableRows)
+            {
+                var d = r.GetDataJoined(); 
+
+                r.IsShown = f(d);
+            }
+            ArrangeRows();
+        }
+
         public class DataRow : IList<DataCell>
         {
             public DataRow()
@@ -153,10 +168,29 @@ namespace Crux.BaseControls
 
             public string[] GetData()
             {
+                return GetData(0);
+            }
+
+            public string[] GetData(int cindex)
+            {
                 string[] data = new string[Count];
                 for (int i = 0; i < Count; i++)
                 {
-                    data[i] = this[i].GetData();
+                    data[i] = this[i].GetData(cindex);
+                }
+                return data;
+            }
+
+            public string GetDataJoined()
+            {
+                string data = "";
+                for (int i = 0; i < Count; i++)
+                {
+                    var cell = this[i];
+                    for (int c = 0; c < cell.Controls.Count - 1; c++) // -1 avoids content slider hop
+                    {
+                        data += cell.GetData(c) + " ";
+                    }
                 }
                 return data;
             }
@@ -192,7 +226,11 @@ namespace Crux.BaseControls
 
         public class DataCell : Panel
         {
-            public string GetData() => Controls[0]?.ToString();
+            public string GetData() => GetData(0);
+
+            // -2 ignores content slider
+            public string GetData(int cindex) => cindex.IsBetween(0, Controls.Count - 2) ? Controls[cindex].Text : "";
+
 
             public override string ToString()
             {
@@ -452,7 +490,7 @@ namespace Crux.BaseControls
             for (int r = 0, shown = 0; r < TotalRows; r++)
             {
                 acm = 0f;
-                var rowcolor = r % 2 == 0 ? BackColor : BackColor;
+                var rowcolor = r % 2 == 0 ? DiffuseColor * .9f : DiffuseColor;
                 var row = TableRows[r];
 
                 if (row.IsShown)
@@ -460,12 +498,12 @@ namespace Crux.BaseControls
                     for (int c = 0; c < TotalColumns; c++)
                     {
                         var cwidth = colwidths[c] * colwidth;
-                        var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .95f);
+                        //var rowcolcolor = rowcolor * (c % 2 == 0 ? 1 : .95f);
                         var current_cell = row[c];
 
 
 
-                        //current_cell.BackColor = rowcolcolor;
+                        current_cell.BackColor = rowcolor;
                         current_cell.BorderSize = 0;
 
                         current_cell.RelativePosition = new Vector2(acm, rowheight * shown);
@@ -525,22 +563,31 @@ namespace Crux.BaseControls
 
         SemiNumericComparer cmp = new SemiNumericComparer();
 
-        public void SortByColumn(int colindex)
+        /// <summary>
+        /// Sort table by column and control index of the cell.
+        /// </summary>
+        /// <param name="colindex">Column index.</param>
+        /// <param name="cindex">Control index inside the cell. If controls with such index does not exist, the table is sorted with empty values.</param>
+        public void SortByColumn(int colindex, int cindex)
         {
             TableRows = TableRows.OrderByDescending(
                 n =>
                 {
-                    var v = n.GetData()[colindex];
-                    var intv = 0;
-                    //if (int.TryParse(v, out intv))
-                    //{
-                    //    return intv;
-                    //}
-                    //else
+                    var v = n.GetData(cindex)[colindex];
+
                     return v;
                 }, cmp).ToList();
             ArrangeRows();
             sortedBy = colindex;
+        }
+
+        /// <summary>
+        /// Sort table by column index.
+        /// </summary>
+        /// <param name="colindex">Column index.</param>
+        public void SortByColumn(int colindex)
+        {
+            SortByColumn(colindex, 0);
         }
 
         public class SemiNumericComparer : IComparer<string>

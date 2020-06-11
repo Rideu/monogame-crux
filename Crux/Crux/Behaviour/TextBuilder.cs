@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 
 using static System.Text.RegularExpressions.Regex;
 using static System.Math;
-using static Crux.Core;
+using static Crux.CoreTests;
 using static Crux.Simplex;
 
 using Crux.BaseControls;

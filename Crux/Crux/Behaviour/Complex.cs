@@ -21,7 +21,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 
 using sRectangle = Microsoft.Xna.Framework.Rectangle;
-using static Crux.Core;
+using static Crux.CoreTests;
 
 namespace Crux
 {

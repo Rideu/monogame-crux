@@ -27,7 +27,7 @@ namespace Crux
             return Text;
         }
     }
-    partial class Core
+    partial class CoreTests
     {
         void Examples()
         {

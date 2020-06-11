@@ -97,7 +97,7 @@ namespace Crux.BaseControls
                 if (formatValue != null)
                 {
                     format = !string.IsNullOrEmpty(value) ? $":{value}" : "";
-                    var apd = !string.IsNullOrEmpty(append) ? $" {append}":"";
+                    var apd = !string.IsNullOrEmpty(append) ? $"{append}":"";
                     drawString = string.Format(CultureInfo.GetCultureInfo("en-us"), "{0" + format + "}" + apd, formatValue);
                     updateSize();
                 }

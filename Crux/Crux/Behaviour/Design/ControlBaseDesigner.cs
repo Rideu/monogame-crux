@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 //using Microsoft.Xna.Framework.Graphics;
 //using Microsoft.Xna.Framework.Input;
 using static Crux.Simplex;
-using static Crux.Core;
+using static Crux.CoreTests;
 
 using static System.Math;
 using static System.Text.RegularExpressions.Regex;

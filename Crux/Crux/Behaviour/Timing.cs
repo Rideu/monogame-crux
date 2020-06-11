@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using static Crux.Simplex;
-using static Crux.Core;
+using static Crux.CoreTests;
 using static System.Math;
 
 namespace Crux

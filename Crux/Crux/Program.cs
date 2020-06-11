@@ -17,7 +17,7 @@ namespace Crux
         [STAThread]
         static void Main()
         { 
-            using (var game = new Core())
+            using (var game = new CoreTests())
                 game.Run();
         }
     }
