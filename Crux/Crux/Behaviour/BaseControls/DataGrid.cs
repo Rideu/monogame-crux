@@ -93,13 +93,13 @@ namespace Crux.BaseControls
         }
         protected override void Initialize()
         {
-            Alias = GetType().Name;
             AddNewControl(TableContainer = new Panel(0, 20, Width - 8, Height - 20));
             TableContainer.Alias = "TableContainer";
             TableContainer.SliderVisible = false;
             TableContainer.BackColor = Color.Transparent;
             //TableContainer.BorderSize = 0;
             base.Initialize();
+            Alias = GetType().Name;
             SliderVisible = true;
             TableContainer.RemoveControl(TableContainer.ContentSlider);
             TableContainer.ContentSlider = ContentSlider;

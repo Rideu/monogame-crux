@@ -21,7 +21,7 @@ namespace Crux.BaseControls
         //TODO: wrap
         public override string Text { get => text; set { text = value; } }
 
-        protected internal Slider ContentSlider;
+        public Slider ContentSlider { get; set; }
 
         public bool SliderVisible { get => ContentSlider.IsVisible; set => ContentSlider.IsVisible = value; }
         public bool IsScrollable { get; set; } = true;
@@ -216,6 +216,11 @@ namespace Crux.BaseControls
         {
             //if (!IsVisible) return;
             base.Draw();
+
+            if(Alias == "DataGrid")
+            {
+
+            }
 
             for (int i = Controls.Count - 1; i >= 0; i--)
             {

@@ -24,7 +24,7 @@ namespace Crux
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public partial class CoreTests : Game
+    sealed internal partial class CoreTests : Game
     {
         public static GraphicsDeviceManager graphics;
         public static SpriteBatch spriteBatch;
@@ -79,6 +79,7 @@ namespace Crux
             hwroll = new Random(r.Next(0, 10000) * DateTime.UtcNow.Second * DateTime.UtcNow.Millisecond / 32);
         public static float Rand() => (float)r.NextDouble();
         static float HWRand() => (float)hwroll.NextDouble();
+        static float HWRandPrec(float mul, float prec) => (int)(HWRand() * mul) / prec;
 
         #region Colorpicker
         public static Form colorPicker;
@@ -113,6 +114,176 @@ namespace Crux
 
             return f;
         }
+
+        static float enboost(float x) => (x * x / 4);
+
+        class Manufacturer
+        {
+            public string Name;
+
+            public string[]
+                Series,
+                Models,
+                Indexes;
+        }
+
+        static readonly Manufacturer[] ManufacturersRegistry = new[]
+            {
+                new Manufacturer
+                {
+                     Name = "TeamBlue",
+                     Series = new[]
+                     {
+                         "AI9", "AI11", "AI13"
+                     },
+                     Models = new[]
+                     {
+                         "500", "600", "700", "800", "900",
+                     },
+                     Indexes = new[]
+                     {
+                         "", "N", "F", "K", "X",
+                     }
+
+                },
+
+                new Manufacturer
+                {
+                     Name = "TeamRed",
+                     Series = new[]
+                     {
+                         "AI9", "AI11", "AI13"
+                     },
+                     Models = new[]
+                     {
+                         "500", "600", "700", "800", "900",
+                     },
+                     Indexes = new[]
+                     {
+                         "", "N", "F", "K", "X",
+                     }
+                },
+
+                new Manufacturer
+                {
+                     Name = "TeamGreen",
+                     Series = new[]
+                     {
+                         "NTX", "TTX", "KTX"
+                     },
+                     Models = new[]
+                     {
+                         "5050", "5060", "5070", "5080", "5090",
+                     },
+                     Indexes = new[]
+                     {
+                         "", "FT", "XT",
+                     }
+                },
+            };
+
+        abstract class Valuable
+        {
+
+
+
+            public float Cost;
+            public string
+                Manufacturer,
+                Series,
+                Model,
+                Index;
+
+        }
+
+        abstract class Electronics : Valuable
+        {
+            public float Freqency;
+            public Texture2D Image;
+
+        }
+
+        abstract class Calculator : Electronics
+        {
+            public int
+                Cores,
+                Techprocess;
+        }
+
+        interface IRam
+        {
+            string FormFactor { get; set; }
+            int RamGigSize { get; set; }
+            float RamFreq { get; set; }
+        }
+
+        class Cpu : Calculator
+        {
+            public int Threads;
+            public static Cpu RollComponent(Manufacturer provider)
+            {
+                var seriesindex = (int)(HWRand() * provider.Series.Length);
+                var series = provider.Series[seriesindex];
+                var seriesboost = (seriesindex + 1f) / provider.Series.Length;
+
+                var modelindex = (int)(HWRand() * provider.Models.Length);
+                var model = provider.Models[modelindex];
+                var modelboost = (modelindex + 1f) / provider.Models.Length;
+
+                var indexindex = (int)(HWRand() * provider.Indexes.Length);
+                var index = provider.Indexes[indexindex];
+                var indexboost = (indexindex + 1f) / provider.Indexes.Length;
+
+                //var sb = (int)enboost(seriesindex) + 1;
+                //var mb = int.Parse(model) / 100f;
+
+
+                var cores = (int)Pow(2, 2 + seriesindex);
+                var gigathreading = HWRand() + seriesboost > .5f;
+                var threads = (int)(cores * (gigathreading ? 2 : 1));
+
+                var indexclocks = HWRandPrec(2, 10) * indexindex;
+                var prec = (+HWRandPrec(2, 5) * 5 + HWRandPrec(6, 10));
+                var freq = (8 + prec);
+
+                var costmul = (seriesboost + modelboost + indexboost) * (freq * 0.05f * threads);
+
+                return new Cpu
+                {
+                    Freqency = freq,
+                    Cores = (int)cores,
+                    Threads = threads,
+                    Series = series,
+                    Model = model,
+                    Index = index,
+                    Cost = (float)costmul,
+                    Image = h_cpu,
+                    Techprocess = 14 // TODO: roll it
+
+                };
+            }
+        }
+
+        class Gpu : Calculator, IRam
+        {
+            public float RamFreq { get; set; }
+            public string FormFactor { get; set; }
+            public int RamGigSize { get; set; }
+        }
+
+        class Ram : Electronics, IRam
+        {
+            public float RamFreq { get; set; }
+            public string FormFactor { get; set; }
+            public int RamGigSize { get; set; }
+
+            public bool
+                HasECC,
+                HasRadiator;
+        }
+
+        List<Electronics> market = new List<Electronics> { }; // TODO: market as static class
+
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -171,6 +342,7 @@ namespace Crux
 
             #region Data sets
 
+
             var series = new[] { "AI9", "AI11", "AI13" };
             var models = new[] { 400, 600, 800, 900 };
             var indexes = new[] { "", "N", "F", "K" };
@@ -180,9 +352,9 @@ namespace Crux
             #region debugForm Setup
 
             debugForm.OnKeyUp += (s, e) =>
-            {
-                var k = e.KeysHandled;
-            };
+                {
+                    var k = e.KeysHandled;
+                };
 
             FormManager.AddForm("MainForm", debugForm);
 
@@ -336,30 +508,34 @@ namespace Crux
                 {
                     var btn = new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor.Value, HoverColor = hov };
                     btn.OnLeftClick += (ss, ee) =>
-                    {
-                        click.Play(1, .5f, 0);
-                    };
+                        {
+                            click.Play(1, .5f, 0);
+                        };
 
-                    var si = (int)(HWRand() * series.Length);
-                    var s = series[si];
-                    var srb = (si + 1f) / series.Length;
+                    btn.Font = arial14;
 
-                    var mi = (int)(HWRand() * models.Length);
-                    var m = models[mi];
-                    var mdb = (mi + 1f) / models.Length;
+                    //var si = (int)(HWRand() * series.Length);
+                    //var s = series[si];
+                    //var srb = (si + 1f) / series.Length;
 
-                    var ii = (int)(HWRand() * indexes.Length);
-                    var i = indexes[ii];
-                    var idb = (ii + 1f) / indexes.Length;
+                    //var mi = (int)(HWRand() * models.Length);
+                    //var m = models[mi];
+                    //var mdb = (mi + 1f) / models.Length;
 
-                    var sb = (si < 1 ? 2 : (si < 2 ? 3 : 4));
-                    var mb = m / 1000;
+                    //var ii = (int)(HWRand() * indexes.Length);
+                    //var i = indexes[ii];
+                    //var idb = (ii + 1f) / indexes.Length;
 
-                    var cr = Pow(2, sb + (int)(HWRand() * 4)) / (si < 1 ? 2 : 1);
-                    var gt = HWRand() > .5f;
-                    var f = (8 + mb) + (int)(HWRand() * 4) + ((.2f + (int)(HWRand() * 4)) * (int)(HWRand() * 4));
+                    //var sb = (si < 1 ? 2 : (si < 2 ? 3 : 4));
+                    //var mb = m / 1000;
 
-                    var costmul = (srb + mdb + idb) * (f * 0.05f * (cr * (gt ? 2 : 1)));
+                    //var cr = Pow(2, sb + (int)(HWRand() * 4)) / (si < 1 ? 2 : 1);
+                    //var gt = HWRand() > .5f;
+                    //var f = (8 + mb) + (int)(HWRand() * 4) + ((.2f + (int)(HWRand() * 4)) * (int)(HWRand() * 4));
+
+                    //var costmul = (srb + mdb + idb) * (f * 0.05f * (cr * (gt ? 2 : 1)));
+
+                    var cpu = Cpu.RollComponent(ManufacturersRegistry[0]);
 
                     float textsize = 1f;
 
@@ -368,26 +544,26 @@ namespace Crux
 
 
                     var itemName = new Label(125, 5, 0, 0);
-                    itemName.Text = $"{s}-{m}{i}";
+                    itemName.Text = $"{cpu.Series}-{cpu.Model}{cpu.Index}";
                     itemName.TextSize = textsize;
                     itemName.Font = arial14;
 
                     ControlTemplate descLiner = new ControlTemplate { RelativePos = new Vector2(125, 35), MarginY = 15 };
 
                     var itemCores = new Label(descLiner.GetParams());
-                    itemCores.Text = $"{cr}";
+                    itemCores.Text = $"{cpu.Cores}";
                     itemCores.Appendix = "-core processor";
                     itemCores.TextSize = textsize;
                     itemCores.Font = arial8;
 
                     var itemThreads = new Label(descLiner.GetParams());
-                    itemThreads.Text = $"{(cr * (gt ? 2 : 1))}";
+                    itemThreads.Text = $"{cpu.Threads}";
                     itemThreads.Appendix = " threads";
                     itemThreads.TextSize = textsize;
                     itemThreads.Font = arial8;
 
                     var itemFreq = new Label(descLiner.GetParams());
-                    itemFreq.Text = $"{f}";
+                    itemFreq.Text = $"{cpu.Freqency}";
                     itemFreq.Appendix = " THz";
                     itemFreq.TextSize = textsize;
                     itemFreq.Font = arial8;
@@ -396,7 +572,7 @@ namespace Crux
                     var itemCost = new Label(5, 40, 0, 0);
                     itemCost.ForeColor = Color.FromNonPremultiplied(255, 220, 60, 255);
                     itemCost.TextSize = textsize;
-                    itemCost.Text = $"{(int)(costmul) * 10}";
+                    itemCost.Text = $"{(int)(cpu.Cost) * 10}";
                     itemCost.StringFormat = "C2";
                     itemCost.Font = arial14;
 
@@ -579,6 +755,7 @@ namespace Crux
             FormManager.Update();
 
             DebugDevice.Update();
+
 
             #region ManualFps
 

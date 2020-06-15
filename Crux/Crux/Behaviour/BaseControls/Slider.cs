@@ -39,7 +39,8 @@ namespace Crux.BaseControls
             {
                 if (value != val)
                 {
-                    val = value.Clamp(0, 1); 
+                    val = value.Clamp(0, 1);
+                    OnSlide?.Invoke();
                     //Invalidate();
                 }
             }

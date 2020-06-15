@@ -327,7 +327,7 @@ namespace Crux.BaseControls
 
         public Rectangle Bounds { get; set; }
 
-        public virtual Rectangle DrawingBounds => Bounds.Intersect(Owner.DrawingBounds.InflateBy(-BorderSize));
+        public virtual Rectangle DrawingBounds => Owner != null ? Bounds.Intersect(Owner.DrawingBounds.InflateBy(-BorderSize)) : Bounds;
 
         protected Rectangle singleHop => Bounds.Intersect(Owner.Bounds.InflateBy(-BorderSize));
 
@@ -447,6 +447,8 @@ namespace Crux.BaseControls
             {
                 n.UpdateBounds();
             }
+
+            drawingBounds = DrawingBounds;
         }
 
         bool LockTransform;
@@ -624,7 +626,6 @@ namespace Crux.BaseControls
         {
             OnUpdate?.Invoke(this, EventArgs.Empty);
             EventProcessor();
-            drawingBounds = DrawingBounds;
             diffuse = allowcustom ? forceHov || IsHovering && !EnterHold ? IsHolding ? HoverColor : HoverColor : DiffuseColor : Color.White;
         }
 
