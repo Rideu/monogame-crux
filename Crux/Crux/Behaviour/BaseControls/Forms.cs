@@ -116,7 +116,7 @@ namespace Crux.BaseControls
             //if (HoveredForm != null && !HoveredForm.EnterHold)
             HoveredForm = null;
 
-            // TODO: holding control
+
             fusw.Restart();
 
 
@@ -142,7 +142,7 @@ namespace Crux.BaseControls
             }
             if (HoveredForm != null && Control.LeftClick())
             {
-                if (HoveredForm.IsHovering)
+                if (HoveredForm.IsHovering && !HoveredForm.ConstantOnBack)
                     HoveredForm.BringToFront();
                 //GlobalForms.Move(GlobalForms.IndexOf(ActiveForm), 0);
             }
@@ -192,6 +192,11 @@ namespace Crux.BaseControls
         }
 
         #region Fields
+
+        /// <summary>
+        /// If true, this form will be always on the background (lowest) level
+        /// </summary>
+        public bool ConstantOnBack { get; set; }
 
         public override string Text { get => text; set { text = value; } }
         public bool IgnoreControl { get; set; } = !true;
@@ -344,6 +349,43 @@ namespace Crux.BaseControls
                 n.UpdateBounds();
                 n.Invalidate();
             }
+        }
+
+        public override Point AbsolutePos
+        {
+            get => Bounds.Location;
+            set { Bounds = Rectangle(value.X, value.Y, Width, Height); UpdateControlsBounds(); }
+        }
+
+        public override float AbsoluteX
+        {
+            get => Bounds.X;
+            set { Bounds = Rectangle(value, AbsoluteY, Width, Height); UpdateControlsBounds(); }
+        }
+
+        public override float AbsoluteY
+        {
+            get => Bounds.Y;
+            set { Bounds = Rectangle(AbsoluteX, value, Width, Height); UpdateControlsBounds(); }
+        }
+
+        void UpdateControlsBounds()
+        {
+            foreach (var n in Controls)
+            {
+                n.UpdateBounds();
+            }
+        }
+
+        public override void UpdateBounds()
+        {
+            dbg_boundsUpdates++;
+
+            AbsolutePos = RelativePosition.ToPoint();
+
+            UpdateControlsBounds();
+
+            drawingBounds = DrawingBounds;
         }
 
         Rectangle RightBorder, LeftBorder, TopBorder, BottomBorder, Header;
@@ -622,8 +664,10 @@ namespace Crux.BaseControls
                 }
                 for (int i = Controls.Count - 1; i >= 0; i--)
                 {
+                    var c = Controls[i];
                     //Parallel.For(0, Controls.Count, (i) => { lock (Batch) { Controls[i].Draw(); } });
-                    Controls[i].Draw();
+                    if (c.IsVisible)
+                        c.Draw();
                     //if (true) // DBG: Drawing bounds debug
                     //{
                     //    Batch.Begin(SpriteSortMode.Deferred, null, null, null);

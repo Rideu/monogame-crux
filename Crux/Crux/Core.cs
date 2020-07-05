@@ -18,6 +18,7 @@ using static System.Math;
 using static Crux.Simplex;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace Crux
 {
@@ -76,9 +77,10 @@ namespace Crux
 
         static Random
             r = new Random(1234),
-            hwroll = new Random(r.Next(0, 10000) * DateTime.UtcNow.Second * DateTime.UtcNow.Millisecond / 32);
+            hwroll = new Random(DateTime.UtcNow.Second * DateTime.UtcNow.Millisecond / 32);
         public static float Rand() => (float)r.NextDouble();
         static float HWRand() => (float)hwroll.NextDouble();
+        static int HWRand(int from, int to) => hwroll.Next(from, to);
         static float HWRandPrec(float mul, float prec) => (int)(HWRand() * mul) / prec;
 
         #region Colorpicker
@@ -90,7 +92,9 @@ namespace Crux
         // Textures
         public static Texture2D pixel;
         public static Texture2D form_layout;
-        public static Texture2D h_cpu, h_gpu, h_ram;
+        public static Dictionary<string, Texture2D>
+            h_cpu = new Dictionary<string, Texture2D>()
+            , h_gpu, h_ram;
 
 
         // Fonts
@@ -104,18 +108,21 @@ namespace Crux
             click, click1, click2, click3;
 
         static DataGrid dg;
-        static Action<string, float> createRow;
+
+        static Action<Cpu> createCPURow;
+        static Action fromMarket;
 
         SpriteFont LoadFont(string path)
         {
             var f = Content.Load<SpriteFont>(path);
             f.Glyphs[0].Width += 5;
             f.DefaultCharacter = ' ';
-
             return f;
         }
 
         static float enboost(float x) => (x * x / 4);
+
+        #region Data stuff
 
         class Manufacturer
         {
@@ -125,16 +132,18 @@ namespace Crux
                 Series,
                 Models,
                 Indexes;
+
+            public Color ImageColor;
         }
 
         static readonly Manufacturer[] ManufacturersRegistry = new[]
             {
                 new Manufacturer
                 {
-                     Name = "TeamBlue",
+                     Name = "Gekside",
                      Series = new[]
                      {
-                         "AI9", "AI11", "AI13"
+                         "AI9", "AI11", "AI13", "AI15"
                      },
                      Models = new[]
                      {
@@ -143,16 +152,16 @@ namespace Crux
                      Indexes = new[]
                      {
                          "", "N", "F", "K", "X",
-                     }
-
+                     },
+                     ImageColor = Color.White,
                 },
 
                 new Manufacturer
                 {
-                     Name = "TeamRed",
+                     Name = "NDA",
                      Series = new[]
                      {
-                         "AI9", "AI11", "AI13"
+                         "RN3", "RN5", "RN7", "RN9"
                      },
                      Models = new[]
                      {
@@ -160,16 +169,17 @@ namespace Crux
                      },
                      Indexes = new[]
                      {
-                         "", "N", "F", "K", "X",
-                     }
+                         "", "G", "X",
+                     },
+                     ImageColor = Color.White,
                 },
 
                 new Manufacturer
                 {
-                     Name = "TeamGreen",
+                     Name = "OptiLabs",
                      Series = new[]
                      {
-                         "NTX", "TTX", "KTX"
+                         "NTX"/*, "TTX", "KTX"*/
                      },
                      Models = new[]
                      {
@@ -178,18 +188,18 @@ namespace Crux
                      Indexes = new[]
                      {
                          "", "FT", "XT",
-                     }
+                     },
+                     ImageColor = Color.White,
                 },
             };
 
         abstract class Valuable
         {
 
-
+            public Manufacturer Manufacturer;
 
             public float Cost;
             public string
-                Manufacturer,
                 Series,
                 Model,
                 Index;
@@ -200,6 +210,7 @@ namespace Crux
         {
             public float Freqency;
             public Texture2D Image;
+            public Color ImageColor;
 
         }
 
@@ -217,8 +228,69 @@ namespace Crux
             float RamFreq { get; set; }
         }
 
+        /// <summary>
+        /// Contains product template data
+        /// </summary>
+        struct CpuProductEntry
+        {
+
+            public Manufacturer manufacturerPtr;
+            public Cpu Sample;
+
+            public Cpu Clone()
+            {
+                return new Cpu
+                {
+                    Manufacturer = Sample.Manufacturer,
+                    Series = Sample.Series,
+                    Model = Sample.Model,
+                    Index = Sample.Index,
+                    Cores = Sample.Cores,
+                    Threads = Sample.Threads,
+                    Freqency = Sample.Freqency,
+                    Techprocess = Sample.Techprocess,
+                    Cost = Sample.Cost,
+                    Image = Sample.Image,
+                    ImageColor = Sample.ImageColor
+                };
+            }
+
+        }
+
+        /// <summary>
+        /// Base product storage
+        /// </summary>
+        static class Market
+        {
+            static Market()
+            {
+                foreach (var m in ManufacturersRegistry)
+                {
+                    for (int iseries = 0; iseries < m.Series.Length; iseries++)
+                    {
+                        for (int imodel = 0; imodel < m.Models.Length; imodel++)
+                        {
+                            for (int iindex = 0; iindex < m.Indexes.Length; iindex++)
+                            {
+                                Market.AllCPUs.Add(
+                                    new CpuProductEntry
+                                    {
+                                        manufacturerPtr = m,
+                                        Sample = Cpu.CreateComponent(m, iseries, imodel, iindex)
+                                    });
+                            }
+                        }
+                    }
+                }
+            }
+
+            public static List<CpuProductEntry> AllCPUs = new List<CpuProductEntry>();
+        }
+
         class Cpu : Calculator
         {
+
+
             public int Threads;
             public static Cpu RollComponent(Manufacturer provider)
             {
@@ -234,8 +306,6 @@ namespace Crux
                 var index = provider.Indexes[indexindex];
                 var indexboost = (indexindex + 1f) / provider.Indexes.Length;
 
-                //var sb = (int)enboost(seriesindex) + 1;
-                //var mb = int.Parse(model) / 100f;
 
 
                 var cores = (int)Pow(2, 2 + seriesindex);
@@ -257,9 +327,52 @@ namespace Crux
                     Model = model,
                     Index = index,
                     Cost = (float)costmul,
-                    Image = h_cpu,
-                    Techprocess = 14 // TODO: roll it
+                    Image = h_cpu[series],
+                    ImageColor = provider.ImageColor,
+                    Techprocess = 14, // TODO: roll it?
+                    Manufacturer = provider
+                };
+            }
+            public static Cpu CreateComponent(Manufacturer provider, int iseries, int imodel, int iindex)
+            {
+                var seriesindex = iseries;
+                var series = provider.Series[seriesindex];
+                var seriesboost = (seriesindex + 1f) / provider.Series.Length;
 
+                var modelindex = imodel;
+                var model = provider.Models[modelindex];
+                var modelboost = (modelindex + 1f) / provider.Models.Length;
+
+                var indexindex = iindex;
+                var index = provider.Indexes[indexindex];
+                var indexboost = (indexindex + 1f) / provider.Indexes.Length;
+
+
+
+
+                var cores = (int)Pow(2, 2 + seriesindex);
+                var gigathreading = HWRand() + seriesboost > .5f;
+                var threads = (int)(cores * (gigathreading ? 2 : 1));
+
+                var indexclocks = HWRandPrec(2, 10) * indexindex;
+                var prec = (+HWRandPrec(2, 5) * 5 + HWRandPrec(6, 10));
+                var freq = (8 + prec + 2 * seriesboost);
+
+                var costmul = (seriesboost + modelboost + indexboost) * (freq * 0.05f * threads);
+
+                return new Cpu
+                {
+                    Freqency = freq,
+                    Cores = (int)cores,
+                    Threads = threads,
+                    Series = series,
+                    Model = model,
+                    Index = index,
+                    Cost = (float)costmul,
+                    Image = h_cpu[series],
+                    ImageColor = provider.ImageColor,
+                    Techprocess = 14, // TODO: roll it?
+                    Manufacturer = provider
                 };
             }
         }
@@ -281,6 +394,8 @@ namespace Crux
                 HasECC,
                 HasRadiator;
         }
+
+        #endregion
 
         List<Electronics> market = new List<Electronics> { }; // TODO: market as static class
 
@@ -313,10 +428,21 @@ namespace Crux
             #endregion
 
             #region Textures
+            var files = Directory.GetFiles(Content.RootDirectory, "*", SearchOption.AllDirectories);
+            h_cpu.Add("AI9", Content.Load<Texture2D>("images\\h_cpuAI9"));
+            h_cpu.Add("AI11", Content.Load<Texture2D>("images\\h_cpuAI11"));
+            h_cpu.Add("AI13", Content.Load<Texture2D>("images\\h_cpuAI13"));
+            h_cpu.Add("AI15", Content.Load<Texture2D>("images\\h_cpuAI15"));
+            h_cpu.Add("RN3", Content.Load<Texture2D>("images\\h_cpuRN3"));
+            h_cpu.Add("RN5", Content.Load<Texture2D>("images\\h_cpuRN5"));
+            h_cpu.Add("RN7", Content.Load<Texture2D>("images\\h_cpuRN7"));
+            h_cpu.Add("RN9", Content.Load<Texture2D>("images\\h_cpuRN9"));
+            h_cpu.Add("NTX", Content.Load<Texture2D>("images\\h_cpuONTX"));
+            h_cpu.Add("TTX", Content.Load<Texture2D>("images\\h_cpuOTTX"));
+            h_cpu.Add("KTX", Content.Load<Texture2D>("images\\h_cpuOKTX"));
 
-            h_cpu = Content.Load<Texture2D>("images\\h_cpu");
-            h_gpu = Content.Load<Texture2D>("images\\h_gpu");
-            h_ram = Content.Load<Texture2D>("images\\h_ram");
+            //h_gpu = Content.Load<Texture2D>("images\\h_gpu");
+            //h_ram = Content.Load<Texture2D>("images\\h_ram");
 
             #endregion
 
@@ -328,24 +454,20 @@ namespace Crux
             TextBuilder.Batch = spriteBatch;
             //TextBuilder.EnableDebug = true;
 
-
-            Form debugForm = new Form(330, 140, 575, 550, new Color(14, 14, 14))
+            Form debugForm = new Form(330, 140, 675, 550, new Color(14, 14, 14))
             {
                 IsResizable = true,
                 IsVisible = true
             };
 
+
             var clayout = new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true);
-            var dif = Palette.NanoBlue;
+            var dif = Color.White;
             var hov = Palette.Neorange;
-            var fore = Color.White;
+            var fore = Color.Black;
 
             #region Data sets
 
-
-            var series = new[] { "AI9", "AI11", "AI13" };
-            var models = new[] { 400, 600, 800, 900 };
-            var indexes = new[] { "", "N", "F", "K" };
 
             #endregion
 
@@ -358,7 +480,7 @@ namespace Crux
 
             FormManager.AddForm("MainForm", debugForm);
 
-            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Font = arial14, Text = "How to Reference", TextSize = 1f, ForeColor = Palette.Neonic, });
+            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Font = arial14, Text = "How to Reference", TextSize = 1f, ForeColor = fore, });
             #endregion
 
             #region TextArea
@@ -408,7 +530,7 @@ namespace Crux
 
                 Slider s;
                 debugForm.AddNewControl(s = new Slider(20, 60, 415, 10, Slider.Type.Horizontal));
-                s.OnSlide += delegate { t.FontSize = (0.5f + (s.Value * 1)); };
+                s.OnUserSlide += delegate { t.FontSize = (0.5f + (s.Value * 1)); };
 
             }
             #endregion
@@ -454,13 +576,17 @@ namespace Crux
 
             #region DataGrid
 
-            if (true)
+            if (false)
             {
+                Panel p = new Panel(30, 145, 400, 300);
 
-                dg = new DataGrid(30, 155, 516, 320);
+
+                debugForm.AddNewControl(p);
+
+                dg = new DataGrid(30, 155, 616, 320);
                 dg.ForeColor = fore;
-                dg.DiffuseColor = dif.MulRGB(.15f);
-                dg.HoverColor = dif.MulRGB(.15f);
+                dg.DiffuseColor = dif.MulRGB(.95f);
+                dg.HoverColor = dif.MulRGB(.95f);
                 dg.CreateLayout(clayout);
                 dg.BorderSize = 0;
                 dg.IsHeightFixed = true;
@@ -481,8 +607,8 @@ namespace Crux
 
                 var tboxByName = new TextBox(30, buttonLiner.GetCurrent().Y + 40, 189, 22);
                 debugForm.AddNewControl(tboxByName);
-                tboxByName.OnDeactivated += (s, e) => { if (tboxByName.Text.Length == 0) { tboxByName.Text = "Search..."; tboxByName.ForeColor = Color.White * .5f; } };
-                tboxByName.OnActivated += (s, e) => { if (tboxByName.Text == "Search...") tboxByName.Text = ""; tboxByName.ForeColor = Color.White; };
+                tboxByName.OnDeactivated += (s, e) => { if (tboxByName.Text.Length == 0) { tboxByName.Text = "Search..."; tboxByName.ForeColor = fore * .5f; } };
+                tboxByName.OnActivated += (s, e) => { if (tboxByName.Text == "Search...") tboxByName.Text = ""; tboxByName.ForeColor = fore; };
                 tboxByName.OnTextInput += (s, e) =>
                 {
                     dg.JoinFilter(
@@ -493,7 +619,7 @@ namespace Crux
                 tboxByName.Text = "Search...";
                 tboxByName.KeyPressedSound = keyPress;
                 controlStyler.SetStyling(tboxByName);
-                tboxByName.ForeColor = Color.White * .5f;
+                tboxByName.ForeColor = fore * .5f;
 
 
                 dg.ColumnsSizing(4.25f, 1.26f, .75f);
@@ -504,49 +630,22 @@ namespace Crux
 
                 Func<string[], bool> doFilter = (n) => n.Any(m => m.Contains(tboxByName.Text));
 
-                createRow = (itemname, price) =>
+
+
+                createCPURow = (cpu) =>
                 {
-                    var btn = new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor.Value, HoverColor = hov };
-                    btn.OnLeftClick += (ss, ee) =>
-                        {
-                            click.Play(1, .5f, 0);
-                        };
-
-                    btn.Font = arial14;
-
-                    //var si = (int)(HWRand() * series.Length);
-                    //var s = series[si];
-                    //var srb = (si + 1f) / series.Length;
-
-                    //var mi = (int)(HWRand() * models.Length);
-                    //var m = models[mi];
-                    //var mdb = (mi + 1f) / models.Length;
-
-                    //var ii = (int)(HWRand() * indexes.Length);
-                    //var i = indexes[ii];
-                    //var idb = (ii + 1f) / indexes.Length;
-
-                    //var sb = (si < 1 ? 2 : (si < 2 ? 3 : 4));
-                    //var mb = m / 1000;
-
-                    //var cr = Pow(2, sb + (int)(HWRand() * 4)) / (si < 1 ? 2 : 1);
-                    //var gt = HWRand() > .5f;
-                    //var f = (8 + mb) + (int)(HWRand() * 4) + ((.2f + (int)(HWRand() * 4)) * (int)(HWRand() * 4));
-
-                    //var costmul = (srb + mdb + idb) * (f * 0.05f * (cr * (gt ? 2 : 1)));
-
-                    var cpu = Cpu.RollComponent(ManufacturersRegistry[0]);
-
                     float textsize = 1f;
 
-                    var iconBox = new PictureBox(-10, -10, h_cpu);
-                    iconBox.Size = new Point(125);
+                    var iconBox = new PictureBox(0, 0, cpu.Image);
+                    iconBox.Size = new Point(105);
+                    iconBox.BackColor = cpu.ImageColor;
 
 
                     var itemName = new Label(125, 5, 0, 0);
-                    itemName.Text = $"{cpu.Series}-{cpu.Model}{cpu.Index}";
+                    itemName.Text = $"{cpu.Manufacturer.Name} {cpu.Series}-{cpu.Model}{cpu.Index}";
                     itemName.TextSize = textsize;
                     itemName.Font = arial14;
+                    itemName.ForeColor = new Color(55, 87, 197);
 
                     ControlTemplate descLiner = new ControlTemplate { RelativePos = new Vector2(125, 35), MarginY = 15 };
 
@@ -555,40 +654,54 @@ namespace Crux
                     itemCores.Appendix = "-core processor";
                     itemCores.TextSize = textsize;
                     itemCores.Font = arial8;
+                    itemCores.ForeColor = fore;
 
                     var itemThreads = new Label(descLiner.GetParams());
                     itemThreads.Text = $"{cpu.Threads}";
                     itemThreads.Appendix = " threads";
                     itemThreads.TextSize = textsize;
                     itemThreads.Font = arial8;
+                    itemThreads.ForeColor = fore;
 
                     var itemFreq = new Label(descLiner.GetParams());
                     itemFreq.Text = $"{cpu.Freqency}";
                     itemFreq.Appendix = " THz";
                     itemFreq.TextSize = textsize;
                     itemFreq.Font = arial8;
+                    itemFreq.ForeColor = fore;
 
-                    //var cost = ;
                     var itemCost = new Label(5, 40, 0, 0);
-                    itemCost.ForeColor = Color.FromNonPremultiplied(255, 220, 60, 255);
+                    itemCost.ForeColor = Color.Black;
                     itemCost.TextSize = textsize;
                     itemCost.Text = $"{(int)(cpu.Cost) * 10}";
                     itemCost.StringFormat = "C2";
                     itemCost.Font = arial14;
 
+                    var btn = new Button(rowbBuyliner.GetCurrent(), rowbBuyliner.BackColor) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor.Value, HoverColor = hov };
+                    btn.Font = arial14;
+                    btn.OnLeftClick += (ss, ee) =>
+                    {
+                        click.Play(1, .5f, 0);
+                    };
+                    btn.ForeColor = fore;
+
+
+
                     dg.AddRow(new List<ControlBase> { iconBox, itemName, itemCores, itemThreads, itemFreq }, itemCost, btn);
                     rowc.Text = $"Total: {dg.TotalRows}";
                 };
 
+                fromMarket = () =>
+                {
 
-                //dg.Filter(n => n[0].Contains("Latex"));
+                    foreach (var c in Market.AllCPUs)
+                    {
+                        createCPURow(c.Sample);
+                    }
 
-                //dg.AddRow("Jabroni Outfit", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
-                //dg.AddRow("Leather Armor", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
-                //dg.AddRow("Fist Glove", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
-                //dg.AddRow("Latex Cover", 8, 5, 8f / 5, cost, new Button(rowbBuyliner.GetCurrent()) { Layout = clayout, Text = "Buy", ForeColor = fore, DiffuseColor = rowbBuyliner.BackColor, HoverColor = hov });
+                };
 
-                dg.IsHeightFixed = false;
+
 
 
                 var bRow = new Button(buttonLiner.GetParams());
@@ -598,7 +711,7 @@ namespace Crux
                     click1.Play(1, .5f, 0);
                     for (int i = e.KeysHandled.Contains(Keys.LeftShift) ? -9 : 0; i < 1; i++)
                     {
-                        createRow("Yes", 300);
+
                     }
                 };
                 controlStyler.SetStyling(bRow);
@@ -654,13 +767,10 @@ namespace Crux
 
                 dg.IsHeightFixed = true;
 
+                p.AddNewControl(dg);
                 debugForm.AddNewControl(bRow, bCol, bSort);
-                debugForm.AddNewControl(dg);
 
-                createRow("AI13-900MK", 300);
-                createRow("AI13-800X", 300);
-                createRow("AI11-600", 300);
-                createRow("AI11-500", 300);
+                fromMarket();
 
 
                 //dg.Sort();
@@ -734,6 +844,23 @@ namespace Crux
             debugForm.DiffuseColor =
             debugForm.HoverColor = dif;
             //Examples();
+
+            var backform = new Form(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height, Color.Black)
+            {
+                ConstantOnBack = true,
+                Layout = flayout,
+                DiffuseColor = new Color(69, 69, 69, 255),
+                HoverColor = new Color(69, 69, 69, 255),
+            };
+
+            var drg = Palette.DarkenGray;
+
+            Button button1 = new Button(7, 10, 80, 30, drg) { Text = "Buy", HoverColor = drg * .6f, BorderColor = drg.MulRGB(.8f) };
+            Button button2 = new Button(89, 10, 80, 30, drg) { Text = "Some", HoverColor = drg * .6f, BorderColor = drg.MulRGB(.8f) };
+            Button button3 = new Button(171, 10, 80, 30, drg) { Text = "Thing", HoverColor = drg * .6f, BorderColor = drg.MulRGB(.8f) };
+
+            FormManager.AddForm("backform", backform);
+            backform.AddNewControl(button1, button2, button3);
 
             Simplex.Init(GraphicsDevice);
             #endregion

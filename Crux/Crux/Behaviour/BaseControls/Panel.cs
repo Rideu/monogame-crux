@@ -60,7 +60,7 @@ namespace Crux.BaseControls
             };
             AddNewControl(ContentSlider);
 
-            ContentSlider.OnSlide += () =>
+            ContentSlider.OnUserSlide += () =>
             {
 
                 if (RelativeContentScale > 1 || !IsScrollable) return;
@@ -76,6 +76,8 @@ namespace Crux.BaseControls
             };
         }
 
+
+
         protected override void Initialize()
         {
             Alias = "Panel";
@@ -83,6 +85,16 @@ namespace Crux.BaseControls
             CreateSlider();
             base.Initialize();
         }
+
+        #region Controls
+
+        public override void AddNewControl(ControlBase c)
+        {
+            base.AddNewControl(c);
+            ContentSlider?.BringToFront();
+        }
+
+        #endregion
 
         public override void CalcContentBounds()
         {
@@ -191,7 +203,7 @@ namespace Crux.BaseControls
                 else SlideSpeed *= 0;
             }
 
-            foreach (var c in Controls)
+            foreach (var c in Controls) // O(n^1)
             {
                 c.InternalUpdate();
                 if (c != ContentSlider)
@@ -209,7 +221,7 @@ namespace Crux.BaseControls
             //    ContentSlider.InternalUpdate();
             //}
             if (!Alias.Contains("Cell"))
-                UpdateBounds();
+                UpdateBounds(); // O(n^2)
         }
 
         public override void Draw()
@@ -217,7 +229,7 @@ namespace Crux.BaseControls
             //if (!IsVisible) return;
             base.Draw();
 
-            if(Alias == "DataGrid")
+            if (Alias == "DataGrid")
             {
 
             }

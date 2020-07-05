@@ -55,9 +55,9 @@ namespace Crux
             s_val.CreateLayout(fl);
             v_val.CreateLayout(fl);
 
-            h_val.OnSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
-            s_val.OnSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
-            v_val.OnSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
+            h_val.OnUserSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
+            s_val.OnUserSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
+            v_val.OnUserSlide += delegate { colorPicker.BackColor = Palette.HSV2RGB(360 * h_val.Value, s_val.Value, v_val.Value); };
 
             colorPicker.CreateLayout(fl);
 

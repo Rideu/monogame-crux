@@ -76,7 +76,7 @@ namespace Crux.BaseControls
             };
             AddNewControl(ContentSlider);
 
-            ContentSlider.OnSlide += () =>
+            ContentSlider.OnUserSlide += () =>
             {
                 if (TableContainer.RelativeContentScale > 1 || !TableContainer.IsScrollable) return;
                 TableContainer.ScrollValue = ContentSlider.Value;

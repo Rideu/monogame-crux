@@ -659,7 +659,7 @@ namespace Crux
                 return x - max2;
             return x;
         }
-        public static Match RegMatch(this string s, string pattern) => Regex.Match(s, pattern);
+        public static Match RegMatch(this string s, string pattern, RegexOptions options = RegexOptions.None) => Regex.Match(s, pattern, options);
         public static MatchCollection RegMatches(this string s, string pattern) => Regex.Matches(s, pattern);
         public static string Regplace(this string s, string pattern, string with) => Regex.Replace(s, pattern, with);
         #endregion

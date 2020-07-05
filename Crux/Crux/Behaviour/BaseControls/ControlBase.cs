@@ -22,6 +22,8 @@ namespace Crux.BaseControls
 
         public Vector2 RelativePos;
 
+        public Point Size { get => new Point(Width, Height); set { Width = value.X; Height = value.Y; } }
+
         public int MarginX, MarginY;
 
         public int Width, Height;
@@ -207,7 +209,7 @@ namespace Crux.BaseControls
         /// Adds specified Control.
         /// </summary>
         /// <param name="c">Specified Control.</param>
-        public void AddNewControl(ControlBase c)
+        public virtual void AddNewControl(ControlBase c)
         {
             c.Owner = this;
             c.Initialize(); // DBG: control initializer reminder
@@ -216,7 +218,7 @@ namespace Crux.BaseControls
             CalcContentBounds();
         }
 
-        public void RemoveControl(ControlBase c)
+        public virtual void RemoveControl(ControlBase c)
         {
             c.Owner = null;
             Controls.Remove(c);
@@ -231,7 +233,7 @@ namespace Crux.BaseControls
         /// Adds specified Controls list.
         /// </summary>
         /// <param name="cl">Specified Controls.</param>
-        public void AddNewControl(params ControlBase[] cl)
+        public virtual void AddNewControl(params ControlBase[] cl)
         {
             foreach (var c in cl)
             {
@@ -243,7 +245,7 @@ namespace Crux.BaseControls
         /// Adds specified Controls list.
         /// </summary>
         /// <param name="cl">Specified Controls.</param>
-        public void AddNewControl(List<ControlBase> cl)
+        public virtual void AddNewControl(IEnumerable<ControlBase> cl)
         {
             foreach (var c in cl)
             {
@@ -256,7 +258,7 @@ namespace Crux.BaseControls
         /// </summary>
         /// <param name="id">Id of the element that has been added by specified order.</param>
         /// <returns></returns>
-        public ControlBase GetControl(int id) => Controls[id - 1];
+        public virtual ControlBase GetControl(int id) => Controls[id - 1];
         #endregion
 
         #region Init
@@ -339,16 +341,23 @@ namespace Crux.BaseControls
 
         public float RelativeContentScale;
 
+
+        public virtual Point AbsolutePos
+        {
+            get => Bounds.Location;
+            set { Bounds = Rectangle(value.X, value.Y, Width, Height); }
+        }
+
         public virtual float AbsoluteX
         {
             get => Bounds.X;
-            internal protected set => Bounds = Rectangle(value, AbsoluteY, Width, Height);
+            set { Bounds = Rectangle(value, AbsoluteY, Width, Height); }
         }
 
         public virtual float AbsoluteY
         {
             get => Bounds.Y;
-            internal protected set => Bounds = Rectangle(AbsoluteX, value, Width, Height);
+            set { Bounds = Rectangle(AbsoluteX, value, Width, Height); }
         }
 
         public virtual float Width
@@ -387,6 +396,16 @@ namespace Crux.BaseControls
         public virtual void SetRelative(int x, int y)
         {
             RelativePosition = new Vector2(x, y);
+            Owner?.CalcContentBounds();
+        }
+        public virtual void SetRelative(float x, float y)
+        {
+            RelativePosition = new Vector2(x, y);
+            Owner?.CalcContentBounds();
+        }
+        public virtual void SetRelative(Vector2 v)
+        {
+            RelativePosition = v;
             Owner?.CalcContentBounds();
         }
 
@@ -434,8 +453,11 @@ namespace Crux.BaseControls
                         break;
                 }
 
-                AbsoluteX = Owner.AbsoluteX + (IsFixed ? 0 : Owner.ContentMappingOffset.X) + rp.X;
-                AbsoluteY = Owner.AbsoluteY + (IsFixed ? 0 : Owner.ContentMappingOffset.Y) + rp.Y;
+                if (Owner != null)
+                {
+                    AbsoluteX = Owner.AbsoluteX + (IsFixed ? 0 : Owner.ContentMappingOffset.X) + rp.X;
+                    AbsoluteY = Owner.AbsoluteY + (IsFixed ? 0 : Owner.ContentMappingOffset.Y) + rp.Y;
+                }
             }
             else
             {
@@ -662,7 +684,7 @@ namespace Crux.BaseControls
         bool allowcustom;
 
         protected bool forceHov;
-        Color diffuse, hovcolor, difcolor;
+        protected Color diffuse, hovcolor, difcolor;
         public Color HoverColor { get => hovcolor; set { hovcolor = value; allowcustom = HoverColor.PackedValue > 0 && DiffuseColor.PackedValue > 0; } }
         public Color DiffuseColor { get => difcolor; set { difcolor = value; allowcustom = HoverColor.PackedValue > 0 && DiffuseColor.PackedValue > 0; } }
 
@@ -728,12 +750,12 @@ namespace Crux.BaseControls
                 if (DrawBorder)
                 {
                     Batch.DrawFill(Bounds, BorderColor * (BackColor.A / 255f));
-                    Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor);
+                    Batch.DrawFill(Bounds.InflateBy(-BorderSize), diffuse); // Primary
                 }
                 else
                 {
-                    Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f)); // Primary
-                    Batch.DrawFill(Bounds.InflateBy(-BorderSize), IsActive ? BackColor : (IsFadable ? new Color(255, 255, 255, 200) : BackColor));
+                    Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f));
+                    Batch.DrawFill(Bounds.InflateBy(-BorderSize), diffuse); // Primary
 
                 }
             }

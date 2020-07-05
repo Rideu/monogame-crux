@@ -18,8 +18,11 @@ namespace Crux.BaseControls
 
         public float TextScale { get; set; } = 1f;
 
-        public override Color BackColor { get => base.BackColor; 
-            set => base.BackColor = value; }
+        public override Color BackColor
+        {
+            get => base.BackColor;
+            set => base.BackColor = value;
+        }
 
         //public event EventHandler OnLeftClick;
         //public event EventHandler OnRightClick;
@@ -41,7 +44,8 @@ namespace Crux.BaseControls
             ForeColor = Color.White;
             AbsoluteX = x; AbsoluteY = y;
             Size = new Point((int)width, (int)height);
-            BackColor = col.HasValue ? col.Value : Palette.DarkenGray;
+            DiffuseColor = BackColor = col.HasValue ? col.Value : Palette.DarkenGray;
+            HoverColor = BackColor * .8f;
         }
 
         public Button(float x, float y, Texture2D image)
@@ -80,6 +84,7 @@ namespace Crux.BaseControls
             base.InternalUpdate();
         }
 
+        public Color ImageColor { get; set; } = Color.White;
         public Texture2D Image { get; set; }
 
         //protected override void DrawLayout(float backmul = 1)
@@ -116,40 +121,44 @@ namespace Crux.BaseControls
 
         //    }
         //}
+
+        public bool RenderBack { get; set; } = true;
+
         public override void Draw()
         {
+            if (!IsVisible) return;
+            if (RenderBack)
+            {
+                Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
+                //MainDraw();
+                Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+                {
+                    if (hasLayout)
+                    {
 
-            base.Draw();
-            //Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
-            //Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
-            //{
-            //    var f = IsHovering && !EnterHold ? IsHolding ? 0.3f : 0.6f : 1f;
+                        DrawLayout();
+                    }
+                    else
+                    if (DrawBorder)
+                    {
+                        Batch.DrawFill(Bounds, BorderColor * (BackColor.A / 255f));
+                        Batch.DrawFill(Bounds.InflateBy(-BorderSize), diffuse * (IsHolding ? .75f : 1)); // Primary
+                    }
+                    else
+                    {
+                        Batch.DrawFill(Bounds, new Color(BackColor * 1.8f, 1f));
+                        Batch.DrawFill(Bounds.InflateBy(-BorderSize), diffuse * (IsHolding ? .75f : 1)); // Primary
 
-            //    if (!hasLayout)
-            //    {
-            //        if (DrawBorder)
-            //        {
-            //            Batch.DrawFill(Bounds, BorderColor); // Primary
-            //            Batch.DrawFill(Bounds.InflateBy(-BorderSize), BackColor * f); // Primary
-            //        }
-            //        else
-            //        {
-            //            Batch.DrawFill(Bounds, BackColor * f); // Primary
-            //        }
-            //    }
-            //    else
-            //    {
-            //        DrawLayout(f);
-            //    }
+                    }
+                }
+                Batch.End();
+            }
 
-            //    if (Image != null)
-            //        Batch.Draw(Image, Bounds, Color.White);
-            //}
-            //Batch.End();
-
-            Batch.GraphicsDevice.ScissorRectangle = drawingBounds.InflateBy(-1);
+            Batch.GraphicsDevice.ScissorRectangle = drawingBounds.InflateBy(-BorderSize);
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
+                if (Image != null)
+                    Batch.Draw(Image, Bounds, ImageColor);
                 var mea = Font.MeasureString(Text);
                 // Overflow control proto 
                 // {

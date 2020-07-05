@@ -40,7 +40,8 @@ namespace Crux.BaseControls
                 if (value != val)
                 {
                     val = value.Clamp(0, 1);
-                    OnSlide?.Invoke();
+                    OnManualSlide?.Invoke();
+                    UpdateSlider();
                     //Invalidate();
                 }
             }
@@ -57,7 +58,7 @@ namespace Crux.BaseControls
         //Texture2D Tex;
         Rectangle slider;
 
-        public event Action OnSlide;
+        public event Action OnUserSlide, OnManualSlide;
         #endregion
 
         public Slider(Vector4 posform, Type type)
@@ -141,15 +142,21 @@ namespace Crux.BaseControls
                         val = ((Control.MousePos.Y - h / 2 - (Bounds.Y)) / (Height - h)).Clamp(0, 1);
                     }
                     if (v != val)
-                        OnSlide?.Invoke();
+                        OnUserSlide?.Invoke();
                 }
             }
 
+            UpdateSlider();
+
+            base.Update();
+        }
+
+        protected virtual void UpdateSlider()
+        {
             if (fstyle == FillStyle.Slider)
                 slider = GetSlider();
             else
                 slider = Rectangle(Bounds.Location.X, Bounds.Location.Y, (Width * val), slider.Height);
-            base.Update();
         }
 
         Rectangle GetSlider()
