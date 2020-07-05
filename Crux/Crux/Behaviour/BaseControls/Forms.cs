@@ -178,6 +178,11 @@ namespace Crux.BaseControls
         { // PERF: AMF IEnum 
             return GlobalForms.Any(n => n.IsHovering);
         }
+
+        static public bool Any(Func<Form, bool> cond)
+        { // PERF: AMF IEnum 
+            return GlobalForms.Any(n => cond(n));
+        }
     }
     #endregion
 
@@ -193,10 +198,12 @@ namespace Crux.BaseControls
 
         #region Fields
 
+        bool constBack;
+
         /// <summary>
         /// If true, this form will be always on the background (lowest) level
         /// </summary>
-        public bool ConstantOnBack { get; set; }
+        public bool ConstantOnBack { get => constBack; set { constBack = true; } }
 
         public override string Text { get => text; set { text = value; } }
         public bool IgnoreControl { get; set; } = !true;
@@ -342,7 +349,7 @@ namespace Crux.BaseControls
             LeftBorder = Rectangle(AbsoluteX, AbsoluteY, 4, Height);
             TopBorder = Rectangle(AbsoluteX, AbsoluteY, Width, 4);
             Header = Rectangle(AbsoluteX, AbsoluteY, Width, 20 + 8);
-            Batch.GraphicsDevice.ScissorRectangle = Bounds;
+            //Batch.GraphicsDevice.ScissorRectangle = Bounds;
 
             foreach (var n in Controls)
             {
@@ -351,23 +358,41 @@ namespace Crux.BaseControls
             }
         }
 
+        public override void SetRelative(Vector2 v)
+        {
+            SetRelative(v.X, v.Y);
+        }
+
+        public override void SetRelative(float x, float y)
+        {
+            base.SetRelative(x, y);
+            AbsolutePos = new Point((int)x, (int)y);
+            RenewBounds();
+        }
+
         public override Point AbsolutePos
         {
             get => Bounds.Location;
-            set { Bounds = Rectangle(value.X, value.Y, Width, Height); UpdateControlsBounds(); }
+            set { Bounds = Rectangle(value.X, value.Y, Width, Height); RenewBounds();/*UpdateControlsBounds();*/ }
         }
 
         public override float AbsoluteX
         {
             get => Bounds.X;
-            set { Bounds = Rectangle(value, AbsoluteY, Width, Height); UpdateControlsBounds(); }
+            set { Bounds = Rectangle(value, AbsoluteY, Width, Height); RenewBounds();/*UpdateControlsBounds();*/ }
         }
 
         public override float AbsoluteY
         {
             get => Bounds.Y;
-            set { Bounds = Rectangle(AbsoluteX, value, Width, Height); UpdateControlsBounds(); }
+            set { Bounds = Rectangle(AbsoluteX, value, Width, Height); RenewBounds(); /*UpdateControlsBounds();*/ }
         }
+
+        public override float Width { get => base.Width; set { base.Width = value; RenewBounds(); } }
+
+        public override float Height { get => base.Height; set { base.Height = value; RenewBounds(); } }
+
+        public override Point Size { get => base.Size; set { base.Size = value; RenewBounds(); } }
 
         void UpdateControlsBounds()
         {
@@ -381,7 +406,7 @@ namespace Crux.BaseControls
         {
             dbg_boundsUpdates++;
 
-            AbsolutePos = RelativePosition.ToPoint();
+            //AbsolutePos = RelativePosition.ToPoint();
 
             UpdateControlsBounds();
 

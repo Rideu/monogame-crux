@@ -480,7 +480,8 @@ namespace Crux
 
             FormManager.AddForm("MainForm", debugForm);
 
-            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Font = arial14, Text = "How to Reference", TextSize = 1f, ForeColor = fore, });
+            debugForm.AddNewControl(new Label(10, 12, 170, 20) { Font = arial14, Text = "How to Reference", TextSize = 1f, ForeColor = fore });
+            //debugForm.AddNewControl(new Button(10, debugForm.Height - 40, 170, 20) { Font = arial14, Text = "How to Reference", Anchor = Alignment.BottomLeft });
             #endregion
 
             #region TextArea

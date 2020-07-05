@@ -391,21 +391,16 @@ namespace Crux.BaseControls
                 OnResize?.Invoke(this, EventArgs.Empty);
                 Owner?.CalcContentBounds();
             }
+        } 
+
+        public virtual void SetRelative(Vector2 v)
+        {
+            SetRelative(v.X, v.Y);
         }
 
-        public virtual void SetRelative(int x, int y)
-        {
-            RelativePosition = new Vector2(x, y);
-            Owner?.CalcContentBounds();
-        }
         public virtual void SetRelative(float x, float y)
         {
             RelativePosition = new Vector2(x, y);
-            Owner?.CalcContentBounds();
-        }
-        public virtual void SetRelative(Vector2 v)
-        {
-            RelativePosition = v;
             Owner?.CalcContentBounds();
         }
 
