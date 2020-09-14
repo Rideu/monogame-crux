@@ -1,6 +1,8 @@
 ﻿using System;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
 using static Crux.Simplex;
 
 /// <summary>
@@ -138,6 +140,17 @@ namespace Crux.BaseControls
             base.Update();
         }
 
+        public void ScrollToTop()
+        {
+            textpos.Y = 0;
+        }
+        public void ScrollToBottom()
+        {
+            if (ContentBounds.Y > Height)
+                textpos.Y = Height - ContentBounds.Y - 2;
+            //textpos.Y = Height - ContentBounds.Y - 2; 
+        }
+
         Vector2 ContentBounds;
         public Vector2 TextSize => ContentBounds;
         public override void InternalUpdate()
@@ -145,10 +158,10 @@ namespace Crux.BaseControls
             ContentBounds = text.GetTotalSize;
             if (ContentBounds.Y > Height) // TODO: renaming
             {
-                if (textpos.Y > 0)
+                if (textpos.Y > 0) // Overscroll to top
                     textpos.Y = 0;
 
-                if (textpos.Y + ContentBounds.Y < Height)
+                if (textpos.Y + ContentBounds.Y < Height) // Overscroll to bottom
                     textpos.Y = Height - ContentBounds.Y - 2;
 
                 textpos += textposspeed;
@@ -159,7 +172,7 @@ namespace Crux.BaseControls
             base.InternalUpdate();
         }
 
-         
+
         public bool RenderBack { get; set; } = true;
 
         public override void Draw()
@@ -168,7 +181,7 @@ namespace Crux.BaseControls
             Batch.GraphicsDevice.ScissorRectangle = drawb;
             if (RenderBack)
             {
-                Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+                Batch.Begin(SpriteSortMode.Deferred, BlendState, SamplerState, null, rasterizer);
                 {
                     if (!hasLayout)
                     {
@@ -177,21 +190,21 @@ namespace Crux.BaseControls
                     }
                     else
                     {
-                        DrawLayout( );
+                        DrawLayout();
                     }
                 }
                 Batch.End();
             }
 
             Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-BorderSize);
-            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+            Batch.Begin(SpriteSortMode.Deferred, BlendState, SamplerState, null, rasterizer);
             {
                 text.Render(Batch, new Vector2(AbsoluteX + 1, AbsoluteY + 1) + textpos);
             }
             Batch.End();
 
             //Batch.GraphicsDevice.ScissorRectangle = drawb.InflateBy(-BorderSize, -BorderSize - 5, -BorderSize, -BorderSize);
-            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+            Batch.Begin(SpriteSortMode.Deferred, BlendState, SamplerState, null, rasterizer);
             {
                 // TODO: replace with normal Slider control 
                 Batch.DrawFill(new Rectangle((int)(AbsoluteX + Width - 5 - BorderSize), (int)(AbsoluteY + BorderSize), 5, (int)Height - 2 - BorderSize), new Color(55, 55, 55, 255));

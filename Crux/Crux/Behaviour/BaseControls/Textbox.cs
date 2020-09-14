@@ -374,7 +374,7 @@ namespace Crux.BaseControls
 
                 // Draw caret
                 if (InputMode)
-                    Batch.DrawFill(Rectangle(new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + caretOffset, BorderSize + Bounds.Y), new Vector2(1, fontStdHeight)), HoverColor * ease(caretEase));
+                    Batch.DrawFill(Rectangle(new Vector2(Bounds.X + BorderSize + 1 + caretPos.X + caretOffset, BorderSize + Bounds.Y), new Vector2(1, fontStdHeight)), ForeColor * ease(caretEase));
 
             }
             Batch.End();

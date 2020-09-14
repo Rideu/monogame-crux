@@ -1,0 +1,1 @@
+﻿https://github.com/MonoGame/MonoGame/issues/7123

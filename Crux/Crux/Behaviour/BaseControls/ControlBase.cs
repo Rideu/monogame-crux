@@ -22,11 +22,11 @@ namespace Crux.BaseControls
 
         public Vector2 RelativePos;
 
-        public Point Size { get => new Point(Width, Height); set { Width = value.X; Height = value.Y; } }
+        public Point Size { get => new Point((int)Width, (int)Height); set { Width = value.X; Height = value.Y; } }
 
-        public int MarginX, MarginY;
+        public float MarginX, MarginY;
 
-        public int Width, Height;
+        public float Width, Height;
 
         /// <summary>
         /// Gets current rectangle data and increments position of the rectangle further.
@@ -68,6 +68,16 @@ namespace Crux.BaseControls
             control.HoverColor = HoverColor ?? control.HoverColor;
             control.DiffuseColor = DiffuseColor ?? control.DiffuseColor;
             control.ForeColor = ForeColor ?? control.ForeColor;
+        }
+
+        public ControlBase OutSetStyling(ControlBase control)
+        {
+            SetStyling(control); return control;
+        }
+
+        public T OutSetStyling<T>(T control) where T : ControlBase
+        {
+            SetStyling(control); return control;
         }
 
         public void ResetTo(Vector2 relativepos)
@@ -181,7 +191,8 @@ namespace Crux.BaseControls
         #endregion
 
         protected string text = "";
-        public virtual string Text { get => text; set => text = value; }
+        public virtual string Text { get => text; set { text = value; OnTextChanged?.Invoke(this, EventArgs.Empty); } }
+        public virtual event EventHandler OnTextChanged;
         public virtual Color ForeColor { get; set; } = Color.White;
         public float ScrollValue { get; set; }
 
@@ -289,6 +300,8 @@ namespace Crux.BaseControls
 
         #region Behaviour
 
+        public virtual bool Enabled { get; set; } = true;
+
         /// <summary>
         /// Returns true if mouse stays inside control's bounds.
         /// </summary>
@@ -391,7 +404,7 @@ namespace Crux.BaseControls
                 OnResize?.Invoke(this, EventArgs.Empty);
                 Owner?.CalcContentBounds();
             }
-        } 
+        }
 
         public virtual void SetRelative(Vector2 v)
         {
@@ -534,8 +547,10 @@ namespace Crux.BaseControls
 
         public event EventHandler OnResize;
 
+
         public event EventHandler<ControlArgs> OnLeftClick;
         public event EventHandler<ControlArgs> OnRightClick;
+        public event EventHandler<ControlArgs> OnKeyDown, OnKeyUp, OnKeyPress;
 
         /// <summary>
         /// Describes update-per-frame logic.
@@ -547,7 +562,7 @@ namespace Crux.BaseControls
 
         public virtual void EventProcessor()
         {
-            if (!IsVisible) return; // WARN: untrusted opt
+            if (!IsVisible || !Enabled) return; // WARN: untrusted opt
 
             IsClicked = false;
 
@@ -628,6 +643,15 @@ namespace Crux.BaseControls
                 EnterHold = false;
             }
 
+            if (/*IsActive &&*/ ActiveControl == this)
+            {
+                if (Control.AnyKeyDown())
+                    OnKeyDown?.Invoke(this, ControlArgs.GetState);
+                if (Control.AnyKeyUp())
+                    OnKeyUp?.Invoke(this, ControlArgs.GetState);
+                //if (Control.AnyKeyHold())
+                //    OnKeyDown?.Invoke(this, ControlArgs.GetState);
+            }
             #endregion
 
             F_Focus = IsActive;
@@ -680,10 +704,15 @@ namespace Crux.BaseControls
 
         protected bool forceHov;
         protected Color diffuse, hovcolor, difcolor;
+
+        public float Opacity { get; set; } = 1;
         public Color HoverColor { get => hovcolor; set { hovcolor = value; allowcustom = HoverColor.PackedValue > 0 && DiffuseColor.PackedValue > 0; } }
         public Color DiffuseColor { get => difcolor; set { difcolor = value; allowcustom = HoverColor.PackedValue > 0 && DiffuseColor.PackedValue > 0; } }
 
-        protected virtual void DrawLayout(float backmul = 1)
+        public SamplerState SamplerState { get; set; }
+        public BlendState BlendState { get; set; }
+
+        protected virtual void DrawLayout()
         {
 
             //if (hasLayout)
@@ -696,23 +725,26 @@ namespace Crux.BaseControls
                 var bottom = fw - Layout.TopLeft.Width - Layout.TopRight.Width;
                 var fa = FillingArea;
                 //Batch.GraphicsDevice.ScissorRectangle = fa;
+
+                var dif = diffuse * Opacity;
+
                 if (allowcustom)
-                    Batch.Draw(layout.ReliancePixel, fa, diffuse);
+                    Batch.Draw(layout.ReliancePixel, fa, dif);
                 //Batch.DrawFill(fa, diffuse * (BackColor.A / 255f));
                 else
-                    Batch.DrawFill(fa, BackColor * backmul);
+                    Batch.DrawFill(fa, BackColor * Opacity);
 
                 //OnDraw?.Invoke();
-                Batch.Draw(Layout.TopLeft, Bounds.Location.ToVector2(), diffuse);
-                Batch.Draw(Layout.TopBorder, new Rectangle(Bounds.X + Layout.TopLeft.Width, Bounds.Y, fw - Layout.TopLeft.Width - Layout.TopRight.Width, Layout.TopBorder.Height), diffuse);
-                Batch.Draw(Layout.TopRight, new Vector2(Bounds.X + Layout.TopLeft.Width + top, Bounds.Y), diffuse);
+                Batch.Draw(Layout.TopLeft, Bounds.Location.ToVector2(), dif);
+                Batch.Draw(Layout.TopBorder, new Rectangle(Bounds.X + Layout.TopLeft.Width, Bounds.Y, fw - Layout.TopLeft.Width - Layout.TopRight.Width, Layout.TopBorder.Height), dif);
+                Batch.Draw(Layout.TopRight, new Vector2(Bounds.X + Layout.TopLeft.Width + top, Bounds.Y), dif);
 
-                Batch.Draw(Layout.LeftBorder, new Rectangle(Bounds.X, Bounds.Y + Layout.TopLeft.Height, Layout.LeftBorder.Width, fh - Layout.BottomLeft.Height - Layout.TopLeft.Height), diffuse);
-                Batch.Draw(Layout.RightBorder, new Rectangle(Bounds.X + fw - Layout.RightBorder.Width, Bounds.Y + Layout.TopLeft.Height, Layout.RightBorder.Width, fh - Layout.TopRight.Height - Layout.BottomRight.Height), diffuse);
+                Batch.Draw(Layout.LeftBorder, new Rectangle(Bounds.X, Bounds.Y + Layout.TopLeft.Height, Layout.LeftBorder.Width, fh - Layout.BottomLeft.Height - Layout.TopLeft.Height), dif);
+                Batch.Draw(Layout.RightBorder, new Rectangle(Bounds.X + fw - Layout.RightBorder.Width, Bounds.Y + Layout.TopLeft.Height, Layout.RightBorder.Width, fh - Layout.TopRight.Height - Layout.BottomRight.Height), dif);
 
-                Batch.Draw(Layout.BottomLeft, new Vector2(Bounds.X, Bounds.Y + fh - Layout.BottomLeft.Height), diffuse);
-                Batch.Draw(Layout.BottomBorder, new Rectangle(Bounds.X + Layout.BottomLeft.Width, Bounds.Y + fh - Layout.BottomBorder.Height, fw - Layout.BottomLeft.Width - Layout.BottomRight.Width, Layout.BottomBorder.Height), diffuse);
-                Batch.Draw(Layout.BottomRight, new Vector2(Bounds.X + Layout.BottomLeft.Width + bottom, Bounds.Y + fh - Layout.BottomRight.Height), diffuse);
+                Batch.Draw(Layout.BottomLeft, new Vector2(Bounds.X, Bounds.Y + fh - Layout.BottomLeft.Height), dif);
+                Batch.Draw(Layout.BottomBorder, new Rectangle(Bounds.X + Layout.BottomLeft.Width, Bounds.Y + fh - Layout.BottomBorder.Height, fw - Layout.BottomLeft.Width - Layout.BottomRight.Width, Layout.BottomBorder.Height), dif);
+                Batch.Draw(Layout.BottomRight, new Vector2(Bounds.X + Layout.BottomLeft.Width + bottom, Bounds.Y + fh - Layout.BottomRight.Height), dif);
 
                 //Batch.DrawFill(new Vector2(Bounds.X, Bounds.Y + fh - Layout.BottomLeft.Height), Layout.BottomLeft.Bounds.Size.ToVector2(), Color.White);
                 //Batch.DrawFill(new Rectangle(Bounds.X + Layout.BottomLeft.Width, Bounds.Y + fh - Layout.BottomBorder.Height, fw - Layout.BottomLeft.Width - Layout.BottomRight.Width, Layout.BottomBorder.Height), Color.White);
@@ -734,7 +766,7 @@ namespace Crux.BaseControls
             if (!IsVisible) return;
             Batch.GraphicsDevice.ScissorRectangle = drawingBounds;
             //MainDraw();
-            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+            Batch.Begin(SpriteSortMode.Deferred, BlendState, SamplerState, null, rasterizer);
             {
                 if (hasLayout)
                 {

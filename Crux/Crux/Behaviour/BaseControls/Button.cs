@@ -1,6 +1,8 @@
 ﻿using System;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
 using static Crux.Simplex;
 
 /// <summary>
@@ -33,6 +35,7 @@ namespace Crux.BaseControls
             AbsoluteX = 10; AbsoluteY = 10;
             Size = new Point(60, 40);
             BackColor = Palette.DarkenGray;
+            ImageTargetBounds = new Rectangle(0, 0, 60, 40);
         }
 
         public Button(Vector4 posform, Color? col = default) : this(posform.X, posform.Y, posform.Z, posform.W, col) { }
@@ -46,12 +49,14 @@ namespace Crux.BaseControls
             Size = new Point((int)width, (int)height);
             DiffuseColor = BackColor = col.HasValue ? col.Value : Palette.DarkenGray;
             HoverColor = BackColor * .8f;
+            ImageTargetBounds = new Rectangle(0, 0, (int)Width, (int)Height);
         }
 
         public Button(float x, float y, Texture2D image)
         {
             AbsoluteX = x; AbsoluteY = y; Width = image.Width; Height = image.Height; BackColor = Color.White;
             Image = image;
+            ImageTargetBounds = new Rectangle(0, 0, (int)Width, (int)Height);
         }
 
         //Color BackColor;
@@ -83,8 +88,10 @@ namespace Crux.BaseControls
         {
             base.InternalUpdate();
         }
+        public Vector2 TextOffset;
 
         public Color ImageColor { get; set; } = Color.White;
+        public Rectangle ImageTargetBounds;
         public Texture2D Image { get; set; }
 
         //protected override void DrawLayout(float backmul = 1)
@@ -155,10 +162,10 @@ namespace Crux.BaseControls
             }
 
             Batch.GraphicsDevice.ScissorRectangle = drawingBounds.InflateBy(-BorderSize);
-            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+            Batch.Begin(SpriteSortMode.Deferred, BlendState, SamplerState, null, rasterizer);
             {
                 if (Image != null)
-                    Batch.Draw(Image, Bounds, ImageColor);
+                    Batch.Draw(Image, ImageTargetBounds.OffsetBy(Bounds.Location), ImageColor);
                 var mea = Font.MeasureString(Text);
                 // Overflow control proto 
                 // {
@@ -166,9 +173,25 @@ namespace Crux.BaseControls
                 // var am = of > 1 ? Text : Text.Substring(0, (int)(Text.Length*of));
                 // mea = Game1.font1.MeasureString(am);
                 // }
-                Batch.DrawString(Font, Text, Bounds.Location.ToVector2() + (new Vector2(Width, Height) / 2 - mea / 2 * TextScale).ToPoint().ToVector2(), ForeColor, 0f, new Vector2(), TextScale, SpriteEffects.None, 1f);
+                Batch.DrawString(Font, Text, TextOffset + Bounds.Location.ToVector2() + (new Vector2(Width, Height) / 2 - mea / 2 * TextScale).ToPoint().ToVector2(), ForeColor, 0f, new Vector2(), TextScale, SpriteEffects.None, 1f);
             }
             Batch.End();
+
+            for (int i = Controls.Count - 1; i >= 0; i--)
+            {
+                var c = Controls[i];
+                if (c.IsVisible)
+                    c.Draw();
+
+                if (false) // Drawing bounds debug
+                {
+                    Batch.Begin(SpriteSortMode.Deferred, null, null, null);
+                    {
+                        Batch.DrawFill(c.DrawingBounds, new Color(123, 77, 63, 80) * .75f);
+                    }
+                    Batch.End();
+                }
+            }
         }
 
     }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Globalization;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
 using static Crux.Simplex;
 
 namespace Crux.BaseControls
@@ -61,10 +63,13 @@ namespace Crux.BaseControls
                 StringFormat = StringFormat;
                 TextSize = TextSize;
 
+                OnTextChanged?.Invoke(this, EventArgs.Empty);
                 //if (!IsFixedWidth)
                 //Width = font.MeasureString(tc).X;
             }
         }
+
+        public override event EventHandler OnTextChanged;
 
         public Vector2 TextSizeOverhead /*= new Vector2(defaultFont.Glyphs[0].Width, 0)*/;
         public float TextSize
@@ -97,7 +102,7 @@ namespace Crux.BaseControls
                 if (formatValue != null)
                 {
                     format = !string.IsNullOrEmpty(value) ? $":{value}" : "";
-                    var apd = !string.IsNullOrEmpty(append) ? $"{append}":"";
+                    var apd = !string.IsNullOrEmpty(append) ? $"{append}" : "";
                     drawString = string.Format(CultureInfo.GetCultureInfo("en-us"), "{0" + format + "}" + apd, formatValue);
                     updateSize();
                 }
@@ -113,6 +118,11 @@ namespace Crux.BaseControls
         public Label()
         {
             AbsoluteX = 10; AbsoluteY = 10; Size = new Point(60, 40); BackColor = default;
+        }
+
+        public Label(float x, float y, string text) : this(x, y, 0, 0)
+        {
+            Text = text;
         }
 
         public Label(Vector4 posform) : this(posform.X, posform.Y, posform.Z, posform.W) { }
@@ -150,7 +160,7 @@ namespace Crux.BaseControls
         {
 
             Batch.GraphicsDevice.ScissorRectangle = Owner.DrawingBounds;
-            Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
+            Batch.Begin(SpriteSortMode.Deferred, BlendState, SamplerState, rasterizerState: rasterizer);
             {
                 //if (true)
                 //    Batch.DrawFill(Bounds, BackColor);

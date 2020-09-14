@@ -14,6 +14,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libcruxTests", "libcruxTest
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "libcruxcore", "CruxCore\libcruxcore.csproj", "{62B95AE9-27B4-4506-88C1-B0EC3DB45A4A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "libcruxnstd", "libcruxnstd\libcruxnstd.csproj", "{83BB7004-DB43-440C-8064-D99A7CCAF070}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mobiletests", "mobiletests\mobiletests.csproj", "{E717AD67-5282-48FD-878E-EFB1C07A6154}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +75,36 @@ Global
 		{62B95AE9-27B4-4506-88C1-B0EC3DB45A4A}.Release|x64.Build.0 = Release|Any CPU
 		{62B95AE9-27B4-4506-88C1-B0EC3DB45A4A}.Release|x86.ActiveCfg = Release|Any CPU
 		{62B95AE9-27B4-4506-88C1-B0EC3DB45A4A}.Release|x86.Build.0 = Release|Any CPU
+		{83BB7004-DB43-440C-8064-D99A7CCAF070}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83BB7004-DB43-440C-8064-D99A7CCAF070}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83BB7004-DB43-440C-8064-D99A7CCAF070}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{83BB7004-DB43-440C-8064-D99A7CCAF070}.Debug|x64.Build.0 = Debug|Any CPU
+		{83BB7004-DB43-440C-8064-D99A7CCAF070}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{83BB7004-DB43-440C-8064-D99A7CCAF070}.Debug|x86.Build.0 = Debug|Any CPU
+		{83BB7004-DB43-440C-8064-D99A7CCAF070}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83BB7004-DB43-440C-8064-D99A7CCAF070}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83BB7004-DB43-440C-8064-D99A7CCAF070}.Release|x64.ActiveCfg = Release|Any CPU
+		{83BB7004-DB43-440C-8064-D99A7CCAF070}.Release|x64.Build.0 = Release|Any CPU
+		{83BB7004-DB43-440C-8064-D99A7CCAF070}.Release|x86.ActiveCfg = Release|Any CPU
+		{83BB7004-DB43-440C-8064-D99A7CCAF070}.Release|x86.Build.0 = Release|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Debug|x64.Build.0 = Debug|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Debug|x86.Build.0 = Debug|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Debug|x86.Deploy.0 = Debug|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Release|x64.ActiveCfg = Release|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Release|x64.Build.0 = Release|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Release|x64.Deploy.0 = Release|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Release|x86.ActiveCfg = Release|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Release|x86.Build.0 = Release|Any CPU
+		{E717AD67-5282-48FD-878E-EFB1C07A6154}.Release|x86.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -17,6 +17,7 @@ using static System.Text.RegularExpressions.Regex;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 
@@ -24,6 +25,7 @@ using sRectangle = Microsoft.Xna.Framework.Rectangle;
 using static Crux.CoreTests;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+
 
 namespace Crux
 {
@@ -152,34 +154,39 @@ namespace Crux
             }
         }
 
-        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 p, Color c, float a)
+
+
+        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 position, Color color, float angle)
         {
-            batch.Draw(tex, p, null, c, a, tex.Center(), 1f, SpriteEffects.None, 0f);
+            batch.Draw(tex, position, null, color, angle, tex.Center(), 1f, SpriteEffects.None, 0f);
         }
 
-        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 p, Color c, float a, float s)
+        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 position, Color color, float angle, float scale)
         {
-            batch.Draw(tex, p, null, c, a, Vector2.Zero, s, SpriteEffects.None, 0f);
+            batch.Draw(tex, position, null, color, angle, Vector2.Zero, scale, SpriteEffects.None, 0f);
         }
 
-        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 p, Color c, float a, float s, Vector2 origin)
+        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 position, Color color, float angle, float scale, Vector2 origin)
         {
-            batch.Draw(tex, p, null, c, a, origin, s, SpriteEffects.None, 0f);
+            batch.Draw(tex, position, null, color, angle, origin, scale, SpriteEffects.None, 0f);
         }
 
-        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 p, Color c, float a, Vector2 origin, Vector2 scale)
+        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 position, Color color, float angle, Vector2 origin, Vector2 scale)
         {
-            batch.Draw(tex, p, null, c, a, origin, scale, SpriteEffects.None, 0f);
+            batch.Draw(tex, position, null, color, angle, origin, scale, SpriteEffects.None, 0f);
         }
 
-        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 p, Color c, float a, Vector2 s)
+        public static void Draw(this SpriteBatch batch, Texture2D tex, Vector2 position, Color color, float angle, Vector2 scale)
         {
-            batch.Draw(tex, p, null, c, a, tex.Center(), s, SpriteEffects.None, 0f);
+            batch.Draw(tex, position, null, color, angle, tex.Center(), scale, SpriteEffects.None, 0f);
         }
 
-        public static void DrawString(this SpriteBatch batch, SpriteFont font, string text, Vector2 pos, Color col, float a, float s)
+
+
+
+        public static void DrawString(this SpriteBatch batch, SpriteFont font, string text, Vector2 pos, Color col, float angle, float scale)
         {
-            batch.DrawString(font, text, pos, col, a, Vector2.Zero, s, SpriteEffects.None, 0f);
+            batch.DrawString(font, text, pos, col, angle, Vector2.Zero, scale, SpriteEffects.None, 0f);
         }
 
 
@@ -432,7 +439,42 @@ namespace Crux
             rtex.SetData(sheetbuf);
             return rtex;
         }
+        #region Vector2
 
+        public static Vector2 Rotate(this Vector2 v, float radians) => Vector2.Transform(v, Matrix.CreateRotationZ(radians));
+        public static Vector2 Trunc(this Vector2 v, float val) { float i; return v * ((i = val / v.Length()) < 1.0f ? i : 1.0f); }
+        public static Vector2 Transform(this Vector2 v, Matrix m) => Vector2.Transform(v, m);
+        public static Vector2 Project(this Vector2 v, Matrix m) => Vector2.Transform(v, Matrix.Invert(m));
+        public static Vector2 Clamp(this Vector2 v, Vector2 min, Vector2 max) => Vector2.Clamp(v, min, max);
+        public static Vector2 Offset(this Vector2 v, float x, float y) => new Vector2(v.X + x, v.Y + y);
+        public static Vector2 Offset(this Vector2 v, float xy) => new Vector2(v.X + xy, v.Y + xy);
+        public static Vector2 Offset(this Vector2 v, Vector2 v1) => v + v1;
+        public static float Distance(this Vector2 v, Vector2 v1) => Vector2.Distance(v, v1);
+        public static float Angle(this Vector2 v) => (float)Atan2(v.Y, v.X);
+        public static Vector2 Normal(this Vector2 v) { v.Normalize(); return float.IsNaN(v.X) ? Vector2.Zero : v; }
+        public static Vector3 GetVector3(this Vector2 v) => new Vector3(v, 0);
+        public static Vector2 UnpackV2(this ushort v) => (new NormalizedByte2() { PackedValue = v }).ToVector2();
+        public static ushort Pack(this Vector2 v) => (new NormalizedByte2(v)).PackedValue;
+
+        #endregion
+
+        #region Vector3
+
+        public static Vector3 Transform(this Vector3 v, Matrix m) => Vector3.Transform(v, m);
+        public static Vector2 GetVector2(this Vector3 v) => new Vector2(v.X, v.Y);
+        public static Vector3 Normal(this Vector3 v) { v.Normalize(); return float.IsNaN(v.X) ? Vector3.Zero : v; }
+        public static Vector3 UnpackV3(this uint v) => (new NormalizedByte4() { PackedValue = v }).ToVector4().GetVector3();
+        public static float Distance(this Vector3 v, Vector3 v1) => Vector3.Distance(v, v1);
+        public static uint Pack(this Vector3 v) => (new NormalizedByte4(new Vector4(v, 0))).PackedValue;
+
+        #endregion
+
+        #region Vector4
+
+        public static Vector3 GetVector3(this Vector4 v) => new Vector3(v.X, v.Y, v.Z);
+        public static Vector2 GetVector2(this Vector4 v) => new Vector2(v.X, v.Y);
+
+        #endregion
         public static Vector2 Center(this Texture2D tex)
         {
             return tex.Bounds.Center.ToVector2();
@@ -449,7 +491,7 @@ namespace Crux
 
         public static Rectangle OffsetBy(this Rectangle src, Point offset) { src.Location += offset; return src; }
 
-        public static Rectangle OffsetBy(this Rectangle src, (float, float) xy) { src.Location += new Point((int)xy.Item1, (int)xy.Item2); return src; }
+        //public static Rectangle OffsetBy(this Rectangle src, (float, float) xy) { src.Location += new Point((int)xy.Item1, (int)xy.Item2); return src; }
 
         public static Rectangle OffsetBy(this Rectangle src, float x, float y) { src.Location += new Point((int)x, (int)y); return src; }
 
@@ -474,32 +516,16 @@ namespace Crux
 
         public static Point Add(this Point p, int x, int y) => p + new Point(x, y);
 
-        public static Point Add(this Point p, (int, int) xy) => p + new Point(xy.Item1, xy.Item2);
 
-        public static Vector2 Trunc(this Vector2 v, float val)
-        {
-            float i;
-            return v * (i = (i = val / v.Length()) < 1.0f ? i : 1.0f);
-        }
+        //public static Point Add(this Point p, (int, int) xy) => p + new Point(xy.Item1, xy.Item2);
 
-        public static Vector2 Transform(this Vector2 v, Matrix m) => Vector2.Transform(v, m);
 
-        public static Vector2 GetVector2(this Vector3 v) => new Vector2(v.X, v.Y);
 
-        public static Vector2 ToPoint(this (int, int) t) => new Vector2(t.Item1, t.Item2);
-
-        public static Vector2 Normal(this Vector2 v)
-        {
-            v.Normalize();
-            return v;
-        }
 
         public static Vector2 Floor(this Vector2 v) => new Vector2((int)v.X, (int)v.Y);
 
-        public static Vector3 GetVector3(this Vector2 v) => new Vector3(v, 0);
 
         public static Vector2 Angle(this float v) => Vector2.Normalize(new Vector2((float)Cos(v), (float)Sin(v)));
-        public static float Angle(this Vector2 v) => (float)Atan2(v.Y, v.X);
         public static float Trunc(this float v, float by) => v > by ? by : v;
         public static float Clamp(this float v, float l, float r) => v > r ? r : v < l ? l : v;
 
@@ -847,7 +873,7 @@ namespace Crux
     public static class RegexLib
     {
         public static readonly string MatchIfContains = "(?<={).??([()]).*?(?=})";
-        public static readonly string MatchColor = "(?<={).??([()]).*?(?=})";
+        public static readonly string MatchColor = "((?<={.+)(\\d{1,3})(?!=}))";
 
     }
 }

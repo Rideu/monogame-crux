@@ -17,6 +17,9 @@ namespace Crux
     {
 
         Texture2D main;
+
+        public Texture2D Image => main;
+
         public Texture2D TopBorder { get; private set; }
         public Texture2D LeftBorder { get; private set; }
         public Texture2D RightBorder { get; private set; }

@@ -111,6 +111,8 @@ namespace Crux.BaseControls
         {
             IsActive = IsHovering = IsHolding = false;
 
+            UpdateSlider();
+
             //slider = fstyle == FillStyle.Slider ? GetSlider() : Rectangle(Bounds.Location.X, Bounds.Location.Y, (Width * val), slider.Height);
 
             //foreach (var c in Controls)
@@ -156,8 +158,10 @@ namespace Crux.BaseControls
             if (fstyle == FillStyle.Slider)
                 slider = GetSlider();
             else
-                slider = Rectangle(Bounds.Location.X, Bounds.Location.Y, (Width * val), slider.Height);
+                slider = Rectangle(Bounds.Location.X + BorderSize, Bounds.Location.Y + BorderSize, ((Width - BorderSize * 2) * val), Height - BorderSize * 2);
         }
+
+        //public Color SliderColor { get; set; }
 
         Rectangle GetSlider()
         {
@@ -171,7 +175,7 @@ namespace Crux.BaseControls
         public override void InternalUpdate()
         {
             base.InternalUpdate();
-            slider = GetSlider();
+            //slider = GetSlider();
         }
 
         public override void Draw()
@@ -181,8 +185,8 @@ namespace Crux.BaseControls
 
             Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
             {
-                Batch.DrawFill(Bounds, BorderColor);
-                Batch.DrawFill(Bounds.InflateBy(-1, -1), IsHovering ? BackColor * 0.9f : BackColor);
+                //Batch.DrawFill(Bounds, BorderColor);
+                //Batch.DrawFill(Bounds.InflateBy(-1, -1), IsHovering ? BackColor * 0.9f : BackColor);
                 //if (DispType == Type.Horizontal)
                 {
                     Batch.DrawFill(slider, IsHovering ? SliderColor : SliderColor * 0.8f);

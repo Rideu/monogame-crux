@@ -122,9 +122,9 @@ namespace Crux.BaseControls
 
             foreach (var f in GlobalForms)
             {
+                f.IsActive = false;
                 if (!f.IsVisible) continue;
 
-                f.IsActive = false;
 
                 if (f.IsResized)
                 {
@@ -140,6 +140,7 @@ namespace Crux.BaseControls
                 }
                 f.Update();
             }
+
             if (HoveredForm != null && Control.LeftClick())
             {
                 if (HoveredForm.IsHovering && !HoveredForm.ConstantOnBack)
@@ -296,6 +297,8 @@ namespace Crux.BaseControls
             //{
             //    Invalidate();
             //};
+            if (ConstantOnBack)
+                SendToBack();
 
             Owner = originForm = this;
             #region Debug
@@ -343,14 +346,19 @@ namespace Crux.BaseControls
             {
                 Height = pv.Height - AbsoluteY;
             }
+            UpdateBorders();
+
+        }
+
+        void UpdateBorders()
+        {
+
             Bounds = Rectangle(AbsoluteX, AbsoluteY, Width, Height);
             BottomBorder = Rectangle(AbsoluteX, AbsoluteY + Height - 4, Width, 4);
             RightBorder = Rectangle(AbsoluteX + Width - 4, AbsoluteY, 4, Height);
             LeftBorder = Rectangle(AbsoluteX, AbsoluteY, 4, Height);
             TopBorder = Rectangle(AbsoluteX, AbsoluteY, Width, 4);
             Header = Rectangle(AbsoluteX, AbsoluteY, Width, 20 + 8);
-            //Batch.GraphicsDevice.ScissorRectangle = Bounds;
-
             foreach (var n in Controls)
             {
                 n.UpdateBounds();
@@ -373,26 +381,26 @@ namespace Crux.BaseControls
         public override Point AbsolutePos
         {
             get => Bounds.Location;
-            set { Bounds = Rectangle(value.X, value.Y, Width, Height); RenewBounds();/*UpdateControlsBounds();*/ }
+            set { Bounds = Rectangle(value.X, value.Y, Width, Height); UpdateBorders();/*UpdateControlsBounds();*/ }
         }
 
         public override float AbsoluteX
         {
             get => Bounds.X;
-            set { Bounds = Rectangle(value, AbsoluteY, Width, Height); RenewBounds();/*UpdateControlsBounds();*/ }
+            set { Bounds = Rectangle(value, AbsoluteY, Width, Height); UpdateBorders();/*UpdateControlsBounds();*/ }
         }
 
         public override float AbsoluteY
         {
             get => Bounds.Y;
-            set { Bounds = Rectangle(AbsoluteX, value, Width, Height); RenewBounds(); /*UpdateControlsBounds();*/ }
+            set { Bounds = Rectangle(AbsoluteX, value, Width, Height); /*RenewBounds();*/ /*UpdateControlsBounds();*/ }
         }
 
-        public override float Width { get => base.Width; set { base.Width = value; RenewBounds(); } }
+        public override float Width { get => base.Width; set { base.Width = value; UpdateBorders(); } }
 
-        public override float Height { get => base.Height; set { base.Height = value; RenewBounds(); } }
+        public override float Height { get => base.Height; set { base.Height = value; UpdateBorders(); } }
 
-        public override Point Size { get => base.Size; set { base.Size = value; RenewBounds(); } }
+        public override Point Size { get => base.Size; set { base.Size = value; UpdateBorders(); } }
 
         void UpdateControlsBounds()
         {
@@ -591,7 +599,7 @@ namespace Crux.BaseControls
                             OnMouseLeftClicked?.Invoke(this, ControlArgs.GetState);
 
 
-                        if (Control.AnyKeyPressed())
+                        if (Control.AnyKeyHold())
                             OnKeyUp?.Invoke(this, ControlArgs.GetState);
                     }
                 }
@@ -649,12 +657,13 @@ namespace Crux.BaseControls
             }
         }
 
-        public event Action OnDraw;
+        public event Action OnDraw, OnPostDraw;
 
         public override void Draw()
         {
             if (IsVisible)
             {
+                OnDraw?.Invoke();
                 Batch.GraphicsDevice.ScissorRectangle = new Rectangle(new Point((int)AbsoluteX, (int)AbsoluteY), new Point((int)Width, (int)Height));
                 //if (!hasLayout)
                 //{
@@ -677,16 +686,16 @@ namespace Crux.BaseControls
                 //    Batch.End();
                 //}
 
-                OnDraw?.Invoke();
 
                 if (hasLayout)
                 {
-                    Batch.Begin(SpriteSortMode.Deferred, rasterizerState: rasterizer);
+                    Batch.Begin(SpriteSortMode.Deferred, BlendState, SamplerState, rasterizerState: rasterizer);
                     {
                         DrawLayout();
                     }
                     Batch.End();
                 }
+
                 for (int i = Controls.Count - 1; i >= 0; i--)
                 {
                     var c = Controls[i];
@@ -703,10 +712,11 @@ namespace Crux.BaseControls
                     //}
                 }
 
+                OnPostDraw?.Invoke();
 
                 SideControl?.Draw();
 
-                Batch.Begin(SpriteSortMode.Deferred, null, null, null);
+                Batch.Begin(SpriteSortMode.Deferred, BlendState, SamplerState, null);
                 {
                     //Batch.DrawFill(Header, new Color(175, 175, 175, 255));
                     //Batch.DrawFill(Rectangle(X + Width - 56 - 6, Y + 6, 56, 20), new Color(135, 135, 135, 255));

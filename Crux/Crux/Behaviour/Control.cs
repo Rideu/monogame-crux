@@ -31,7 +31,7 @@ namespace Crux
             NMW = Mouse.GetState().ScrollWheelValue;
             WheelVal = NMW - OMW;
         }
-         
+
 
         public static bool MouseHoverOverTex(Texture2D tex, Vector2 offset) => (Simplex.OffsettedTexture(tex, offset).Contains(Mouse.GetState().Position.ToVector2()));
 
@@ -41,25 +41,27 @@ namespace Crux
 
         public static bool LeftPressed() => Mouse.GetState().LeftButton == ButtonState.Pressed;
 
-        public static bool LeftClick() => (OMS.LeftButton == ButtonState.Pressed && NMS.LeftButton == ButtonState.Released);
-
         public static bool RightPressed() => Mouse.GetState().RightButton == ButtonState.Pressed;
+
+        public static bool LeftClick() => (OMS.LeftButton == ButtonState.Pressed && NMS.LeftButton == ButtonState.Released);
 
         public static bool RightClick() => (OMS.RightButton == ButtonState.Pressed && NMS.RightButton == ButtonState.Released);
 
         public static bool MidClick() => (OMS.MiddleButton == ButtonState.Pressed && NMS.MiddleButton == ButtonState.Released);
 
-        public static bool IsKeyUpPressedKey(Keys key) => (OKS.IsKeyDown(key) && NKS.IsKeyUp(key));
-
         public static bool PressedDownKey(Keys key) => (OKS.IsKeyUp(key) && NKS.IsKeyDown(key));
 
-        public static bool AnyKeyPressed() => OKS.GetPressedKeys().Length > 0;
+        public static bool AnyKeyDown() => OKS.GetPressedKeys().Length == 0 && NKS.GetPressedKeys().Length > 0;
 
-        public static bool IsKeyUp(Keys key) => Keyboard.GetState().IsKeyUp(key);
+        public static bool AnyKeyUp() => OKS.GetPressedKeys().Length > 0 && NKS.GetPressedKeys().Length == 0;
 
-        public static bool IsKeyDown(Keys key) => Keyboard.GetState().IsKeyDown(key);
+        public static bool AnyKeyHold() => OKS.GetPressedKeys().Length > 0;
 
-        public static Keys[] GetPressedKeys() => Keyboard.GetState().GetPressedKeys();
+        public static bool IsKeyUp(Keys key) => NKS.IsKeyUp(key);
+
+        public static bool IsKeyDown(Keys key) => NKS.IsKeyDown(key);
+
+        public static Keys[] GetPressedKeys() => NKS.GetPressedKeys();
 
         public static void Debug(SpriteBatch batch)
         {

@@ -1,6 +1,8 @@
 ﻿using System;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
 using static Crux.Simplex;
 
 namespace Crux.BaseControls
@@ -40,7 +42,7 @@ namespace Crux.BaseControls
 
             Batch.GraphicsDevice.ScissorRectangle = drawingBounds.InflateBy(-BorderSize);
 
-            Batch.Begin(SpriteSortMode.Deferred, null, null, null, rasterizer);
+            Batch.Begin(SpriteSortMode.Deferred, BlendState, SamplerState, null, rasterizer);
             {
                 if (Image != null)
                     Batch.Draw(Image, Bounds, BackColor);

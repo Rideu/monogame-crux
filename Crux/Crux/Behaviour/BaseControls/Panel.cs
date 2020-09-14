@@ -23,7 +23,8 @@ namespace Crux.BaseControls
 
         public Slider ContentSlider { get; set; }
 
-        public bool SliderVisible { get => ContentSlider.IsVisible; set => ContentSlider.IsVisible = value; }
+        protected bool sliderVisible;
+        public bool SliderVisible { get => sliderVisible; set { sliderVisible = value; if (ContentSlider != null) ContentSlider.IsVisible = sliderVisible; } }
         public bool IsScrollable { get; set; } = true;
 
         #endregion
@@ -83,6 +84,7 @@ namespace Crux.BaseControls
             Alias = "Panel";
             BorderColor = (BackColor = BackColor == default ? Palette.DarkenGray : BackColor) * 1.5f;
             CreateSlider();
+            SliderVisible = sliderVisible;
             base.Initialize();
         }
 
@@ -226,7 +228,7 @@ namespace Crux.BaseControls
 
         public override void Draw()
         {
-            //if (!IsVisible) return;
+            if (!IsVisible) return;
             base.Draw();
 
             if (Alias == "DataGrid")

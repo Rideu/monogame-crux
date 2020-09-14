@@ -135,7 +135,7 @@ namespace Crux
             wordsgroups.Clear();
             mea.Restart();
             t = Replace(t = text + " ", "\\r\\n", " ^n");
-            Vector2 currentPoint = new Vector2();
+            Vector2 currentPoint = new Vector2(pad.Left, pad.Top);
             var _line_index = 0;
             var c = Matches(t, @" +|(.+?)(?=({| ))");
             ct = Replace(t = text, "{.+?}", "");
@@ -143,7 +143,7 @@ namespace Crux
 
             Word _wordbuffer = null;
             float lineoverflow = 0;
-            try
+            //try
             {
                 for (int i = 0; i < c.Count; i++)
                 {
@@ -153,7 +153,10 @@ namespace Crux
                     var _root = _wordstring;
                     lineoverflow += _wordscale.X;
 
-                    if ((areasize.X > 0 ? (_root.Contains("^n") || lineoverflow > areasize.X - 5 - (pad.Right + pad.Left)) : false) && !string.IsNullOrWhiteSpace(_wordstring))
+                    if (
+                       (areasize.X > 0 ? (_root.Contains("^n")
+                       || lineoverflow > areasize.X - 5 - (pad.Right + pad.Left)) : false)
+                       && !string.IsNullOrWhiteSpace(_wordstring))
                     {
                         _root = _wordstring.Replace("^n", "");
                         currentPoint.X = pad.Left;
@@ -166,6 +169,7 @@ namespace Crux
                     if (applyFormatting)
                         F_C_APPLY(_wordbuffer);
 
+
                     _wordscale = f.MeasureString(_wordbuffer) * fontscale;
                     _wordbuffer.prevnext[0] = wordslist.Count > 1 ? wordslist[wordslist.Count - 1] : null;
 
@@ -176,6 +180,7 @@ namespace Crux
                         while (string.IsNullOrWhiteSpace(tx)) // Trace index of the first non-empty word among prevous ones
                         {
                             idx--;
+                            if (idx == -1) { idx = wordslist.Count - 2; break; }
                             tx = wordslist[idx].text;
                         }
 
@@ -185,12 +190,12 @@ namespace Crux
                         _wordbuffer.prevnext[0] = prev;
                     }
 
-                    currentPoint += new Vector2(_wordscale.X, pad.Top);
+                    currentPoint += new Vector2(_wordscale.X, 0);
 
                     wordslist.Add(_wordbuffer);
                 }
             }
-            catch { }
+            //catch(Exception e) { throw; }
             if (_wordbuffer != null) // TODO: clutch
                 textscale = new Vector2(areasize.X, _wordbuffer.bounds.Y + _wordbuffer.bounds.Height + 2); // TODO: add owner's pads, margs later
             mea.Stop();
@@ -220,11 +225,11 @@ namespace Crux
 
             while (IsMatch(s.text, "{.+?}")) // Keep processing commands until they gone...
             {
-                var prop_detect = (is_prop_def || is_prop_hov);
+                var prop_detect = (is_prop_def || is_prop_hov); // what
 
                 var pc = rule.analyse(s.text); // Parse command
 
-                if ((is_prop_def || is_prop_hov) && !prop_detect)
+                if ((is_prop_def || is_prop_hov) /*&& !prop_detect == !(is_prop_def || is_prop_hov)*/)
                 {
                     wordsgroups.Add(new WordGroup());
                     is_grouping = true;

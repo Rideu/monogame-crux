@@ -462,7 +462,7 @@ namespace Crux
 
 
             var clayout = new ControlLayout(Content.Load<Texture2D>("images\\control_layout2"), true);
-            var dif = Color.White;
+            var dif = Color.Gray;
             var hov = Palette.Neorange;
             var fore = Color.Black;
 
@@ -485,9 +485,9 @@ namespace Crux
             #endregion
 
             #region TextArea
-            if (false)
+            if (true)
             {
-                TextArea t = new TextArea(20, 80, 415, 280);
+                TextArea t = new TextArea(20, 80, 150, 100);
 
                 t.Font = arial;
                 var tb = t.GetTextBuilder;
@@ -497,8 +497,11 @@ namespace Crux
                 }
 
                 debugForm.AddNewControl(t);
-                t.Text = @"   {scale(1,0);}«1917»
 
+                if (false)
+                {
+
+                    t.Text = @"   {scale(1,0);}«1917»  
 «1917» (англ. 1917) - художественный {link():p;}фильм британского режиссёра{@p;} Сэма Мендеса по сценарию, написанному им совместно с Кристи Уилсон-Кэрнс. Премьера в США состоялась 25 декабря 2019 года. В Великобритании вышел в прокат 10 января 2020 года.
 
 
@@ -517,6 +520,8 @@ namespace Crux
 
 Весной 1917 года британская армия планирует наступление на Линию Гинденбурга. Двое молодых солдат Блейк и Скофилд должны доставить на передовую приказ об отмене атаки в практически невыполнимый срок, иначе батальон из 1600 солдат попадёт в засаду. Для Блейка задание становится личным - в этом батальоне служит его брат.";
 
+                }
+
                 //font.LineSpacing = 5;
 
                 TextSeeker ts = new TextSeeker();
@@ -524,6 +529,7 @@ namespace Crux
                 ts.AddSeeker("star", "{#(255,0,255);}");
                 ts.AddSeeker("node", "{#(85,185,255);#(25,125,255):h;}");
                 //ts.AddSeeker("f", "{censore();norm():h;}");
+
 
                 t.GetTextBuilder.AttachSeeker(ts);
 
@@ -533,6 +539,24 @@ namespace Crux
                 debugForm.AddNewControl(s = new Slider(20, 60, 415, 10, Slider.Type.Horizontal));
                 s.OnUserSlide += delegate { t.FontSize = (0.5f + (s.Value * 1)); };
 
+                //Button b = new Button(20, 20, 170, 20) { Text = "freeman zapusti" };
+                //b.OnLeftClick += (s, e) =>
+                //{
+                //    t.Text += "{#(255,155,25):p;}kdwao akwdadow wkado{@p;} ^n";
+                //};
+                //t.GetTextBuilder.Padding = new Rectangle(5, 5, 5, 5);
+
+                //TextBox tbb = new TextBox(20, 370 + 20 + 10, 100, 16) { ForeColor = Color.Black };
+                //tbb.OnKeyDown += (s, e) =>
+                //{
+                //    if (e.KeysHandled.Contains(Keys.Enter))
+                //    {
+                //        t.Text += $"{{#(255,155,25):p;}}{tbb.Text}{{@p;}} ^n";
+                //        tbb.Text = "";
+                //    }
+                //};
+
+                //debugForm.AddNewControl(b, tbb);
             }
             #endregion
 
@@ -541,8 +565,8 @@ namespace Crux
             {
                 Panel p, pp;
                 debugForm.AddNewControl(p = new Panel(110, 80, 410, 210, Palette.DarkenGray) { Layout = clayout });
-                p.DiffuseColor = dif;
-                p.HoverColor = hov;
+                p.DiffuseColor = Palette.Neonic;
+                p.HoverColor = Palette.DarkenGray;
                 var w = 100;
                 var h = 200;
                 //p.AddNewControl(new Button(10, 10, w, h, new Color(40, 40, 40)) { Text = "OK" });

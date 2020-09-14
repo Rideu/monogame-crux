@@ -7,7 +7,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{E2175B1A-2104-49B0-8F09-A907897B4B6E}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Crux</RootNamespace>
     <AssemblyName>libcrux</AssemblyName>
@@ -133,10 +133,10 @@
     <Compile Include="Behaviour\BaseControls\Panel.cs" />
     <Compile Include="Behaviour\BaseControls\Slider.cs" />
     <Compile Include="Behaviour\BaseControls\Textbox.cs" />
-    <Compile Include="Behaviour\DebugDevice.cs" />
+    <None Include="Behaviour\DebugDevice.cs" />
     <Compile Include="Behaviour\Design\ControlBaseDesigner.cs" />
     <Compile Include="Behaviour\Design\ControlLayout.cs" />
-    <Compile Include="Behaviour\IUnify.cs" />
+    <None Include="Behaviour\IUnify.cs" />
     <Compile Include="Behaviour\Simplex.cs" />
     <Compile Include="Behaviour\TextSeeker.cs" />
     <Compile Include="Behaviour\Timing.cs" />
@@ -183,14 +183,6 @@
   <ItemGroup>
     <Content Include="Icon.ico" />
     <Content Include="todo.txt" />
-    <None Include="Resources\delete_selected.png" />
-    <None Include="Resources\create_new.png" />
-    <None Include="Resources\label.png" />
-    <None Include="Resources\button.png" />
-    <None Include="Resources\panel.png" />
-    <None Include="Resources\to_front.png" />
-    <None Include="Resources\to_back.png" />
-    <None Include="Resources\start.png" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />

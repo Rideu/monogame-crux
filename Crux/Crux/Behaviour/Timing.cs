@@ -15,7 +15,7 @@ namespace Crux
     public struct Timer
     {
         public float Period;
-         
+
 
         /// <summary>
         /// Returns passed percent of time.
@@ -48,12 +48,23 @@ namespace Crux
             Run = !true;
         }
 
+
         public void Reset()
         {
             Elapse = 0;
         }
 
-        internal void Update(float elapse)
+        public void Restart()
+        {
+            Reset(); Start();
+        }
+
+        public void Update(GameTime gt)
+        {
+            Update((float)gt.ElapsedGameTime.TotalMilliseconds);
+        }
+
+        public void Update(float elapse)
         {
             if (Run)
             {
